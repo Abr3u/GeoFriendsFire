@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">GeoFriendsFire</string>
+    <string name="categories_prompt">Choose a category</string>
+    <string-array name="categories_array">
+        <item>Restaurant</item>
+        <item>Bar</item>
+        <item>Sports</item>
+        <item>Clothes</item>
+    </string-array>
+</resources>

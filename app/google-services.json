@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "916857347121",
+    "firebase_url": "https://geofriendsfire.firebaseio.com",
+    "project_id": "geofriendsfire",
+    "storage_bucket": "geofriendsfire.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916857347121:android:da11cd93063edcd4",
+        "android_client_info": {
+          "package_name": "pt.utl.ist.meic.geofriendsfire"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "916857347121-d4svimj7jdat6cjpqp1n9g0elqf4qfua.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFYQR2gMimsnwYydmxV4VaErkaqdnOLCU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

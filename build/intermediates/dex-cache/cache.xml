@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.google.android.gms\play-services-tasks\9.0.2\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="aec1bc54964a85d851c2c1b1cb7f90f7dbd755ab">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.google.android.gms-play-services-tasks-9.0.2_5850928f51f6a6227c0503d820224a836223b1a6.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.google.android.gms\play-services-maps\9.0.2\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="20e1a0f0de6276a5f36062b655f8b20f8cc00cc4">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.google.android.gms-play-services-maps-9.0.2_84ae3965428f39abaa225f60b44ef81220a88ea9.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.google.firebase\firebase-analytics-impl\9.0.2\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="a511c684ea4c2cf31a3377d51e7677cb76696e07">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.google.firebase-firebase-analytics-impl-9.0.2_c7963ff96e39f9b6b382808febf18d969ce09947.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.google.firebase\firebase-database\9.0.2\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="4ec890171a97b5ab98292f131aa784e0f3792c73">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.google.firebase-firebase-database-9.0.2_3be2b6c591214c49d5992bed0f2d600f8db01611.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.jakewharton\butterknife\8.4.0\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="a07818a1ecabdb149998823429cce555af4b9cba">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.jakewharton-butterknife-8.4.0_7d88b4de14e15832d712997cab31e0a567d2107a.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-fragment\24.2.0\jars\libs\internal_impl-24.2.0.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="032a4b53def5e2ceedfc2e793b126c0163cfa1dd">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.0_a5dc21d8bf27fe237a3cb20195b05c3954143c71.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.google.android.gms\play-services-basement\9.0.2\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="4022261eeea0d92eb2997a68d2c1f084a16abad9">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.google.android.gms-play-services-basement-9.0.2_c327e38621fe3257c2924db06f9739acab2e8ad1.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="bf8fcc0267bc104cb2572ed7fd220e236aea443d">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\instant-run-bootstrap_5dbfbffea4364c30cabe44fcc1bf5970d46b3294.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-core-ui\24.2.0\jars\libs\internal_impl-24.2.0.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="6e02e34594ebe9c0501ffda8dd48497f81b82977">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.0_cb66dcabebc9721778b42f550a7cdbf720633c4e.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-core-ui\24.2.0\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="c84e216d9bf618464d6b9564d71d9a656433e7c4">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.android.support-support-core-ui-24.2.0_1e9c721f67207456036244a260035272c3e64a7e.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.google.firebase\firebase-analytics\9.0.2\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="51a11c41a08f099a204e1b8dcc04f27217de50ec">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.google.firebase-firebase-analytics-9.0.2_b7c5ca544dd7c9b8dc64aa47c3fa06dc0ef05f35.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.google.android.gms\play-services-base\9.0.2\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="94d9cedd04b124aed044ac71c451a292856d854c">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.google.android.gms-play-services-base-9.0.2_491a2214caa120f32b97832fbf2c48c53fcf1005.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-fragment\24.2.0\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="d8bd2268fdcbfd52c76ade65d9900cd8def93a44">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.android.support-support-fragment-24.2.0_447339406dd4e2f2f8a13a8f1c2762115bcee0a5.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-media-compat\24.2.0\jars\libs\internal_impl-24.2.0.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="045be695d968dd707691cc55d23746dbf8cf569a">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.0_f42750310fca2f698f4d3cfb68055866c50d1076.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-v4\24.2.0\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="45f5eda279825ff470e3f51019d374d1ef61e000">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.android.support-support-v4-24.2.0_069be983459a39dea565408b63ef8a6c704611c5.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-vector-drawable\24.2.0\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="beac40bcc8a320a896dd15f5109cfcaea5e1e0e3">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.android.support-support-vector-drawable-24.2.0_78aa36841a8675d040c7f31934b38f4bb1701694.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\sdk\extras\android\m2repository\com\android\support\support-annotations\24.2.0\support-annotations-24.2.0.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="6be858a75633b1f0a2d24cad740db57775cb6871">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\support-annotations-24.2.0_9e39f98bb961c405f8e5c9a86428b6e860d0213b.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.google.firebase\firebase-common\9.0.2\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="9919563cffd8e3732e944d3c437d4b9575a08448">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.google.firebase-firebase-common-9.0.2_064383de4f7be61e12880fc3a55fe6309755204f.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-compat\24.2.0\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="f9b41622897665678d31d78e57a361cb0cebcb0d">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.android.support-support-compat-24.2.0_0bb653b76c00a4e2bb382527f92caaea255602e5.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-core-utils\24.2.0\jars\libs\internal_impl-24.2.0.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="60d7b23621d31e6f42f4f76f16af467e57a20cda">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.0_94b707ade92fa6252707468fa24d294fd7b5076c.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\24.2.0\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="c3c638be6e650b165ab9ae144857b64e82787fad">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.android.support-appcompat-v7-24.2.0_6571ae6e0d8c9fe1c819e70ee8bfcffe958cc002.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.firebase\geofire-android\2.0.0\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="5d91b5ea1f08ac3148d6a46e61645a56f42f9280">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.firebase-geofire-android-2.0.0_77c3a245527a82ab06f3986212af08d687441793.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\animated-vector-drawable\24.2.0\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="f3ee23ef25c9a8fe3d40246d0b7097267963a612">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.android.support-animated-vector-drawable-24.2.0_6bb85152665194cf53ee5fbacce2007577e221f1.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.google.firebase\firebase-database-connection\9.0.2\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="9819419ce8d79f3f81a0fc70f9345ac8c843af9c">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.google.firebase-firebase-database-connection-9.0.2_68296fb38c93bb55435b113b13548405c867810e.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-compat\24.2.0\jars\libs\internal_impl-24.2.0.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="771b3cc0e597b54da25f8086ba73180c59c6bc71">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\internal_impl-24.2.0_669f8e2057d20465f040ce15a3767788fc930f90.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-core-utils\24.2.0\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="fcc945a86ebcbf527429acb8216ec7dae2c06417">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.android.support-support-core-utils-24.2.0_cb770a8afb819373ae57a19a55fdd8ab2f6ac37c.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-media-compat\24.2.0\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="6eb9107eb34d2fe2b020662b7fbbec991dcba846">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.android.support-support-media-compat-24.2.0_fbc7ac3b8e5fe8d422ad092a83d7871af486e64b.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.google.firebase\firebase-iid\9.0.2\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="b3d0809a742c5f768c6aa9efc6decd5c1d6cd227">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.google.firebase-firebase-iid-9.0.2_7b25974e3e24793aca267188ebf6c8fb1d770f21.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="10eb9323a1060599711881257445991c0c6ddb4a">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\instant-run_cd38713718ee8ce55eef84523a093da1b2d1f060.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Users\ricar\.gradle\caches\modules-2\files-2.1\com.jakewharton\butterknife-annotations\8.4.0\ea392375cf9ff59234a82e7928a204215ccc98cd\butterknife-annotations-8.4.0.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="24.0.2"
+        sha1="ea392375cf9ff59234a82e7928a204215ccc98cd">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\butterknife-annotations-8.4.0_aeb3384e1b6698fdf90de3f183559bb731e86a2a.jar" />
+    </item>
+
+</items>
