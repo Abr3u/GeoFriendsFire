@@ -1,14 +1,29 @@
 package pt.utl.ist.meic;
 
-public interface DataPoint {
+public class DataPoint {
 
-	public double distance(DataPoint datapoint);
-	
-	public void setCluster(int id);
-	
-	public int getCluster();
-	
-	public int getX();
-	
-	public int getY();
+	private Double latitude;
+	private Double longitude;
+
+	public DataPoint(Double latitude, Double longitude) {
+		this.latitude = latitude;
+		this.longitude = longitude;
+	}
+
+	public Double getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(Double longitude) {
+		this.longitude = longitude;
+	}
+
+	public Double getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(Double latitude) {
+		this.latitude = latitude;
+	}
+
 }
