@@ -28,7 +28,7 @@ local.properties
 .idea/scopes/scope_settings.xml
 .idea/vcs.xml
 *.iml
-/dataset
+GeoServer/dataset/*
 
 # OS-specific files
 .DS_Store
