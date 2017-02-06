@@ -1,5 +1,6 @@
 package pt.utl.ist.meic.geofriendsfire.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import android.app.AlertDialog;
@@ -33,7 +34,7 @@ import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 
 public class EventsNearbyActivity extends FragmentActivity implements GeoQueryEventListener, GoogleMap.OnCameraChangeListener, OnMapReadyCallback {
 
-    private static final GeoLocation INITIAL_CENTER = new GeoLocation(38.7097424, -9.4224729);//Lisboa
+    private static GeoLocation INITIAL_CENTER = new GeoLocation(38.7097424, -9.4224729);//Lisboa
     private static final int INITIAL_ZOOM_LEVEL = 14;
 
     private static final String EVENTS_LOCATIONS_REF = "/eventsLocations";
@@ -50,6 +51,14 @@ public class EventsNearbyActivity extends FragmentActivity implements GeoQueryEv
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_events_nearby);
+
+        Intent intent = getIntent();
+        if(intent.hasExtra("initialCenterLati") && intent.hasExtra("initialCenterLongi")){
+            double lati = intent.getDoubleExtra("initialCenterLati",38.7097424);
+            double longi = intent.getDoubleExtra("initialCenterLongi",-9.4224729);
+            this.INITIAL_CENTER = new GeoLocation(lati,longi);
+        }
+
 
         GPSTracker gpsTracker = new GPSTracker(this);
         if (!gpsTracker.canGetLocation()) {

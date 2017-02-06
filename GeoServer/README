@@ -8,11 +8,17 @@ New York
 inferior left -> 40.543155, -74.056834
 superior right -> 40.904894, -73.726044
 =
-119069
+130425
 
+Kmeans clusters
+k=2 -> 3.2098474496243083E-9
+k=4 -> 4.671376571847712E-10
+k=5 -> 2.701799675821211E-10
+k=6 -> 2.356666682945554E-10
+k=8 -> 2.1862730014317916E-10
 
-central park
-low left -> 40.764504, -73.983347
-top right -> 40.800128, -73.947576
-=
-16223
+Tomorrow:
+na eventsActivity:
+usar eventos reais
+ir buscar os eventos com o RxFirebase
+no onClick(), passar a geoLocation do evento para o eventsNearbyAvtivity via intent

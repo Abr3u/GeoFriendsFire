@@ -44,7 +44,7 @@ public class DoubleArray {
 		for(int i=0; i<data.length; i++){
 			buffer.append(data[i]);
 			if(i < data.length -1){
-				buffer.append(",");
+				buffer.append(";");
 			}
 		}
 		return buffer.toString();

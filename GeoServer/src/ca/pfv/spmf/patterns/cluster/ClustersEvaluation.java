@@ -4,7 +4,6 @@ import java.util.List;
 
 import ca.pfv.spmf.algorithms.clustering.dbscan.AlgoDBSCAN;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
-import ca.pfv.spmf.algorithms.clustering.kmeans.AlgoBisectingKMeans;
 import ca.pfv.spmf.algorithms.clustering.kmeans.AlgoKMeans;
 /* This file is copyright (c) 2008-2012 Philippe Fournier-Viger
 * 

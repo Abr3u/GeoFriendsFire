@@ -27,7 +27,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.EventsNearbyActivity" />
-        <activity android:name=".activities.CreateEventActivity"></activity>
+        <activity android:name=".activities.CreateEventActivity" />
+        <activity android:name=".activities.EventsActivity"/>
     </application>
 
 </manifest>

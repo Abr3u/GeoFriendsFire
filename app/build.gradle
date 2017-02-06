@@ -2,12 +2,12 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
     defaultConfig {
         applicationId "pt.utl.ist.meic.geofriendsfire"
         minSdkVersion 16
-        targetSdkVersion 24
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -20,14 +20,19 @@ android {
     }
 }
 
+ext{
+    supportLibVersion = '25.0.0'
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.2.0'
-    compile "com.android.support:support-core-utils:24.2.0"
+    compile "com.android.support:appcompat-v7:${supportLibVersion}"
+    compile "com.android.support:design:${supportLibVersion}"
+    compile "com.android.support:support-core-utils:${supportLibVersion}"
     //maps
     compile 'com.google.android.gms:play-services-maps:9.0.2'
     // firebase
@@ -35,9 +40,13 @@ dependencies {
     compile 'com.google.firebase:firebase-database:9.0.2'
     // GeoFire
     compile 'com.firebase:geofire-android:2.0.0'
+    //rxfirebase
+    compile 'com.github.frangsierra:rx2firebase:1.0.0'
     //butterknife
     compile 'com.jakewharton:butterknife:8.4.0'
     apt 'com.jakewharton:butterknife-compiler:8.4.0'
+    //glide
+    compile 'com.github.bumptech.glide:glide:3.7.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

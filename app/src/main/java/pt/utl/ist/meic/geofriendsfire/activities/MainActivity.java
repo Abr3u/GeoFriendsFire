@@ -26,14 +26,19 @@ public class MainActivity extends AppCompatActivity {
 
 
     @OnClick(R.id.eventsNearbyButton)
-    public void eventsNearbyClicked(){
+    public void eventsNearbyButtonClicked(){
         startActivity(new Intent(this,EventsNearbyActivity.class));
     }
 
 
     @OnClick(R.id.createEventButton)
-    public void createEventClicked(){
+    public void createEventButtonClicked(){
         startActivity(new Intent(this,CreateEventActivity.class));
+    }
+
+    @OnClick(R.id.eventsButton)
+    public void eventsButtonClicked(){
+        startActivity(new Intent(this,EventsActivity.class));
     }
 
     @Override

@@ -2,9 +2,12 @@
     <string name="app_name">GeoFriendsFire</string>
     <string name="categories_prompt">Choose a category</string>
     <string-array name="categories_array">
-        <item>Restaurant</item>
-        <item>Bar</item>
+        <item>Food</item>
         <item>Sports</item>
-        <item>Clothes</item>
+        <item>Shop</item>
     </string-array>
+
+    <string name="dialog_title">"Create New Event"</string>
+    <string name="dialog_message">"Do you want to create an event at your current location?"</string>
+
 </resources>
