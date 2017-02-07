@@ -2,6 +2,7 @@ package pt.utl.ist.meic.geofriendsfire.models;
 
 import android.util.Log;
 
+import com.firebase.geofire.GeoLocation;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
@@ -11,6 +12,10 @@ import java.util.Map;
 @IgnoreExtraProperties
 public class Event {
 
+    @Exclude
+    public GeoLocation geoLocation;
+    @Exclude
+    public String ref;
     public String author;
     public String description;
     public String category;
@@ -23,6 +28,10 @@ public class Event {
         this.author = author;
         this.description = description;
         this.category = category;
+    }
+
+    public void setRef(String ref){
+        this.ref = ref;
     }
 
     @Exclude
