@@ -13,6 +13,7 @@ import android.view.View;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.CustomViewPagerAdapter;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventsNearbyListFragment;
+import pt.utl.ist.meic.geofriendsfire.fragments.MyEventsListFragment;
 
 public class EventsActivity extends AppCompatActivity {
 
@@ -42,7 +43,7 @@ public class EventsActivity extends AppCompatActivity {
     private void setupViewPager(ViewPager viewPager) {
             CustomViewPagerAdapter adapter = new CustomViewPagerAdapter(getSupportFragmentManager());
             adapter.addFragment(new EventsNearbyListFragment(), "Nearby Events");
-            adapter.addFragment(new EventsNearbyListFragment(), "My Events");
+            adapter.addFragment(new MyEventsListFragment(), "My Events");
             viewPager.setAdapter(adapter);
     }
 

@@ -34,7 +34,7 @@ import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 
 public class EventsNearbyActivity extends FragmentActivity implements GeoQueryEventListener, GoogleMap.OnCameraChangeListener, OnMapReadyCallback {
 
-    private static GeoLocation INITIAL_CENTER = new GeoLocation(38.7097424, -9.4224729);//Lisboa
+    private static GeoLocation INITIAL_CENTER = new GeoLocation(38.7097424, -9.4224729);//Casa
     private static final int INITIAL_ZOOM_LEVEL = 14;
 
     private static final String EVENTS_LOCATIONS_REF = "/eventsLocations";
@@ -128,12 +128,9 @@ public class EventsNearbyActivity extends FragmentActivity implements GeoQueryEv
     @Override
     public void onKeyEntered(String key, GeoLocation location) {
         if (this.markers.size() < preferedWorkLoad) {
-            Log.d("yyy","nao passava do workload ---- "+this.markers.size()+ " < "+preferedWorkLoad);
             // Add a new marker to the map
             Marker marker = this.map.addMarker(new MarkerOptions().position(new LatLng(location.latitude, location.longitude)));
             this.markers.put(key, marker);
-        }else{
-            Log.d("yyy","ja passava do workload");
         }
     }
 

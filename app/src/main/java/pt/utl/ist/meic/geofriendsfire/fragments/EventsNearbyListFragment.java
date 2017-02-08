@@ -14,7 +14,7 @@ import com.firebase.geofire.GeoLocation;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
-import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyRecyclerViewAdapter;
+import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyAdapter;
 import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 
 public class EventsNearbyListFragment extends Fragment {
@@ -33,11 +33,10 @@ public class EventsNearbyListFragment extends Fragment {
         if (!gpsTracker.canGetLocation()) {
             Toast.makeText(getActivity(), "cant get current location", Toast.LENGTH_LONG).show();
         } else {
-            MyApplicationContext context = (MyApplicationContext) getActivity().getApplicationContext();
             GeoLocation currentLocation = new GeoLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude());
 
             recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
-            recyclerView.setAdapter(new EventsNearbyRecyclerViewAdapter(getActivity(),currentLocation, context.getMaximumWorkLoad()));
+            recyclerView.setAdapter(new EventsNearbyAdapter(getActivity(),currentLocation));
         }
     }
 }

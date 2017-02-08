@@ -18,12 +18,7 @@ k=6 -> 2.356666682945554E-10
 k=8 -> 2.1862730014317916E-10
 
 Tomorrow:
+eventsNearby e MyEvents done!
+problema do workload - resolvido incrementando o raio ate ter o numero de eventos
 
-list events nearby -> eventsRecyclerViewAdapter ja implementa geoQuery. testar!!
-list my events -> rever o myEventsAdapter, criar o observeChildEvent()
-
-
-na eventsActivity:
-usar eventos reais
-ir buscar os eventos com o RxFirebase
-no onClick(), passar a geoLocation do evento para o eventsNearbyActivity via intent
+comecar com amigos??

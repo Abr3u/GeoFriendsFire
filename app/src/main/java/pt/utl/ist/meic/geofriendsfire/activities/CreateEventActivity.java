@@ -11,6 +11,9 @@ import com.firebase.geofire.GeoLocation;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -58,7 +61,11 @@ public class CreateEventActivity extends AppCompatActivity {
             double latitude = mGpsTracker.getLatitude();
             double longitude = mGpsTracker.getLongitude();
             String category = String.valueOf(eventCategory.getSelectedItem());
-            Event newEvent = new Event("abreu", eventDescription.getText().toString().trim(),category);
+
+            SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+            String creationDate = df.format(new Date());
+
+            Event newEvent = new Event("abreu", eventDescription.getText().toString().trim(),category,creationDate);
 
             // Generate a reference to a new location and add some data using push()
             DatabaseReference eventsRef = mDatabase.child(EVENTS_REF);

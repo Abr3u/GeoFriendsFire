@@ -19,15 +19,17 @@ public class Event {
     public String author;
     public String description;
     public String category;
+    public String creationDate;
 
     public Event() {
         // Default constructor required for calls to DataSnapshot.getValue(User.class)
     }
 
-    public Event(String author, String description, String category) {
+    public Event(String author, String description, String category,String creationDate) {
         this.author = author;
         this.description = description;
         this.category = category;
+        this.creationDate = creationDate;
     }
 
     public void setRef(String ref){
@@ -40,13 +42,18 @@ public class Event {
         result.put("author", this.author);
         result.put("description", this.description);
         result.put("category", this.category);
+        result.put("creationDate",this.creationDate);
         return result;
     }
 
+    @Override
+    public String toString() {
+        return "["+creationDate+"]"+"["+category+"]"+description+"::"+author;
+    }
 
     @Override
     public int hashCode() {
-        return author.hashCode() + description.hashCode() + category.hashCode();
+        return author.hashCode() + description.hashCode() + category.hashCode()+creationDate.hashCode();
     }
 
     @Override
@@ -61,6 +68,8 @@ public class Event {
         if (!description.equals(other.description))
             return false;
         if (!category.equals(other.category))
+            return false;
+        if (!creationDate.equals(other.creationDate))
             return false;
         return true;
     }
