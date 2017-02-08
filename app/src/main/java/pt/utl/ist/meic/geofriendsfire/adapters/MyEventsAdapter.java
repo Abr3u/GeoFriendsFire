@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.activities.EventsNearbyActivity;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
@@ -129,7 +130,10 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
                         Toast.LENGTH_SHORT).show();
             }
         };
-        ref.orderByChild("author").equalTo("abreu").addChildEventListener(childEventListener);
+
+        String myId = ((MyApplicationContext)mContext.getApplicationContext()).getFirebaseUser().getUid();
+
+        ref.orderByChild("authorId").equalTo(myId).addChildEventListener(childEventListener);
         // [END child_event_listener_recycler]
 
         // Store reference to listener so it can be removed on app stop

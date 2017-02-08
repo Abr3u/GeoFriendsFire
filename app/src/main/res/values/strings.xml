@@ -9,5 +9,6 @@
 
     <string name="dialog_title">"Create New Event"</string>
     <string name="dialog_message">"Do you want to create an event at your current location?"</string>
+    <string name="sign_in_button">Sign In</string>
 
 </resources>

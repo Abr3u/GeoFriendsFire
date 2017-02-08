@@ -1,7 +1,5 @@
 package pt.utl.ist.meic.geofriendsfire.models;
 
-import android.util.Log;
-
 import com.firebase.geofire.GeoLocation;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
@@ -16,7 +14,8 @@ public class Event {
     public GeoLocation geoLocation;
     @Exclude
     public String ref;
-    public String author;
+    public String authorId;
+    public String authorName;
     public String description;
     public String category;
     public String creationDate;
@@ -25,8 +24,9 @@ public class Event {
         // Default constructor required for calls to DataSnapshot.getValue(User.class)
     }
 
-    public Event(String author, String description, String category,String creationDate) {
-        this.author = author;
+    public Event(String authorId,String author, String description, String category,String creationDate) {
+        this.authorId = authorId;
+        this.authorName = author;
         this.description = description;
         this.category = category;
         this.creationDate = creationDate;
@@ -39,7 +39,8 @@ public class Event {
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
-        result.put("author", this.author);
+        result.put("authorId", this.authorId);
+        result.put("authorName", this.authorName);
         result.put("description", this.description);
         result.put("category", this.category);
         result.put("creationDate",this.creationDate);
@@ -48,12 +49,12 @@ public class Event {
 
     @Override
     public String toString() {
-        return "["+creationDate+"]"+"["+category+"]"+description+"::"+author;
+        return "["+creationDate+"]"+"["+category+"]"+description+"::"+ authorName;
     }
 
     @Override
     public int hashCode() {
-        return author.hashCode() + description.hashCode() + category.hashCode()+creationDate.hashCode();
+        return authorId.hashCode()+authorName.hashCode() + description.hashCode() + category.hashCode()+creationDate.hashCode();
     }
 
     @Override
@@ -63,7 +64,7 @@ public class Event {
         if (!(obj instanceof Event))
             return false;
         Event other = (Event) obj;
-        if (!author.equals(other.author))
+        if (!authorId.equals(other.authorId))
             return false;
         if (!description.equals(other.description))
             return false;

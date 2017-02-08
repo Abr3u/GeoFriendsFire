@@ -18,6 +18,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import durdinapps.rxfirebase2.RxFirebaseDatabase;
+import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
@@ -61,11 +62,15 @@ public class CreateEventActivity extends AppCompatActivity {
             double latitude = mGpsTracker.getLatitude();
             double longitude = mGpsTracker.getLongitude();
             String category = String.valueOf(eventCategory.getSelectedItem());
+            String description = eventDescription.getText().toString().trim();
 
             SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
             String creationDate = df.format(new Date());
 
-            Event newEvent = new Event("abreu", eventDescription.getText().toString().trim(),category,creationDate);
+            String myId = ((MyApplicationContext)getApplicationContext()).getFirebaseUser().getUid();
+            String myName = ((MyApplicationContext)getApplicationContext()).getFirebaseUser().getDisplayName();
+
+            Event newEvent = new Event(myId,myName,description ,category,creationDate);
 
             // Generate a reference to a new location and add some data using push()
             DatabaseReference eventsRef = mDatabase.child(EVENTS_REF);

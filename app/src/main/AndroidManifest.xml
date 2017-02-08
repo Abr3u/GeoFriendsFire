@@ -26,6 +26,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activities.SignInActivity"/>
         <activity android:name=".activities.EventsNearbyActivity" />
         <activity android:name=".activities.CreateEventActivity" />
         <activity android:name=".activities.EventsActivity"/>
