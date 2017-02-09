@@ -19,11 +19,19 @@ k=8 -> 2.1862730014317916E-10
 
 Today:
 eventsNearby e MyEvents done!
-problema do workload - resolvido incrementando o raio ate ter o numero de eventos
+problema do workload done! - resolvido incrementando o raio ate ter o numero de eventos - pode exceder o workload pela distancia minima (default)
+login done!
+drawerView done! - resolvido com dynamicPagerAdapter
+
 
 Tomorrow:
+implementar parcelable nos fragments;
+eventDetails;
+
+mvvm
+criar anotation para ver se tem wifi/gps
 eventDetails
+
 track de localizacoes - maybe RxLocation?
-login
 comecar com amigos??
 mostrar ao user os seus clusters?

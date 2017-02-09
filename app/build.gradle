@@ -51,6 +51,8 @@ dependencies {
     apt 'com.jakewharton:butterknife-compiler:8.4.0'
     //glide
     compile 'com.github.bumptech.glide:glide:3.7.0'
+    //pagerAdapter
+    compile 'com.nakama.arraypageradapter:arraypageradapter:0.1.2'
 }
 
 apply plugin: 'com.google.gms.google-services'

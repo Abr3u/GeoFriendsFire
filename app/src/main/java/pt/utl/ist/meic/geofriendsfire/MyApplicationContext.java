@@ -4,7 +4,9 @@ import android.app.Application;
 
 import com.google.firebase.auth.FirebaseUser;
 
-public class MyApplicationContext extends Application {
+import java.io.Serializable;
+
+public class MyApplicationContext extends Application{
 
     private FirebaseUser firebaseUser;
     private int maximumWorkLoad;

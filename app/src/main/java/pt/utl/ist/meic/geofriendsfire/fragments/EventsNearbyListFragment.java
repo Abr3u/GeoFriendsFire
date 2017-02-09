@@ -1,10 +1,14 @@
 package pt.utl.ist.meic.geofriendsfire.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,12 +16,17 @@ import android.widget.Toast;
 
 import com.firebase.geofire.GeoLocation;
 
+import java.io.Serializable;
+
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyAdapter;
+import pt.utl.ist.meic.geofriendsfire.adapters.MyEventsAdapter;
 import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 
-public class EventsNearbyListFragment extends Fragment {
+public class EventsNearbyListFragment extends Fragment{
+
+    private Context mContext;
 
     @Nullable
     @Override
@@ -29,14 +38,18 @@ public class EventsNearbyListFragment extends Fragment {
     }
 
     private void setupRecyclerView(RecyclerView recyclerView) {
-        GPSTracker gpsTracker = new GPSTracker(getActivity());
+        GPSTracker gpsTracker = new GPSTracker(mContext);
         if (!gpsTracker.canGetLocation()) {
-            Toast.makeText(getActivity(), "cant get current location", Toast.LENGTH_LONG).show();
+            Toast.makeText(mContext, "cant get current location", Toast.LENGTH_LONG).show();
         } else {
             GeoLocation currentLocation = new GeoLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude());
 
-            recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
-            recyclerView.setAdapter(new EventsNearbyAdapter(getActivity(),currentLocation));
+            recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+            recyclerView.setAdapter(new EventsNearbyAdapter(mContext,currentLocation));
         }
+    }
+
+    public void setContext(Context mContext) {
+        this.mContext = mContext;
     }
 }

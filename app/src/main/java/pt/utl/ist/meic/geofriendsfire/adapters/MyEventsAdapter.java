@@ -25,7 +25,7 @@ import java.util.Map;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
-import pt.utl.ist.meic.geofriendsfire.activities.EventsNearbyActivity;
+import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 
 
@@ -58,7 +58,6 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
         ChildEventListener childEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
-                Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
 
                 // A new Event has been added, add it to the displayed list
                 Event event = dataSnapshot.getValue(Event.class);
@@ -158,7 +157,7 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
             @Override
             public void onClick(View v) {
                 Context context = v.getContext();
-                Intent intent = new Intent(context, EventsNearbyActivity.class);
+                Intent intent = new Intent(context, DrawerMainActivity.class);
                 //intent.putExtra("initialCenterLati", mValues.get(position).geoLocation.latitude);
                 //intent.putExtra("initialCenterLongi", mValues.get(position).geoLocation.longitude);
                 context.startActivity(intent);

@@ -14,7 +14,7 @@ import com.bumptech.glide.Glide;
 
 import durdinapps.rxfirebase2.RxFirebaseRecyclerAdapter;
 import pt.utl.ist.meic.geofriendsfire.R;
-import pt.utl.ist.meic.geofriendsfire.activities.EventsNearbyActivity;
+import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 
 
@@ -46,7 +46,7 @@ public class MyEventsAdapterRX extends RxFirebaseRecyclerAdapter<MyEventsAdapter
             @Override
             public void onClick(View v) {
                 Context context = v.getContext();
-                Intent intent = new Intent(context, EventsNearbyActivity.class);
+                Intent intent = new Intent(context, DrawerMainActivity.class);
                 context.startActivity(intent);
             }
         });

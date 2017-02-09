@@ -29,9 +29,8 @@ import java.util.Map;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
-import pt.utl.ist.meic.geofriendsfire.activities.EventsNearbyActivity;
+import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
-import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
 
@@ -39,6 +38,7 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
 
     private static final String EVENTS_LOCATIONS_REF = "/eventsLocations";
     private static final String EVENTS_REF = "/events";
+    private static final double MIN_RADIUS = 0.1;
 
     private final Context mContext;
     private final TypedValue mTypedValue = new TypedValue();
@@ -57,7 +57,9 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
         mValues = new ArrayList<>();
         this.mContext = context;
         this.mCurrentLocation = currentLocation;
-        this.mCurrentRadius = 0.1;
+        this.mCurrentRadius = MIN_RADIUS;
+
+        Log.d("yyy","events nearby adapter constr");
 
         this.geoQuery = new GeoFire(FirebaseDatabase.getInstance().getReference(EVENTS_LOCATIONS_REF))
                 .queryAtLocation(currentLocation, mCurrentRadius);
@@ -87,7 +89,7 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
             @Override
             public void onClick(View v) {
                 Context context = v.getContext();
-                Intent intent = new Intent(context, EventsNearbyActivity.class);
+                Intent intent = new Intent(context, DrawerMainActivity.class);
                 //intent.putExtra(IntentKeys.initialCenterLati.name(), mValues.get(position).geoLocation.latitude);
                 //intent.putExtra(IntentKeys.initialCenterLati.name(), mValues.get(position).geoLocation.longitude);
                 context.startActivity(intent);
@@ -135,7 +137,7 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
     public void onKeyEntered(final String key, final GeoLocation location) {
         MyApplicationContext appContext = (MyApplicationContext) mContext.getApplicationContext();
         int maxWorkload = appContext.getMaximumWorkLoad();
-        Log.d("yyy", "keyEntered, size -> " + this.mValues.size() + " :: " + maxWorkload);
+        Log.d("yyy", "Radius -> "+mCurrentRadius+" // keyEntered, size -> " + this.mValues.size() + " :: " + maxWorkload);
 
         if (this.mValues.size() < maxWorkload) {
             // New Event nearby
@@ -188,6 +190,7 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
         MyApplicationContext appContext = (MyApplicationContext) mContext.getApplicationContext();
         int maxWorkload = appContext.getMaximumWorkLoad();
         if (this.mValues.size() < maxWorkload) {
+            Log.d("yyy",this.mValues.size()+" era mais pequeno que o WL "+maxWorkload);
             mCurrentRadius = mCurrentRadius * 2;
             geoQuery.setRadius(mCurrentRadius);
         }

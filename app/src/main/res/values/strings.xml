@@ -11,4 +11,10 @@
     <string name="dialog_message">"Do you want to create an event at your current location?"</string>
     <string name="sign_in_button">Sign In</string>
 
+    <string name="menu_night_mode">Night mode</string>
+    <string name="menu_night_mode_system">Follow system</string>
+    <string name="menu_night_mode_day">Day (always)</string>
+    <string name="menu_night_mode_night">Night (always)</string>
+    <string name="menu_night_mode_auto">Auto</string>
+
 </resources>
