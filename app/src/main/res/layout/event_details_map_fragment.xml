@@ -10,8 +10,5 @@
         android:layout_height="match_parent"
         class="com.google.android.gms.maps.SupportMapFragment" />
 
-    <include
-        android:visibility="gone"
-        android:id="@+id/detailsHolder"
-        layout="@layout/card_item"/>
+    <include android:id="@+id/detailsHolder" layout="@layout/card_item"/>
 </RelativeLayout>

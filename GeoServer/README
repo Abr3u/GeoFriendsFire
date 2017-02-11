@@ -17,21 +17,43 @@ k=5 -> 2.701799675821211E-10
 k=6 -> 2.356666682945554E-10
 k=8 -> 2.1862730014317916E-10
 
+__________________________________________
+
+
+But you can write a generic class ValueHolder<T> and mark the variable of it final! 
+And then just instead of "a = val" you write "aHolder.setValue(val)"! It's so easy!
+
+Objects.hashCode(mId, mTitle, mDescription);
+Task task = (Task) o;
+        return Objects.equal(mId, task.mId) &&
+               Objects.equal(mTitle, task.mTitle) &&
+               Objects.equal(mDescription, task.mDescription);
+
+
+
+Uri gmmIntentUri = Uri.parse("geo:"+country.lat+","+country.lng+"?q="+country.name+"&z=2");
+        navigator.startActivity(Intent.ACTION_VIEW, gmmIntentUri);
+		
+protected final FragmentActivity activity;
+activity.startActivity(new Intent(action, uri));
+__________________________________________
+
 Today:
 eventsNearby e MyEvents done!
 problema do workload done! - resolvido incrementando o raio ate ter o numero de eventos - pode exceder o workload pela distancia minima (default)
 login done!
-drawerView done! - resolvido com dynamicPagerAdapter
+drawerView done! - resolvido com dynamicPagerAdapter e fragmentKeys
+eventDetails done!
 
 
 Tomorrow:
-implementar parcelable nos fragments;
-eventDetails;
+pagina de settings no drawer view - para mudar o maxWorkload
 
-mvvm
-criar anotation para ver se tem wifi/gps
-eventDetails
+ver porque e que os fragments precisam de context;
+ver exemplos de rxJava de onlineDetection e polling
 
-track de localizacoes - maybe RxLocation?
 comecar com amigos??
+criar anotation para ver se tem wifi/gps
+track de localizacoes - maybe RxLocation?
+mvvm
 mostrar ao user os seus clusters?

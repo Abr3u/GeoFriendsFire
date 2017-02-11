@@ -21,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -32,7 +33,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,11 +42,9 @@ import butterknife.ButterKnife;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.DynamicViewPagerAdapter;
-import pt.utl.ist.meic.geofriendsfire.fragments.EventsNearbyListFragment;
-import pt.utl.ist.meic.geofriendsfire.fragments.MapFragment;
-import pt.utl.ist.meic.geofriendsfire.fragments.MyEventsListFragment;
-import pt.utl.ist.meic.geofriendsfire.models.PagerItem;
+import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.models.User;
+import pt.utl.ist.meic.geofriendsfire.utils.FragmentKeys;
 
 public class DrawerMainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -88,7 +86,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
             setupDrawerContent(navigationView);
         }
 
-        mAdapter = new DynamicViewPagerAdapter(getSupportFragmentManager(),new ArrayList<PagerItem>());
+        mAdapter = new DynamicViewPagerAdapter(DrawerMainActivity.this,getSupportFragmentManager(),new ArrayList<FragmentKeys>());
         mViewPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
         setupViewPagerEvents();
@@ -212,23 +210,23 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
     }
 
     private void setupViewPagerEvents() {
-        EventsNearbyListFragment frag1 = new EventsNearbyListFragment();
-        frag1.setContext(DrawerMainActivity.this);
-
-        MyEventsListFragment frag2 = new MyEventsListFragment();
-        frag2.setContext(DrawerMainActivity.this);
-
         mAdapter.clear();
-        mAdapter.add(new PagerItem("Events Nearby", frag1));
-        mAdapter.add(new PagerItem("My Events", frag2));
+        mAdapter.add(FragmentKeys.EventsNearby);
+        mAdapter.add(FragmentKeys.MyEvents);
 
         mTabLayout.setVisibility(View.VISIBLE);
     }
 
     private void setupViewPagerMap() {
         mAdapter.clear();
-        mAdapter.add(new PagerItem("", new MapFragment()));
+        mAdapter.add(FragmentKeys.EventsNearbyMap);
+        mTabLayout.setVisibility(View.GONE);
+    }
 
+    public void setupViewPagerEventDetails(Event event) {
+        mAdapter.clear();
+        mAdapter.setEventForDetails(event);
+        mAdapter.add(FragmentKeys.EventDetailsMap);
         mTabLayout.setVisibility(View.GONE);
     }
 

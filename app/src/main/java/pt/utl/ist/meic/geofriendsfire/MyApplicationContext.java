@@ -4,7 +4,6 @@ import android.app.Application;
 
 import com.google.firebase.auth.FirebaseUser;
 
-import java.io.Serializable;
 
 public class MyApplicationContext extends Application{
 
@@ -14,7 +13,7 @@ public class MyApplicationContext extends Application{
     @Override
     public void onCreate() {
         super.onCreate();
-        maximumWorkLoad = 1;
+        maximumWorkLoad = 3;
     }
 
     public void setFirebaseUser(FirebaseUser firebaseUser) {

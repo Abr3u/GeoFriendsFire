@@ -59,8 +59,6 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
         this.mCurrentLocation = currentLocation;
         this.mCurrentRadius = MIN_RADIUS;
 
-        Log.d("yyy","events nearby adapter constr");
-
         this.geoQuery = new GeoFire(FirebaseDatabase.getInstance().getReference(EVENTS_LOCATIONS_REF))
                 .queryAtLocation(currentLocation, mCurrentRadius);
 
@@ -88,11 +86,10 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Context context = v.getContext();
-                Intent intent = new Intent(context, DrawerMainActivity.class);
-                //intent.putExtra(IntentKeys.initialCenterLati.name(), mValues.get(position).geoLocation.latitude);
-                //intent.putExtra(IntentKeys.initialCenterLati.name(), mValues.get(position).geoLocation.longitude);
-                context.startActivity(intent);
+                Event event = mValues.get(position);
+                if(mContext instanceof DrawerMainActivity){
+                    ((DrawerMainActivity)mContext).setupViewPagerEventDetails(event);
+                }
             }
         });
 
@@ -137,7 +134,7 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
     public void onKeyEntered(final String key, final GeoLocation location) {
         MyApplicationContext appContext = (MyApplicationContext) mContext.getApplicationContext();
         int maxWorkload = appContext.getMaximumWorkLoad();
-        Log.d("yyy", "Radius -> "+mCurrentRadius+" // keyEntered, size -> " + this.mValues.size() + " :: " + maxWorkload);
+        Log.d("ena", "Radius -> "+mCurrentRadius+" // keyEntered, size -> " + this.mValues.size() + " :: " + maxWorkload);
 
         if (this.mValues.size() < maxWorkload) {
             // New Event nearby
@@ -149,13 +146,13 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
                     v.setRef(key);
                     mValues.add(v);
                     mEventsMap.put(key, v);
-                    Log.d("yyy", "nearby - item inserted - " + v.toString());
+                    Log.d("ena", "nearby - item inserted - " + v.toString());
                     notifyItemInserted(mValues.size() - 1);
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    Log.e("yyy", databaseError.toString());
+                    Log.e("ena", databaseError.toString());
                 }
             });
 
@@ -172,7 +169,7 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
             mEventsMap.remove(event);
             mValues.remove(event);
             // Update the RecyclerView
-            Log.d("yyy", "nearby - item removed - " + event.toString());
+            Log.d("ena", "nearby - item removed - " + event.toString());
             notifyItemRemoved(eventIndex);
         }
     }
@@ -190,8 +187,8 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
         MyApplicationContext appContext = (MyApplicationContext) mContext.getApplicationContext();
         int maxWorkload = appContext.getMaximumWorkLoad();
         if (this.mValues.size() < maxWorkload) {
-            Log.d("yyy",this.mValues.size()+" era mais pequeno que o WL "+maxWorkload);
-            mCurrentRadius = mCurrentRadius * 2;
+            Log.d("ena",this.mValues.size()+" era mais pequeno que o WL "+maxWorkload);
+            mCurrentRadius = mCurrentRadius + 0.2;
             geoQuery.setRadius(mCurrentRadius);
         }
     }

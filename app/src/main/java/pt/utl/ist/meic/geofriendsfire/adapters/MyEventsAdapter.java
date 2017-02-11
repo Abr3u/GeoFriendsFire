@@ -13,10 +13,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.firebase.geofire.GeoLocation;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +37,6 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
     private static final String TAG = "yyy";
 
     private static final String EVENTS_LOCATIONS_REF = "/eventsLocations";
-    private static final String EVENTS_REF = "/events";
 
     private final Context mContext;
     private DatabaseReference mDatabaseReference;
@@ -60,12 +62,29 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
 
                 // A new Event has been added, add it to the displayed list
-                Event event = dataSnapshot.getValue(Event.class);
+                final Event eventAux = dataSnapshot.getValue(Event.class);
+                final String eventKey = dataSnapshot.getKey();
+                FirebaseDatabase.getInstance().getReference(EVENTS_LOCATIONS_REF).child(eventKey+"/l").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        double latitude = dataSnapshot.child("0").getValue(Double.class);
+                        double longitude = dataSnapshot.child("1").getValue(Double.class);
 
-                // Update RecyclerView
-                mEventsMap.put(dataSnapshot.getKey(),event);
-                mValues.add(event);
-                notifyItemInserted(mValues.size() - 1);
+                        Event v = new Event(eventAux.authorId,eventAux.authorName,eventAux.description,eventAux.category,eventAux.creationDate);
+                        v.geoLocation = new GeoLocation(latitude,longitude);
+                        v.setRef(eventKey);
+
+                        // Update RecyclerView
+                        mEventsMap.put(eventKey,v);
+                        mValues.add(v);
+                        notifyItemInserted(mValues.size() - 1);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
             }
 
             @Override
@@ -156,11 +175,10 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Context context = v.getContext();
-                Intent intent = new Intent(context, DrawerMainActivity.class);
-                //intent.putExtra("initialCenterLati", mValues.get(position).geoLocation.latitude);
-                //intent.putExtra("initialCenterLongi", mValues.get(position).geoLocation.longitude);
-                context.startActivity(intent);
+                Event event = mValues.get(position);
+                if(mContext instanceof DrawerMainActivity){
+                    ((DrawerMainActivity)mContext).setupViewPagerEventDetails(event);
+                }
             }
         });
 
