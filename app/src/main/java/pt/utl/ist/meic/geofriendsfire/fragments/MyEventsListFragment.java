@@ -18,8 +18,6 @@ import pt.utl.ist.meic.geofriendsfire.adapters.MyEventsAdapter;
 public class MyEventsListFragment extends Fragment{
 
     private static final String EVENTS_REF = "/events";
-
-    Context mContext;
     MyEventsAdapter adapter;
 
     @Nullable
@@ -32,8 +30,8 @@ public class MyEventsListFragment extends Fragment{
     }
 
     private void setupRecyclerView(final RecyclerView recyclerView) {
-        adapter = new MyEventsAdapter(mContext,FirebaseDatabase.getInstance().getReference(EVENTS_REF));
-        recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+        adapter = new MyEventsAdapter(getContext(),FirebaseDatabase.getInstance().getReference(EVENTS_REF));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(adapter);
     }
 
@@ -43,8 +41,5 @@ public class MyEventsListFragment extends Fragment{
         adapter.cleanupListener();
     }
 
-    public void setContext(Context context) {
-        this.mContext = context;
-    }
 }
 

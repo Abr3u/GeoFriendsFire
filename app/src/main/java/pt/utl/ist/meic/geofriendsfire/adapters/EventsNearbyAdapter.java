@@ -134,9 +134,9 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
     public void onKeyEntered(final String key, final GeoLocation location) {
         MyApplicationContext appContext = (MyApplicationContext) mContext.getApplicationContext();
         int maxWorkload = appContext.getMaximumWorkLoad();
-        Log.d("ena", "Radius -> "+mCurrentRadius+" // keyEntered, size -> " + this.mValues.size() + " :: " + maxWorkload);
+        int furthestEvent = appContext.getFurthestEvent();
 
-        if (this.mValues.size() < maxWorkload) {
+        if (this.mValues.size() < maxWorkload && mCurrentRadius < furthestEvent) {
             // New Event nearby
             FirebaseDatabase.getInstance().getReference(EVENTS_REF).child(key).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -146,7 +146,6 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
                     v.setRef(key);
                     mValues.add(v);
                     mEventsMap.put(key, v);
-                    Log.d("ena", "nearby - item inserted - " + v.toString());
                     notifyItemInserted(mValues.size() - 1);
                 }
 
@@ -169,7 +168,6 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
             mEventsMap.remove(event);
             mValues.remove(event);
             // Update the RecyclerView
-            Log.d("ena", "nearby - item removed - " + event.toString());
             notifyItemRemoved(eventIndex);
         }
     }
@@ -186,11 +184,13 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
     public void onGeoQueryReady() {
         MyApplicationContext appContext = (MyApplicationContext) mContext.getApplicationContext();
         int maxWorkload = appContext.getMaximumWorkLoad();
-        if (this.mValues.size() < maxWorkload) {
-            Log.d("ena",this.mValues.size()+" era mais pequeno que o WL "+maxWorkload);
+        int furthestEvent = appContext.getFurthestEvent();
+        if (this.mValues.size() < maxWorkload && mCurrentRadius < furthestEvent) {
+            Log.d("aaa","NEARBY :: "+this.mValues.size()+" era mais pequeno que o WL "+maxWorkload);
             mCurrentRadius = mCurrentRadius + 0.2;
             geoQuery.setRadius(mCurrentRadius);
         }
+        Log.d("aaa","nearby Current radius -> "+mCurrentRadius);
     }
 
     @Override

@@ -64,14 +64,9 @@ public class Event {
         if (!(obj instanceof Event))
             return false;
         Event other = (Event) obj;
-        if (!authorId.equals(other.authorId))
-            return false;
-        if (!description.equals(other.description))
-            return false;
-        if (!category.equals(other.category))
-            return false;
-        if (!creationDate.equals(other.creationDate))
-            return false;
-        return true;
+        return authorId.equals(other.authorId)
+                && description.equals(other.description)
+                && category.equals(other.category)
+                && creationDate.equals(other.creationDate);
     }
 }

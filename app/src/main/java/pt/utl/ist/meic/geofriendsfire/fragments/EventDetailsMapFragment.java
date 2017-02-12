@@ -42,7 +42,6 @@ public class EventDetailsMapFragment extends Fragment implements GoogleMap.OnCam
     private GoogleMap map;
     private View rootView;
     private GeoLocation mCurrentLocation;
-    private Context mContext;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -82,10 +81,6 @@ public class EventDetailsMapFragment extends Fragment implements GoogleMap.OnCam
         this.mEvent = event;
     }
 
-    public void setContext(Context context) {
-        this.mContext = context;
-    }
-
     protected void setUpMap() {
         if (this.map == null) {
             SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
@@ -93,9 +88,9 @@ public class EventDetailsMapFragment extends Fragment implements GoogleMap.OnCam
                 mapFragment.getMapAsync(this);
             }
         } else {
-            GPSTracker gpsTracker = new GPSTracker(mContext);
+            GPSTracker gpsTracker = new GPSTracker(getContext());
             if (!gpsTracker.canGetLocation()) {
-                Toast.makeText(mContext, "cant get current location", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "cant get current location", Toast.LENGTH_LONG).show();
             } else {
                 mCurrentLocation = new GeoLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude());
                 this.map.addMarker(new MarkerOptions()

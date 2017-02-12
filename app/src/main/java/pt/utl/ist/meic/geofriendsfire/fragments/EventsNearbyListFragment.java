@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +20,6 @@ import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 
 public class EventsNearbyListFragment extends Fragment{
 
-    private Context mContext;
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -31,18 +30,14 @@ public class EventsNearbyListFragment extends Fragment{
     }
 
     private void setupRecyclerView(RecyclerView recyclerView) {
-        GPSTracker gpsTracker = new GPSTracker(mContext);
+        GPSTracker gpsTracker = new GPSTracker(getContext());
         if (!gpsTracker.canGetLocation()) {
-            Toast.makeText(mContext, "cant get current location", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "cant get current location", Toast.LENGTH_LONG).show();
         } else {
             GeoLocation currentLocation = new GeoLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude());
 
-            recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-            recyclerView.setAdapter(new EventsNearbyAdapter(mContext,currentLocation));
+            recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            recyclerView.setAdapter(new EventsNearbyAdapter(getContext(),currentLocation));
         }
-    }
-
-    public void setContext(Context mContext) {
-        this.mContext = mContext;
     }
 }

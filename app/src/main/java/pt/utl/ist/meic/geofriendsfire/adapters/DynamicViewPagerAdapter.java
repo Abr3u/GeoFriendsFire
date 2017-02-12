@@ -1,6 +1,5 @@
 package pt.utl.ist.meic.geofriendsfire.adapters;
 
-import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
@@ -8,8 +7,7 @@ import com.nakama.arraypageradapter.ArrayFragmentStatePagerAdapter;
 
 import java.util.ArrayList;
 
-import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
-import pt.utl.ist.meic.geofriendsfire.activities.CreateEventFragment;
+import pt.utl.ist.meic.geofriendsfire.fragments.CreateEventFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventDetailsMapFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventsNearbyListFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.MapFragment;
@@ -19,39 +17,27 @@ import pt.utl.ist.meic.geofriendsfire.utils.FragmentKeys;
 
 public class DynamicViewPagerAdapter extends ArrayFragmentStatePagerAdapter<FragmentKeys> {
 
-
-    private final Context mContext;
     private Event mEvent;
 
-    public DynamicViewPagerAdapter(Context context, FragmentManager fm, ArrayList<FragmentKeys> datas) {
+    public DynamicViewPagerAdapter(FragmentManager fm, ArrayList<FragmentKeys> datas) {
         super(fm, datas);
-        this.mContext = context;
     }
 
     @Override
     public Fragment getFragment(FragmentKeys item, int position) {
         switch (item) {
             case EventsNearbyMap:
-                MapFragment frag0 = new MapFragment();
-                frag0.setContext(mContext);
-                return frag0;
+                return new MapFragment();
             case EventsNearby:
-                EventsNearbyListFragment frag1 = new EventsNearbyListFragment();
-                frag1.setContext(mContext);
-                return frag1;
+                return new EventsNearbyListFragment();
             case MyEvents:
-                MyEventsListFragment frag2 = new MyEventsListFragment();
-                frag2.setContext(mContext);
-                return frag2;
+                return new MyEventsListFragment();
             case EventDetailsMap:
                 EventDetailsMapFragment frag3 = new EventDetailsMapFragment();
-                frag3.setContext(mContext);
                 frag3.setEvent(mEvent);
                 return frag3;
             case CreateEvent:
-                CreateEventFragment frag4 = new CreateEventFragment();
-                frag4.setContext(mContext);
-                return frag4;
+                return new CreateEventFragment();
         }
         //shouldn't happen so it's not in switch. just fail-safe
         return new MapFragment();

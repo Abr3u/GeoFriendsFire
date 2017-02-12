@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.auth.api.Auth;
@@ -86,7 +87,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
             setupDrawerContent(navigationView);
         }
 
-        mAdapter = new DynamicViewPagerAdapter(DrawerMainActivity.this,getSupportFragmentManager(),new ArrayList<FragmentKeys>());
+        mAdapter = new DynamicViewPagerAdapter(getSupportFragmentManager(), new ArrayList<FragmentKeys>());
         mViewPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
         setupViewPagerEvents();
@@ -179,27 +180,32 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
     //design
 
     private void setupDrawerContent(NavigationView navigationView) {
+
+        View header = navigationView.getHeaderView(0);
+        String myName = ((MyApplicationContext) getApplicationContext()).getFirebaseUser().getDisplayName();
+        ((TextView) header.findViewById(R.id.navTextView)).setText(myName);
+
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         switch (menuItem.getItemId()) {
                             case R.id.nav_home:
-                                menuItem.setChecked(true);
                                 setupViewPagerMap();
                                 mDrawerLayout.closeDrawers();
                                 return true;
                             case R.id.nav_events:
-                                menuItem.setChecked(true);
                                 setupViewPagerEvents();
                                 mDrawerLayout.closeDrawers();
                                 return true;
                             case R.id.nav_friends:
-                                menuItem.setChecked(true);
                                 mDrawerLayout.closeDrawers();
                                 return true;
+                            case R.id.nav_settings:
+                                mDrawerLayout.closeDrawers();
+                                startActivity(new Intent(DrawerMainActivity.this, SettingsActivity.class));
+                                return false;
                             default:
-                                menuItem.setChecked(true);
                                 mDrawerLayout.closeDrawers();
                                 return true;
                         }
@@ -230,7 +236,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mTabLayout.setVisibility(View.GONE);
     }
 
-    public void setupViewPagerCreateEvent(){
+    public void setupViewPagerCreateEvent() {
         mAdapter.clear();
         mAdapter.add(FragmentKeys.CreateEvent);
         mTabLayout.setVisibility(View.GONE);

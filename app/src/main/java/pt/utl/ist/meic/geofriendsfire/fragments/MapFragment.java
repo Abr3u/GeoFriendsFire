@@ -7,7 +7,6 @@ package pt.utl.ist.meic.geofriendsfire.fragments;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -34,8 +33,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -53,6 +50,7 @@ import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
+import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
 public class MapFragment extends Fragment implements GeoQueryEventListener, GoogleMap.OnCameraChangeListener,
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
@@ -60,9 +58,8 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
     private static final String EVENTS_LOCATIONS_REF = "/eventsLocations";
     private static final String EVENTS_REF = "/events";
 
-    private static GeoLocation INITIAL_CENTER = new GeoLocation(38.7097424, -9.4224729);//Casa
     private static final int INITIAL_ZOOM_LEVEL = 15;
-    private static final double INITIAL_RADIUS = 0.5;
+    private static final double INITIAL_RADIUS = 0.1;
 
     private GoogleMap map;
     private View rootView;
@@ -70,7 +67,6 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
     private GeoQuery geoQuery;
 
     private Map<String, Marker> markers;
-    private Context mContext;
     private double mRadius;
 
     private Map<String, Event> mEventsMap;
@@ -89,9 +85,9 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
             }
         }
 
-        GPSTracker gpsTracker = new GPSTracker(mContext);
+        GPSTracker gpsTracker = new GPSTracker(getContext());
         if (!gpsTracker.canGetLocation()) {
-            Toast.makeText(mContext, "cant get current location", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "cant get current location", Toast.LENGTH_LONG).show();
         } else {
             this.markers = new HashMap<String, Marker>();
             this.mEventsMap = new HashMap<>();
@@ -166,7 +162,7 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
     }
 
     protected void setUpMap() {
-        LatLng latLngCenter = new LatLng(INITIAL_CENTER.latitude, INITIAL_CENTER.longitude);
+        LatLng latLngCenter = new LatLng(mCurrentLocation.latitude, mCurrentLocation.longitude);
         this.map.addMarker(new MarkerOptions()
                 .position(new LatLng(mCurrentLocation.latitude, mCurrentLocation.longitude))
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));
@@ -176,10 +172,6 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
         this.map.setOnCameraChangeListener(this);
     }
 
-    public void setContext(Context context) {
-        this.mContext = context;
-    }
-
     protected void setupCardView(Event event) {
         View detailsHolder = rootView.findViewById(R.id.detailsHolder);
         View cardview = detailsHolder.findViewById(R.id.card_view);
@@ -187,8 +179,13 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
         TextView description = (TextView) cardview.findViewById(R.id.iv_text);
         description.setText(event.description);
 
-        TextView creationDate = (TextView) cardview.findViewById(R.id.iv_extra);
-        creationDate.setText(event.creationDate);
+        TextView extra = (TextView) cardview.findViewById(R.id.iv_extra);
+        if (mCurrentLocation == null || event.geoLocation == null) {
+            extra.setText(event.creationDate);
+        }else{
+            double distance = Utils.distance(mCurrentLocation.latitude, event.geoLocation.latitude, mCurrentLocation.longitude, event.geoLocation.longitude);
+            extra.setText(String.format("%.3f", distance / 1000) + " kms away");
+        }
 
         ImageView category = (ImageView) cardview.findViewById(R.id.iv_image);
 
@@ -256,8 +253,9 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
 
     @Override
     public void onKeyEntered(final String key, final GeoLocation location) {
-        int maxWorkload = ((MyApplicationContext) mContext.getApplicationContext()).getMaximumWorkLoad();
-        if (this.markers.size() < maxWorkload) {
+        int maxWorkload = ((MyApplicationContext) getContext().getApplicationContext()).getMaximumWorkLoad();
+        int furthestEvent = ((MyApplicationContext) getContext().getApplicationContext()).getFurthestEvent();
+        if (this.markers.size() < maxWorkload && mRadius < furthestEvent) {
             Marker marker = this.map.addMarker(new MarkerOptions()
                     .position(new LatLng(location.latitude, location.longitude))
                     .icon(BitmapDescriptorFactory.defaultMarker(88)));
@@ -319,17 +317,19 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
 
     @Override
     public void onGeoQueryReady() {
-        int maxWorkload = ((MyApplicationContext) mContext.getApplicationContext()).getMaximumWorkLoad();
-        if (this.markers.size() < maxWorkload) {
-            Log.d("yyy", this.mValues.size() + " era mais pequeno que o WL " + maxWorkload);
+        int maxWorkload = ((MyApplicationContext) getContext().getApplicationContext()).getMaximumWorkLoad();
+        int furthestEvent = ((MyApplicationContext) getContext().getApplicationContext()).getFurthestEvent();
+        if (this.markers.size() < maxWorkload && mRadius < furthestEvent) {
+            Log.d("aaa", "MAP :: "+this.mValues.size() + " era mais pequeno que o WL " + maxWorkload);
             mRadius = mRadius + 0.2;
             geoQuery.setRadius(mRadius);
         }
+        Log.d("aaa","map Current radius -> "+mRadius);
     }
 
     @Override
     public void onGeoQueryError(DatabaseError error) {
-        new AlertDialog.Builder(mContext)
+        new AlertDialog.Builder(getContext())
                 .setTitle("Error")
                 .setMessage("There was an unexpected error querying GeoFire: " + error.getMessage())
                 .setPositiveButton(android.R.string.ok, null)

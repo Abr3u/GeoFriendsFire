@@ -9,11 +9,13 @@ public class MyApplicationContext extends Application{
 
     private FirebaseUser firebaseUser;
     private int maximumWorkLoad;
+    private int furthestEvent;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        maximumWorkLoad = 3;
+        maximumWorkLoad = 1;
+        furthestEvent = 20;
     }
 
     public void setFirebaseUser(FirebaseUser firebaseUser) {
@@ -30,5 +32,13 @@ public class MyApplicationContext extends Application{
 
     public void setMaximumWorkLoad(int maximumWorkLoad) {
         this.maximumWorkLoad = maximumWorkLoad;
+    }
+
+    public int getFurthestEvent() {
+        return furthestEvent;
+    }
+
+    public void setFurthestEvent(int furthestEvent) {
+        this.furthestEvent = furthestEvent;
     }
 }
