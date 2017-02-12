@@ -9,6 +9,7 @@ import com.nakama.arraypageradapter.ArrayFragmentStatePagerAdapter;
 import java.util.ArrayList;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
+import pt.utl.ist.meic.geofriendsfire.activities.CreateEventFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventDetailsMapFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventsNearbyListFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.MapFragment;
@@ -47,6 +48,10 @@ public class DynamicViewPagerAdapter extends ArrayFragmentStatePagerAdapter<Frag
                 frag3.setContext(mContext);
                 frag3.setEvent(mEvent);
                 return frag3;
+            case CreateEvent:
+                CreateEventFragment frag4 = new CreateEventFragment();
+                frag4.setContext(mContext);
+                return frag4;
         }
         //shouldn't happen so it's not in switch. just fail-safe
         return new MapFragment();

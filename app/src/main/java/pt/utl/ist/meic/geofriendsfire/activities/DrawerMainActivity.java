@@ -209,7 +209,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         );
     }
 
-    private void setupViewPagerEvents() {
+    public void setupViewPagerEvents() {
         mAdapter.clear();
         mAdapter.add(FragmentKeys.EventsNearby);
         mAdapter.add(FragmentKeys.MyEvents);
@@ -217,7 +217,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mTabLayout.setVisibility(View.VISIBLE);
     }
 
-    private void setupViewPagerMap() {
+    public void setupViewPagerMap() {
         mAdapter.clear();
         mAdapter.add(FragmentKeys.EventsNearbyMap);
         mTabLayout.setVisibility(View.GONE);
@@ -227,6 +227,12 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.clear();
         mAdapter.setEventForDetails(event);
         mAdapter.add(FragmentKeys.EventDetailsMap);
+        mTabLayout.setVisibility(View.GONE);
+    }
+
+    public void setupViewPagerCreateEvent(){
+        mAdapter.clear();
+        mAdapter.add(FragmentKeys.CreateEvent);
         mTabLayout.setVisibility(View.GONE);
     }
 
@@ -240,7 +246,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        startActivity(new Intent(DrawerMainActivity.this, CreateEventActivity.class));
+                        setupViewPagerCreateEvent();
                     }
                 });
 

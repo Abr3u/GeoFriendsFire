@@ -1,7 +1,11 @@
 package pt.utl.ist.meic.geofriendsfire.activities;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Context;
+import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,13 +21,12 @@ import java.util.Date;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import durdinapps.rxfirebase2.RxFirebaseDatabase;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 
-public class CreateEventActivity extends AppCompatActivity {
+public class CreateEventFragment extends Fragment {
 
 
     private static final String EVENTS_REF = "/events";
@@ -36,27 +39,27 @@ public class CreateEventActivity extends AppCompatActivity {
     TextView eventDescription;
 
     private DatabaseReference mDatabase;
+    private Context mContext;
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create_event);
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
+        View view = inflater.inflate(R.layout.fragment_create_event, container, false);
         mDatabase = FirebaseDatabase.getInstance().getReference();
-
-        ButterKnife.bind(this);
+        ButterKnife.bind(this,view);
+        return view;
     }
 
     @OnClick(R.id.createEventButton)
     public void createNewEventButtonClicked() {
 
-        GPSTracker mGpsTracker = new GPSTracker(this);
+        GPSTracker mGpsTracker = new GPSTracker(mContext);
 
         if (!mGpsTracker.canGetLocation()) {
-            Toast.makeText(this, "can not get location", Toast.LENGTH_LONG).show();
+            Toast.makeText(mContext, "can not get location", Toast.LENGTH_LONG).show();
         }else if(eventDescription.getText().toString().trim().isEmpty()){
-            Toast.makeText(this, "plz provide an event description", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, "plz provide an event description", Toast.LENGTH_SHORT).show();
         }
         else {
             double latitude = mGpsTracker.getLatitude();
@@ -67,8 +70,8 @@ public class CreateEventActivity extends AppCompatActivity {
             SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
             String creationDate = df.format(new Date());
 
-            String myId = ((MyApplicationContext)getApplicationContext()).getFirebaseUser().getUid();
-            String myName = ((MyApplicationContext)getApplicationContext()).getFirebaseUser().getDisplayName();
+            String myId = ((MyApplicationContext)mContext.getApplicationContext()).getFirebaseUser().getUid();
+            String myName = ((MyApplicationContext)mContext.getApplicationContext()).getFirebaseUser().getDisplayName();
 
             Event newEvent = new Event(myId,myName,description ,category,creationDate);
 
@@ -87,7 +90,11 @@ public class CreateEventActivity extends AppCompatActivity {
             GeoFire geoFire = new GeoFire(ref);
             geoFire.setLocation(eventID, new GeoLocation(latitude, longitude));
 
-            finish();
+            ((DrawerMainActivity)mContext).setupViewPagerEvents();
         }
+    }
+
+    public void setContext(Context context) {
+        this.mContext = context;
     }
 }

@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.SignInActivity" />
-        <activity android:name=".activities.CreateEventActivity" />
+        <activity android:name=".activities.CreateEventFragment" />
     </application>
 
 </manifest>

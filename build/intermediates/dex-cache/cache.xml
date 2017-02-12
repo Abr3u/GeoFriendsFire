@@ -385,7 +385,7 @@
         jumboMode="true"
         optimize="true"
         revision="25.0.0"
-        sha1="c8a4910e35c55b6bcf7e25474a7538ecbd26b654">
+        sha1="3333425f2eafeb1bd2e6374c3b55c9c2dc313a72">
         <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\instant-run-bootstrap_5dbfbffea4364c30cabe44fcc1bf5970d46b3294.jar" />
     </item>
     <item
