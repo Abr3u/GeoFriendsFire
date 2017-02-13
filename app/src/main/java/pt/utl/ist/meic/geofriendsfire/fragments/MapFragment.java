@@ -6,7 +6,6 @@ package pt.utl.ist.meic.geofriendsfire.fragments;
 
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -36,6 +35,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
@@ -160,6 +160,8 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.map = googleMap;
+        MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.retro_map_style);
+        map.setMapStyle(style);
         setUpMap();
     }
 

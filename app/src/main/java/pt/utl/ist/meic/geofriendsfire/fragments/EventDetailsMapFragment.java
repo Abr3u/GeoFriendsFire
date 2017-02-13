@@ -1,11 +1,9 @@
 package pt.utl.ist.meic.geofriendsfire.fragments;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +16,7 @@ import com.bumptech.glide.Glide;
 import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -175,6 +174,8 @@ public class EventDetailsMapFragment extends Fragment implements GoogleMap.OnCam
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.map = googleMap;
+        MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.retro_map_style);
+        map.setMapStyle(style);
         setUpMap();
     }
 }
