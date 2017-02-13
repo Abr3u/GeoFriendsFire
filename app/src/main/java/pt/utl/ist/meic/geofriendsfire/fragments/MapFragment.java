@@ -7,6 +7,8 @@ package pt.utl.ist.meic.geofriendsfire.fragments;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -172,7 +174,7 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
         this.map.setOnCameraChangeListener(this);
     }
 
-    protected void setupCardView(Event event) {
+    protected void setupCardView(final Event event) {
         View detailsHolder = rootView.findViewById(R.id.detailsHolder);
         View cardview = detailsHolder.findViewById(R.id.card_view);
 
@@ -187,8 +189,19 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
             extra.setText(String.format("%.3f", distance / 1000) + " kms away");
         }
 
-        ImageView category = (ImageView) cardview.findViewById(R.id.iv_image);
+        cardview.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Uri gmmIntentUri = Uri.parse("google.navigation:" +
+                        "q="+event.geoLocation.latitude+","+event.geoLocation.longitude+"&mode=w");
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+                startActivity(mapIntent);
+                return true;
+            }
+        });
 
+        ImageView category = (ImageView) cardview.findViewById(R.id.iv_image);
         switch (event.category) {
             case "Food":
                 Glide.with(category.getContext())
@@ -224,6 +237,7 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
         }
         return true;
     }
+
 
 
     /*

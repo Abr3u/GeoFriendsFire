@@ -14,7 +14,7 @@ public class MyApplicationContext extends Application{
     @Override
     public void onCreate() {
         super.onCreate();
-        maximumWorkLoad = 1;
+        maximumWorkLoad = 4;
         furthestEvent = 20;
     }
 

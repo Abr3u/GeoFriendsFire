@@ -3,6 +3,7 @@ package pt.utl.ist.meic.geofriendsfire.adapters;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.TypedValue;
@@ -90,6 +91,19 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
                 if(mContext instanceof DrawerMainActivity){
                     ((DrawerMainActivity)mContext).setupViewPagerEventDetails(event);
                 }
+            }
+        });
+
+        holder.mView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Event event = mValues.get(position);
+                Uri gmmIntentUri = Uri.parse("google.navigation:" +
+                        "q="+event.geoLocation.latitude+","+event.geoLocation.longitude+"&mode=w");
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+                mContext.startActivity(mapIntent);
+                return true;
             }
         });
 

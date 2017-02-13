@@ -44,21 +44,22 @@ problema do workload done! - resolvido incrementando o raio ate ter o numero de 
 login done!
 drawerView done! - resolvido com dynamicPagerAdapter e fragmentKeys
 eventDetails done!
+settings done!
+direction done! - resolvido com longClick num evento (cardview)
 
 
 Tomorrow:
-maps initial center = mCurrentLocation;
-pagina de settings no drawer view - para mudar o maxWorkload
-testar workload!!
+testar workload/furthest!!
 
 ver exemplos de rxJava de onlineDetection;
-
-ver porque e que os fragments precisam de context;
 ver exemplos de rxJava de polling
+
 comecar com amigos??
-criar anotation para ver se tem wifi/gps
 track de localizacoes - maybe RxLocation?
+clustering de markers, mapa style
+
+Extra:
+criar anotation para ver se tem wifi/gps
 mvvm
 mostrar ao user os seus clusters?
-direccoes com intent URI para google maps.
 api google maps, directions, places, roads;
