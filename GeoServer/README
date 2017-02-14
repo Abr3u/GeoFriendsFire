@@ -49,6 +49,7 @@ direction done! - resolvido com longClick num evento (cardview)
 
 
 Tomorrow:
+por alert dialog antes de ir para directions
 testar workload/furthest!!
 
 ver exemplos de rxJava de onlineDetection;

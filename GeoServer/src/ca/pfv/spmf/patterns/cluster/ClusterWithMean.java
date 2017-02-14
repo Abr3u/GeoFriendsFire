@@ -29,6 +29,8 @@ public class ClusterWithMean extends Cluster {
 	DoubleArray sum; // the sum of all vectors in this clusters 
 	// (used to calculate the mean efficiently)
 	
+	public int mId;
+	
 	/**
 	 * Constructor
 	 * @param vectorsSize the size of the vectors to be stored in this cluster

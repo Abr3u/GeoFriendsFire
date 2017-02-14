@@ -5,6 +5,7 @@ public class DataPoint {
 	private Double latitude;
 	private Double longitude;
 
+	
 	public DataPoint(Double latitude, Double longitude) {
 		this.latitude = latitude;
 		this.longitude = longitude;
@@ -25,5 +26,7 @@ public class DataPoint {
 	public void setLatitude(Double latitude) {
 		this.latitude = latitude;
 	}
+
+
 
 }
