@@ -2,21 +2,19 @@ package pt.utl.ist.meic;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.DatagramPacket;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import net.thegreshams.firebase4j.error.FirebaseException;
 import net.thegreshams.firebase4j.error.JacksonUtilityException;
 import net.thegreshams.firebase4j.model.FirebaseResponse;
 import net.thegreshams.firebase4j.service.Firebase;
-
+import utility.FileManager;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceCosine;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
 import ca.pfv.spmf.algorithms.clustering.kmeans.AlgoKMeans;
@@ -34,22 +32,41 @@ public class GeoServer {
 	private static List<ClusterWithMean> globalClusters;
 	private static List<ClusterWithMean> userClusters;
 
+	private static Map<String, UserProfile> usersProfiles;
+
 	public static void main(String[] args) throws ParseException, IOException {
 
-		// getUserCheckInsCSV(pathGlobalCSV, "2");
-		// System.out.println("got checkIns -> " + userCheckIns.size());
-		// createCSV("user2.csv");
+		initGlobalClustersList();
+		usersProfiles = new HashMap<String, UserProfile>();
+		FileManager mFileManager = new FileManager();
 
-		//initGlobalClustersList();
-		//getDistancesGlobalClusters();
+		// mFileManager.stuff();
+		List<CheckIn> userCheckIns = mFileManager.getUserCheckInsCsv("22", false);
+
+		Graph graph = getUserGraphFromCheckIns(userCheckIns);
+
+		System.out.println("graph tamanho -> " + graph.vertexes.size());
 		
-		applyKmeans("clusters1");
-		try {
-			writeNewClustersFirebase(2);
-		} catch (FirebaseException | JacksonUtilityException e) {
-			e.printStackTrace();
-		}
-		
+		graph.buildSequences();
+		graph.printSequences();
+
+		UserProfile profile = new UserProfile("22");
+		profile.addNewGraph("0", graph);
+
+		// Graph graph = new Graph();
+		// for(ClusterWithMean c : globalClusters){
+		// graph.addVertex(c);
+		// }
+		// graph.getGraphContentString();
+
+		// mFileManager.createCsvStayPoints("teste.csv");
+
+		/*
+		 * applyKmeans("clusters1"); try { writeNewClustersFirebase(2); } catch
+		 * (FirebaseException | JacksonUtilityException e) {
+		 * e.printStackTrace(); }
+		 */
+
 		/*
 		 * try { writeDistancesFirebase(); } catch (FirebaseException |
 		 * JacksonUtilityException e) { e.printStackTrace(); }
@@ -65,6 +82,43 @@ public class GeoServer {
 		// readClustersFromDisk();
 		// System.out.println("clusters -> "+clusters.size());
 
+	}
+
+	private static Graph getUserGraphFromCheckIns(List<CheckIn> userCheckIns) {
+		Graph graph = new Graph();
+		// inserir cada checkIn no seu cluster => criar um vertice no graph
+		for (CheckIn ci : userCheckIns) {
+			// values are init only
+			double minDistance = Double.MAX_VALUE;
+			ClusterWithMean minCluster = globalClusters.get(0);
+			for (ClusterWithMean cluster : globalClusters) {
+				double distance = distanceBetween(ci.getDataPoint().getLatitude(), cluster.getmean().get(0),
+						ci.getDataPoint().getLongitude(), cluster.getmean().get(1));
+
+				if (distance < minDistance) {
+					minDistance = distance;
+					minCluster = cluster;
+				}
+			}
+			graph.addVertex(new VertexInfo(minCluster, ci.getDate()));
+		}
+		return graph;
+	}
+
+	private static double distanceBetween(double lat1, double lat2, double lon1, double lon2) {
+
+		final int R = 6371; // Radius of the earth
+
+		Double latDistance = Math.toRadians(lat2 - lat1);
+		Double lonDistance = Math.toRadians(lon2 - lon1);
+		Double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2) + Math.cos(Math.toRadians(lat1))
+				* Math.cos(Math.toRadians(lat2)) * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+		Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		double distance = R * c * 1000; // convert to meters
+
+		distance = Math.pow(distance, 2);
+
+		return Math.sqrt(distance);
 	}
 
 	private static void initGlobalClustersList() {
@@ -145,7 +199,7 @@ public class GeoServer {
 		if (level == 0) {
 			firebase = new Firebase(FIREBASE_URL + "/clusters");
 		} else {
-			firebase = new Firebase(FIREBASE_URL+"/clustersLevel"+level);
+			firebase = new Firebase(FIREBASE_URL + "/clustersLevel" + level);
 		}
 		for (int i = 0; i < globalClusters.size(); i++) {
 			// "POST cluster to /clusters
@@ -177,10 +231,10 @@ public class GeoServer {
 	private static void deleteClustersFirebase(int level) throws FirebaseException, UnsupportedEncodingException {
 		Firebase firebase = new Firebase(FIREBASE_URL);
 		FirebaseResponse response;
-		if(level == 0){
+		if (level == 0) {
 			response = firebase.delete("clusters");
-		}else{
-			response = firebase.delete("clustersLevel"+level);
+		} else {
+			response = firebase.delete("clustersLevel" + level);
 		}
 		System.out.println(response.getBody().toString());
 	}
