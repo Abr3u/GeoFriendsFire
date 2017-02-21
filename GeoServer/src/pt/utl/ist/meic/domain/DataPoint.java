@@ -1,4 +1,4 @@
-package pt.utl.ist.meic;
+package pt.utl.ist.meic.domain;
 
 public class DataPoint {
 

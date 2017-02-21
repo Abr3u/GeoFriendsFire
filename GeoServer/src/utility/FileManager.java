@@ -25,8 +25,8 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
 import one.util.streamex.StreamEx;
-import pt.utl.ist.meic.CheckIn;
-import pt.utl.ist.meic.DataPoint;
+import pt.utl.ist.meic.domain.CheckIn;
+import pt.utl.ist.meic.domain.DataPoint;
 
 public class FileManager {
 
@@ -48,6 +48,7 @@ public class FileManager {
 
 	public void stuff() throws IOException  {
 		System.out.println("getUserSP");
+		int checkIncounter = 0;
 		Reader in = new FileReader(pathGlobalCSV);
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
@@ -59,23 +60,24 @@ public class FileManager {
 			Double latitude = Double.parseDouble(record.get(2));
 			Double longitude = Double.parseDouble(record.get(3));
 
-			// ajustar coordenadas de acordo com os users aqui
 			if (!lastUser.equals(user) && latitude >= LOW_LATI && latitude <= HIGH_LATI && longitude >= LOW_LONGI && longitude <= HIGH_LONGI) {
-				System.out.println("user -- > "+user);
+				System.out.println("user -- > "+lastUser+" ::: "+checkIncounter);
 				lastUser = user;
+				checkIncounter = 0;
+			}
+			if(lastUser.equals(user)){
+				checkIncounter++;
 			}
 
 		}
 
 	}
 
-	public List<CheckIn> getUserCheckInsCsv(String userId, boolean global) throws ParseException, IOException {
-		System.out.println("getUserSP");
-
+	public List<CheckIn> getUserCheckInsCsv(String userId, boolean createCSV) throws ParseException, IOException {
 		userCheckIns = new ArrayList<CheckIn>();
 		Reader in;
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
-		if (global) {
+		if (createCSV) {
 			// checkIns do utilizador do csv global
 			in = new FileReader(pathGlobalCSV);
 			Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
@@ -93,7 +95,7 @@ public class FileManager {
 				}
 
 			}
-			System.out.println("tamanho -> "+userCheckIns.size());
+			System.out.println("criar csv para user "+userId+" com tamanho -> "+userCheckIns.size());
 			createCsvCheckIns(userId+".csv");
 			return userCheckIns;
 		} else {

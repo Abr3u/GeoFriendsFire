@@ -23,19 +23,6 @@ __________________________________________
 But you can write a generic class ValueHolder<T> and mark the variable of it final! 
 And then just instead of "a = val" you write "aHolder.setValue(val)"! It's so easy!
 
-Objects.hashCode(mId, mTitle, mDescription);
-Task task = (Task) o;
-        return Objects.equal(mId, task.mId) &&
-               Objects.equal(mTitle, task.mTitle) &&
-               Objects.equal(mDescription, task.mDescription);
-
-
-
-Uri gmmIntentUri = Uri.parse("geo:"+country.lat+","+country.lng+"?q="+country.name+"&z=2");
-        navigator.startActivity(Intent.ACTION_VIEW, gmmIntentUri);
-		
-protected final FragmentActivity activity;
-activity.startActivity(new Intent(action, uri));
 __________________________________________
 
 Today:
@@ -46,16 +33,17 @@ drawerView done! - resolvido com dynamicPagerAdapter e fragmentKeys
 eventDetails done!
 settings done!
 direction done! - resolvido com longClick num evento (cardview)
-
+obter sequencias para cada user done! - getDaily().removeUniCluster().removeShort();
 
 Tomorrow:
+sequence matching algorithm - HGSM - testar outros casos!!
+
 por alert dialog antes de ir para directions
 testar workload/furthest!!
 
 ver exemplos de rxJava de onlineDetection;
 ver exemplos de rxJava de polling
 
-comecar com amigos??
 track de localizacoes - maybe RxLocation?
 clustering de markers, mapa style
 

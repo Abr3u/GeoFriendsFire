@@ -1,4 +1,4 @@
-package pt.utl.ist.meic;
+package pt.utl.ist.meic.domain;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +15,10 @@ public class UserProfile {
 
 	public void addNewGraph(String level, Graph graph){
 		this.mGraphs.put(level, graph);
+	}
+	
+	public Graph getGraphByLevel(String level){
+		return this.mGraphs.get(level);
 	}
 	
 }

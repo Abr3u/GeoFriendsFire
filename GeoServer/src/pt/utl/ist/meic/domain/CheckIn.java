@@ -1,4 +1,4 @@
-package pt.utl.ist.meic;
+package pt.utl.ist.meic.domain;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

@@ -1,4 +1,4 @@
-package pt.utl.ist.meic;
+package pt.utl.ist.meic.domain;
 
 import java.util.Date;
 
@@ -27,6 +27,24 @@ public class VertexInfo {
 	@Override
 	public int hashCode() {
 		return cluster.mId;
+	}
+	
+	@Override
+	public String toString() {
+		//return "["+vertex.mId+"("+index1+";"+index2+")]";
+		String id = "";
+		switch(cluster.mId){
+		case 0:
+			id = "A";
+		break;
+		case 1:
+			id = "B";
+			break;
+		case 2:
+			id = "C";
+			break;
+		}
+		return "["+id+"]";
 	}
 	
 }
