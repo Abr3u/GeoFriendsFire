@@ -34,9 +34,13 @@ eventDetails done!
 settings done!
 direction done! - resolvido com longClick num evento (cardview)
 obter sequencias para cada user done! - getDaily().removeUniCluster().removeShort();
+sequenceMatching done! - algoritmo revisto = expand clean up; prune only at the end;
 
 Tomorrow:
-sequence matching algorithm - HGSM - testar outros casos!!
+gerar score com as max length sequences devolvidas
+ver HGSM como e que eles dao score
+adicionar vertente tempo dispendido em cada clusterin
+adicionar vertente popularidade
 
 por alert dialog antes de ir para directions
 testar workload/furthest!!

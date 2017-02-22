@@ -31,23 +31,25 @@ public class VertexInfo {
 	
 	@Override
 	public String toString() {
-		//return "["+vertex.mId+"("+index1+";"+index2+")]";
-		String id = "";
-		switch(cluster.mId){
+		return "["+convertId(cluster.mId)+"]";
+	}
+	
+	private String convertId(int lastId) {
+		switch (lastId) {
 		case 0:
-			id = "A";
-		break;
+			return "A";
 		case 1:
-			id = "B";
-			break;
+			return "B";
 		case 2:
-			id = "C";
-			break;
+			return "C";
 		case 3:
-			id = "D";
-			break;
+			return "D";
+		case 4:
+			return "E";
+		default:
+			return "NoID";
 		}
-		return "["+id+"]";
+
 	}
 	
 }

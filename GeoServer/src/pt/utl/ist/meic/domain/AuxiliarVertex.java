@@ -21,25 +21,27 @@ public class AuxiliarVertex {
 	
 	@Override
 	public String toString() {
-		//return "["+vertex.mId+"("+index1+";"+index2+")]";
-		String id = "";
-		switch(vertex.mId){
-		case 0:
-			id = "A";
-		break;
-		case 1:
-			id = "B";
-			break;
-		case 2:
-			id = "C";
-			break;
-		case 3:
-			id = "D";
-			break;
-		}
-		return "["+id+"("+index1+";"+index2+")]";
+		return "["+convertId(vertex.mId)+"("+index1+";"+index2+")]";
 	}
 
+	private static String convertId(int lastId) {
+		switch (lastId) {
+		case 0:
+			return "A";
+		case 1:
+			return "B";
+		case 2:
+			return "C";
+		case 3:
+			return "D";
+		case 4:
+			return "E";
+		default:
+			return "NoID";
+		}
+
+	}
+	
 	@Override
 	public int hashCode() {
 		return vertex.mId + index1 + index2;

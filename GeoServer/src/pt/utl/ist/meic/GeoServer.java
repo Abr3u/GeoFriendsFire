@@ -52,118 +52,32 @@ public class GeoServer {
 
 	public static void main(String[] args) throws ParseException, IOException {
 
-		ClusterWithMean clusterA = new ClusterWithMean(2);
-		clusterA.mId = 0;
-		ClusterWithMean clusterB = new ClusterWithMean(2);
-		clusterB.mId = 1;
-		ClusterWithMean clusterC = new ClusterWithMean(2);
-		clusterC.mId = 2;
-		ClusterWithMean clusterD = new ClusterWithMean(2);
-		clusterD.mId = 3;
+		//testSequenceMatching();
 
-		Calendar cal = Calendar.getInstance();
-		Date now = new Date();
-		
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 60);
-		Date oneHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 90);
-		Date oneHourHalf = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 120);
-		Date twoHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 144);
-		Date twoFourHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 180);
-		Date threeHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 270);
-		Date fourHalfHour = new Date(cal.getTimeInMillis());
-		
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 271);
-		Date fourHalfHourTest = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 408);
-		Date sixEightHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 468);
-		Date sevenEightHour = new Date(cal.getTimeInMillis());
-		
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 469);
-		Date sevenEightHourTest = new Date(cal.getTimeInMillis());
-
-		Sequence a = new Sequence();
-		a.addVertexInfo(new VertexInfo(clusterA, new Date()));
-		a.addVertexInfo(new VertexInfo(clusterB, oneHour));
-		a.addVertexInfo(new VertexInfo(clusterC, threeHour));
-		a.addVertexInfo(new VertexInfo(clusterA, fourHalfHour));
-		a.addVertexInfo(new VertexInfo(clusterD, fourHalfHourTest));
-
-		Sequence b = new Sequence();
-		b.addVertexInfo(new VertexInfo(clusterC, new Date()));
-		b.addVertexInfo(new VertexInfo(clusterA, twoHour));
-		b.addVertexInfo(new VertexInfo(clusterB, fourHalfHour));
-		b.addVertexInfo(new VertexInfo(clusterC, sixEightHour));
-		b.addVertexInfo(new VertexInfo(clusterB, sevenEightHour));
-		b.addVertexInfo(new VertexInfo(clusterD, sevenEightHourTest));
-
-		Sequence x = new Sequence();
-		x.addVertexInfo(new VertexInfo(clusterA, new Date()));
-		x.addVertexInfo(new VertexInfo(clusterB, oneHourHalf));
-		x.addVertexInfo(new VertexInfo(clusterC, twoHour));
-		x.addVertexInfo(new VertexInfo(clusterA, threeHour));
-		x.addVertexInfo(new VertexInfo(clusterB, fourHalfHour));
-		x.addVertexInfo(new VertexInfo(clusterC, fourHalfHourTest));
-
-		Sequence y = new Sequence();
-		y.addVertexInfo(new VertexInfo(clusterA, new Date()));
-		y.addVertexInfo(new VertexInfo(clusterD, oneHour));
-		y.addVertexInfo(new VertexInfo(clusterB, oneHour));
-		y.addVertexInfo(new VertexInfo(clusterC, twoFourHour));
-		y.addVertexInfo(new VertexInfo(clusterA, new Date(twoFourHour.getTime()+fourHalfHour.getTime())));
-		y.addVertexInfo(new VertexInfo(clusterB, new Date(twoFourHour.getTime()+sixEightHour.getTime())));
-		y.addVertexInfo(new VertexInfo(clusterC, new Date(twoFourHour.getTime()+sevenEightHour.getTime())));
-
-		Set<Sequence> similarSequences = sequenceMatching(x, y, MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD);
-		for (Sequence seq : similarSequences) {
-			System.out.println(seq);
-		}
-
-		// initGlobalClustersList();
+		initGlobalClustersList();
 		// usersProfiles = new HashMap<String, UserProfile>();
-		// FileManager mFileManager = new FileManager();
-		//
-		// // mFileManager.stuff();
-		//
-		// List<CheckIn> userCheckIns = mFileManager.getUserCheckInsCsv("22",
-		// false);
-		//
-		// Graph graph = getUserGraphFromCheckIns(userCheckIns);
-		// graph.buildSequences();
-		// graph.printSequences();
-		// UserProfile profile22 = new UserProfile("22");
-		// profile22.addNewGraph("0", graph);
-		//
-		// userCheckIns = mFileManager.getUserCheckInsCsv("578", false);
-		// graph = getUserGraphFromCheckIns(userCheckIns);
-		// graph.buildSequences();
-		// graph.printSequences();
-		// UserProfile profile578 = new UserProfile("578");
-		// profile578.addNewGraph("0", graph);
-		//
-		// getUserSimilarity(profile22, profile578, "0");
+		FileManager mFileManager = new FileManager();
+
+		// mFileManager.stuff();
+
+		List<CheckIn> userCheckIns = mFileManager.getUserCheckInsCsv("22", false);
+
+		Graph graph = getUserGraphFromCheckIns(userCheckIns);
+		graph.buildSequences();
+		graph.printSequences();
+		UserProfile profile22 = new UserProfile("22");
+		profile22.addNewGraph("0", graph);
+
+		userCheckIns = mFileManager.getUserCheckInsCsv("578", false);
+		graph = getUserGraphFromCheckIns(userCheckIns);
+		graph.buildSequences();
+		graph.printSequences();
+		UserProfile profile578 = new UserProfile("578");
+		profile578.addNewGraph("0", graph);
+
+		System.out.println("done");
+
+		getUserSimilarity(profile22, profile578, "0");
 
 		// Graph graph = new Graph();
 		// for(ClusterWithMean c : globalClusters){
@@ -196,6 +110,108 @@ public class GeoServer {
 
 	}
 
+	private static void testSequenceMatching() {
+		ClusterWithMean clusterA = new ClusterWithMean(2);
+		clusterA.mId = 0;
+		ClusterWithMean clusterB = new ClusterWithMean(2);
+		clusterB.mId = 1;
+		ClusterWithMean clusterC = new ClusterWithMean(2);
+		clusterC.mId = 2;
+		ClusterWithMean clusterD = new ClusterWithMean(2);
+		clusterD.mId = 3;
+
+		Calendar cal = Calendar.getInstance();
+		Date now = new Date();
+
+		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 60);
+		Date oneHour = new Date(cal.getTimeInMillis());
+
+		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 90);
+		Date oneHourHalf = new Date(cal.getTimeInMillis());
+
+		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 120);
+		Date twoHour = new Date(cal.getTimeInMillis());
+
+		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 144);
+		Date twoFourHour = new Date(cal.getTimeInMillis());
+
+		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 180);
+		Date threeHour = new Date(cal.getTimeInMillis());
+
+		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 270);
+		Date fourHalfHour = new Date(cal.getTimeInMillis());
+
+		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 271);
+		Date fourHalfHourTest = new Date(cal.getTimeInMillis());
+
+		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 408);
+		Date sixEightHour = new Date(cal.getTimeInMillis());
+
+		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 468);
+		Date sevenEightHour = new Date(cal.getTimeInMillis());
+
+		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 469);
+		Date sevenEightHourTest = new Date(cal.getTimeInMillis());
+
+		Sequence test1 = new Sequence();
+		test1.addVertexInfo(new VertexInfo(clusterA, new Date()));
+		test1.addVertexInfo(new VertexInfo(clusterA, oneHour));
+		test1.addVertexInfo(new VertexInfo(clusterA, twoHour));
+
+		Sequence test2 = new Sequence();
+		test2.addVertexInfo(new VertexInfo(clusterA, new Date()));
+		test2.addVertexInfo(new VertexInfo(clusterA, oneHour));
+		test2.addVertexInfo(new VertexInfo(clusterA, twoHour));
+
+		Sequence a = new Sequence();
+		a.addVertexInfo(new VertexInfo(clusterA, new Date()));
+		a.addVertexInfo(new VertexInfo(clusterB, oneHour));
+		a.addVertexInfo(new VertexInfo(clusterC, threeHour));
+		a.addVertexInfo(new VertexInfo(clusterA, fourHalfHour));
+		a.addVertexInfo(new VertexInfo(clusterD, fourHalfHourTest));
+
+		Sequence b = new Sequence();
+		b.addVertexInfo(new VertexInfo(clusterC, new Date()));
+		b.addVertexInfo(new VertexInfo(clusterA, twoHour));
+		b.addVertexInfo(new VertexInfo(clusterB, fourHalfHour));
+		b.addVertexInfo(new VertexInfo(clusterC, sixEightHour));
+		b.addVertexInfo(new VertexInfo(clusterB, sevenEightHour));
+		b.addVertexInfo(new VertexInfo(clusterD, sevenEightHourTest));
+
+		Sequence x = new Sequence();
+		x.addVertexInfo(new VertexInfo(clusterA, new Date()));
+		x.addVertexInfo(new VertexInfo(clusterB, oneHourHalf));
+		x.addVertexInfo(new VertexInfo(clusterC, twoHour));
+		x.addVertexInfo(new VertexInfo(clusterA, threeHour));
+		x.addVertexInfo(new VertexInfo(clusterB, fourHalfHour));
+		x.addVertexInfo(new VertexInfo(clusterC, fourHalfHourTest));
+
+		Sequence y = new Sequence();
+		y.addVertexInfo(new VertexInfo(clusterA, new Date()));
+		y.addVertexInfo(new VertexInfo(clusterD, oneHour));
+		y.addVertexInfo(new VertexInfo(clusterB, oneHour));
+		y.addVertexInfo(new VertexInfo(clusterC, twoFourHour));
+		y.addVertexInfo(new VertexInfo(clusterA, new Date(twoFourHour.getTime() + fourHalfHour.getTime())));
+		y.addVertexInfo(new VertexInfo(clusterB, new Date(twoFourHour.getTime() + sixEightHour.getTime())));
+		y.addVertexInfo(new VertexInfo(clusterC, new Date(twoFourHour.getTime() + sevenEightHour.getTime())));
+
+		Set<Sequence> similarSequences = sequenceMatching(test1, test2, MATCHING_MAX_SEQ_LENGTH,
+				TRANSITION_TIME_THRESHOLD);
+		for (Sequence seq : similarSequences) {
+			System.out.println(seq);
+		}
+	}
+
 	private static void getUserSimilarity(UserProfile profileA, UserProfile profileB, String level) {
 		Set<Sequence> seqsA = profileA.getGraphByLevel(level).mSequences;
 		Set<Sequence> seqsB = profileB.getGraphByLevel(level).mSequences;
@@ -203,6 +219,7 @@ public class GeoServer {
 		for (Sequence seqA : seqsA) {
 			for (Sequence seqB : seqsB) {
 				sequenceMatching(seqA, seqB, MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD);
+				// TODO: gerar score com as sequences devolvidas
 			}
 		}
 
@@ -225,14 +242,14 @@ public class GeoServer {
 				}
 			}
 			sequenceSet.addAll(toAdd);
-			if(step == 1){
+			if (step == 1) {
 				sequenceSet = pruneSequences(sequenceSet);
 			}
 			step++;
 		}
 		sequenceSet = pruneSequences(sequenceSet);
 		Set<Sequence> toReturn = new HashSet<Sequence>();
-		
+
 		System.out.println("adicionar para devolver sequencias normais");
 		for (SequenceAuxiliar seq : sequenceSet) {
 			toReturn.add(seq.toNormalSequence());
@@ -273,7 +290,7 @@ public class GeoServer {
 			long transitionTimeThreshold, Sequence a, Sequence b) {
 
 		Set<SequenceAuxiliar> toReturn = new HashSet<SequenceAuxiliar>();
-		
+
 		Set<SequenceAuxiliar> auxSet = new HashSet<SequenceAuxiliar>(set);
 		auxSet.remove(seq);
 

@@ -14,7 +14,6 @@ public class Graph {
 
 	private static final int MIN_SEQUENCE_CHECKINS = 3;
 
-	private final long TWO_DAYS_IN_MILI = 48 * 60 * 60 * 1000;
 	private final long MEANINGLESS_THRESHOLD_MILI = 20 * 1000;//20 secs
 
 	public List<VertexInfo> vertexes;
@@ -134,18 +133,52 @@ public class Graph {
 				.collect(Collectors.toSet());
 	}
 	
-	
 	public void printSequences() {
 		System.out.println("TOTAL DE SEQUENCIAS -> "+mSequences.size());
 		int i = 0;
 		for (Sequence seq : mSequences) {
-			System.out.println("sequence" + i + " -> v:" + seq.getClusters().size());
+			System.out.println("sequence "+i+" "+getAggregatedSeqString(seq));
+			//System.out.println("sequence" + i + " -> v:" + seq.getClusters().size());
 			i++;
 		}
 	}
+	
+	private static String getAggregatedSeqString(Sequence seq) {
+		String result = "";
+		int count = 0;
+		int lastId = seq.getClusters().get(0).cluster.mId;
+		for (int i = 0;i < seq.getClusters().size();i++) {
+			VertexInfo vi = seq.getClusters().get(i);
+			if (vi.cluster.mId == lastId) {
+				count++;
+			} else {
+				result += "-> [" + convertId(lastId) + "(" + count + ")] ";
+				lastId = vi.cluster.mId;
+				count = 1;
+			}
+		}
+		//adicionar o ultimo a mao porque nao cai no else
+		result += "-> [" + convertId(lastId) + "(" + count + ")] ";
+		return result;
+	}
 
+	private static String convertId(int lastId) {
+		switch (lastId) {
+		case 0:
+			return "A";
+		case 1:
+			return "B";
+		case 2:
+			return "C";
+		case 3:
+			return "D";
+		case 4:
+			return "E";
+		default:
+			return "NoID";
+		}
 
-
+	}
 	
 
 }
