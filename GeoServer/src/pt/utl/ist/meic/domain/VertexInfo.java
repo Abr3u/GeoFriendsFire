@@ -43,6 +43,9 @@ public class VertexInfo {
 		case 2:
 			id = "C";
 			break;
+		case 3:
+			id = "D";
+			break;
 		}
 		return "["+id+"]";
 	}

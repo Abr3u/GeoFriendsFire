@@ -58,17 +58,27 @@ public class GeoServer {
 		clusterB.mId = 1;
 		ClusterWithMean clusterC = new ClusterWithMean(2);
 		clusterC.mId = 2;
+		ClusterWithMean clusterD = new ClusterWithMean(2);
+		clusterD.mId = 3;
 
 		Calendar cal = Calendar.getInstance();
 		Date now = new Date();
-
+		
 		cal.setTime(now);
 		cal.add(Calendar.MINUTE, 60);
 		Date oneHour = new Date(cal.getTimeInMillis());
 
 		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 90);
+		Date oneHourHalf = new Date(cal.getTimeInMillis());
+
+		cal.setTime(now);
 		cal.add(Calendar.MINUTE, 120);
 		Date twoHour = new Date(cal.getTimeInMillis());
+
+		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 144);
+		Date twoFourHour = new Date(cal.getTimeInMillis());
 
 		cal.setTime(now);
 		cal.add(Calendar.MINUTE, 180);
@@ -77,6 +87,10 @@ public class GeoServer {
 		cal.setTime(now);
 		cal.add(Calendar.MINUTE, 270);
 		Date fourHalfHour = new Date(cal.getTimeInMillis());
+		
+		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 271);
+		Date fourHalfHourTest = new Date(cal.getTimeInMillis());
 
 		cal.setTime(now);
 		cal.add(Calendar.MINUTE, 408);
@@ -85,12 +99,17 @@ public class GeoServer {
 		cal.setTime(now);
 		cal.add(Calendar.MINUTE, 468);
 		Date sevenEightHour = new Date(cal.getTimeInMillis());
+		
+		cal.setTime(now);
+		cal.add(Calendar.MINUTE, 469);
+		Date sevenEightHourTest = new Date(cal.getTimeInMillis());
 
 		Sequence a = new Sequence();
 		a.addVertexInfo(new VertexInfo(clusterA, new Date()));
 		a.addVertexInfo(new VertexInfo(clusterB, oneHour));
 		a.addVertexInfo(new VertexInfo(clusterC, threeHour));
 		a.addVertexInfo(new VertexInfo(clusterA, fourHalfHour));
+		a.addVertexInfo(new VertexInfo(clusterD, fourHalfHourTest));
 
 		Sequence b = new Sequence();
 		b.addVertexInfo(new VertexInfo(clusterC, new Date()));
@@ -98,8 +117,26 @@ public class GeoServer {
 		b.addVertexInfo(new VertexInfo(clusterB, fourHalfHour));
 		b.addVertexInfo(new VertexInfo(clusterC, sixEightHour));
 		b.addVertexInfo(new VertexInfo(clusterB, sevenEightHour));
+		b.addVertexInfo(new VertexInfo(clusterD, sevenEightHourTest));
 
-		List<Sequence> similarSequences = sequenceMatching(a, b, MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD);
+		Sequence x = new Sequence();
+		x.addVertexInfo(new VertexInfo(clusterA, new Date()));
+		x.addVertexInfo(new VertexInfo(clusterB, oneHourHalf));
+		x.addVertexInfo(new VertexInfo(clusterC, twoHour));
+		x.addVertexInfo(new VertexInfo(clusterA, threeHour));
+		x.addVertexInfo(new VertexInfo(clusterB, fourHalfHour));
+		x.addVertexInfo(new VertexInfo(clusterC, fourHalfHourTest));
+
+		Sequence y = new Sequence();
+		y.addVertexInfo(new VertexInfo(clusterA, new Date()));
+		y.addVertexInfo(new VertexInfo(clusterD, oneHour));
+		y.addVertexInfo(new VertexInfo(clusterB, oneHour));
+		y.addVertexInfo(new VertexInfo(clusterC, twoFourHour));
+		y.addVertexInfo(new VertexInfo(clusterA, new Date(twoFourHour.getTime()+fourHalfHour.getTime())));
+		y.addVertexInfo(new VertexInfo(clusterB, new Date(twoFourHour.getTime()+sixEightHour.getTime())));
+		y.addVertexInfo(new VertexInfo(clusterC, new Date(twoFourHour.getTime()+sevenEightHour.getTime())));
+
+		Set<Sequence> similarSequences = sequenceMatching(a, b, MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD);
 		for (Sequence seq : similarSequences) {
 			System.out.println(seq);
 		}
@@ -172,7 +209,7 @@ public class GeoServer {
 	}
 
 	// returns set of maximum length similar sequences
-	private static List<Sequence> sequenceMatching(Sequence seqA, Sequence seqB, int matchingMaxSeqLength,
+	private static Set<Sequence> sequenceMatching(Sequence seqA, Sequence seqB, int matchingMaxSeqLength,
 			long transitionTimeThreshold) {
 
 		int step = 1;
@@ -186,24 +223,17 @@ public class GeoServer {
 					// extend step-length seq to be (step + 1)-length
 					toAdd.addAll(extendSequence(sequenceSet, seq, transitionTimeThreshold, seqA, seqB));
 				}
-
-				else {
-					// as sequencias ja sao mais pequenas que o step,
-					// podemos terminar os loops 
-					// quer dizer que na ronda anterior nao conseguimos extender nenhuma sequencia
-					step = matchingMaxSeqLength;
-					break;
-				}
-
 			}
 			sequenceSet.addAll(toAdd);
-			sequenceSet = pruneSequences(sequenceSet);
+			if(step == 1){
+				sequenceSet = pruneSequences(sequenceSet);
+			}
 			step++;
 		}
-
-		List<Sequence> toReturn = new ArrayList<Sequence>();
-
-		System.out.println("FINAL RESULT");
+		sequenceSet = pruneSequences(sequenceSet);
+		Set<Sequence> toReturn = new HashSet<Sequence>();
+		
+		System.out.println("adicionar para devolver sequencias normais");
 		for (SequenceAuxiliar seq : sequenceSet) {
 			toReturn.add(seq.toNormalSequence());
 			System.out.println(seq);
@@ -242,48 +272,72 @@ public class GeoServer {
 	private static Set<SequenceAuxiliar> extendSequence(Set<SequenceAuxiliar> set, SequenceAuxiliar seq,
 			long transitionTimeThreshold, Sequence a, Sequence b) {
 
-		System.out.println("estou a analisar " + seq.getLastVertex());
 		Set<SequenceAuxiliar> toReturn = new HashSet<SequenceAuxiliar>();
+		
+		Set<SequenceAuxiliar> auxSet = new HashSet<SequenceAuxiliar>(set);
+		auxSet.remove(seq);
 
-		for (SequenceAuxiliar aux : set) {
-			// nao comparar com nos mesmos nem com quem está antes
-			if (!aux.equals(seq) && consequentIndexes(seq.getLastVertex(), aux.getLastVertex())) {
-				if (seq.mVertexes.size() == 1 && !aux.getLastVertex().vertex.equals(seq.getLastVertex().vertex)) {
-					// se for tamanho 1, nao podemos comparar sequencias para o
+		for (SequenceAuxiliar aux : auxSet) {
+			if (seq.mVertexes.size() == 1) {
+				AuxiliarVertex v1 = seq.getLastVertex();
+				AuxiliarVertex v2 = aux.getLastVertex();
+				System.out.println("estou a analisar " + v1 + " com " + v2);
+				if (v1.vertex.mId != v2.vertex.mId && consequentIndexes(v1, v2)) {
+					// se for tamanho 1, nao comparamos sequencias para o
 					// mesmo cluster
-					System.out.println("cumpre criterios!!!!");
+					System.out.println("consequent and diferent!");
 					// calcular o tempo perdido a ir de seq para aux em cada
 					// sequencia original
-					long travelTime1 = Math.abs(a.getClusters().get(seq.getLastVertex().index1).date.getTime()
-							- a.getClusters().get(aux.getLastVertex().index1).date.getTime());
-					long travelTime2 = Math.abs(b.getClusters().get(seq.getLastVertex().index2).date.getTime()
-							- b.getClusters().get(aux.getLastVertex().index2).date.getTime());
+					long travelTime1 = Math.abs(a.getClusters().get(v1.index1).date.getTime()
+							- a.getClusters().get(v2.index1).date.getTime());
+					long travelTime2 = Math.abs(b.getClusters().get(v1.index2).date.getTime()
+							- b.getClusters().get(v2.index2).date.getTime());
 
 					long delta = Math.abs(travelTime1 - travelTime2);
 					if (delta <= transitionTimeThreshold) {
 						SequenceAuxiliar result = new SequenceAuxiliar();
-						result.mVertexes.add(seq.getLastVertex());
-						result.mVertexes.add(aux.getLastVertex());
-						System.out.println("aumentei seq para :: " + result);
+						result.mVertexes.add(v1);
+						result.mVertexes.add(v2);
+						System.out.println("aumentei seq Unitaria para :: " + result);
 						toReturn.add(result);
 					}
-				} else if (seq.mVertexes.size() > 1) {
-					System.out.println("comparando com " + aux.getFirstVertex());
-					if (aux.getFirstVertex().equals(seq.getLastVertex())) {
-						System.out.println("ENCAIXA - cumpre criterios!!!!");
-						// calcular o tempo entro o fim da sequencia actual
-						// (seq) e o segundo ponto da outra sequencia (aux) onde
-						// seq encaixa
-						long travelTime1 = Math.abs(a.getClusters().get(seq.getLastVertex().index1).date.getTime()
+				}
+			} else if (seq.mVertexes.size() > 1) {
+				AuxiliarVertex v1 = seq.getLastVertex();
+				AuxiliarVertex v2 = aux.getFirstVertex();
+				System.out.println("estou a analisar " + v1 + " com " + v2);
+				if (consequentIndexes(v1, v2)) {
+					System.out.println("consequent!");
+					long travelTime1;
+					long travelTime2;
+					long delta;
+					if (v1.equals(v2)) {
+						System.out.println("same! calcular delta com seguinte");
+						travelTime1 = Math.abs(a.getClusters().get(v1.index1).date.getTime()
 								- a.getClusters().get(aux.getSecondVertex().index1).date.getTime());
-						long travelTime2 = Math.abs(b.getClusters().get(seq.getLastVertex().index2).date.getTime()
+						travelTime2 = Math.abs(b.getClusters().get(v1.index2).date.getTime()
 								- b.getClusters().get(aux.getSecondVertex().index2).date.getTime());
 
-						long delta = Math.abs(travelTime1 - travelTime2);
+						delta = Math.abs(travelTime1 - travelTime2);
 						if (delta <= transitionTimeThreshold) {
 							SequenceAuxiliar result = new SequenceAuxiliar();
 							result.mVertexes.addAll(seq.mVertexes);
 							result.mVertexes.add(aux.getSecondVertex());
+							System.out.println("aumentei seq para :: " + result);
+							toReturn.add(result);
+						}
+					} else {
+						System.out.println("nao encaixam! calcular delta");
+						travelTime1 = Math.abs(a.getClusters().get(v1.index1).date.getTime()
+								- a.getClusters().get(v2.index1).date.getTime());
+						travelTime2 = Math.abs(b.getClusters().get(v1.index2).date.getTime()
+								- b.getClusters().get(v2.index2).date.getTime());
+
+						delta = Math.abs(travelTime1 - travelTime2);
+						if (delta <= transitionTimeThreshold) {
+							SequenceAuxiliar result = new SequenceAuxiliar();
+							result.mVertexes.addAll(seq.mVertexes);
+							result.mVertexes.add(v2);
 							System.out.println("aumentei seq para :: " + result);
 							toReturn.add(result);
 						}
@@ -292,12 +346,11 @@ public class GeoServer {
 			}
 		}
 		return toReturn;
+
 	}
 
 	private static boolean consequentIndexes(AuxiliarVertex v1, AuxiliarVertex v2) {
-		boolean aux = v1.index1 < v2.index1 && v1.index2 < v2.index2;
-		System.out.println("consequent " + v1 + " // " + v2 + " RETURN " + aux);
-		return v1.index1 < v2.index1 && v1.index2 < v2.index2;
+		return v1.index1 <= v2.index1 && v1.index2 <= v2.index2;
 	}
 
 	private static Graph getUserGraphFromCheckIns(List<CheckIn> userCheckIns) {

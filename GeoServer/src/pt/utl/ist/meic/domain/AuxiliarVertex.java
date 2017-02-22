@@ -33,10 +33,18 @@ public class AuxiliarVertex {
 		case 2:
 			id = "C";
 			break;
+		case 3:
+			id = "D";
+			break;
 		}
 		return "["+id+"("+index1+";"+index2+")]";
 	}
 
+	@Override
+	public int hashCode() {
+		return vertex.mId + index1 + index2;
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null)

@@ -23,6 +23,15 @@ public class SequenceAuxiliar {
 	
 	
 	@Override
+	public int hashCode() {
+		int res = 0;
+		for (int i = 0; i < mVertexes.size(); i++) {
+			res = res + mVertexes.get(i).hashCode();
+		}
+		return res;
+	}
+	
+	@Override
 	public boolean equals(Object obj) {
 		if (obj == null)
 			return false;
@@ -33,7 +42,7 @@ public class SequenceAuxiliar {
 			return false;
 		}
 		for (int i = 0; i < this.mVertexes.size(); i++) {
-			if (!this.mVertexes.get(i).equals(other.mVertexes.get(i))) {
+			if (this.mVertexes.get(i).vertex.mId != other.mVertexes.get(i).vertex.mId) {
 				return false;
 			}
 		}
