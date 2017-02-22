@@ -136,7 +136,7 @@ public class GeoServer {
 		y.addVertexInfo(new VertexInfo(clusterB, new Date(twoFourHour.getTime()+sixEightHour.getTime())));
 		y.addVertexInfo(new VertexInfo(clusterC, new Date(twoFourHour.getTime()+sevenEightHour.getTime())));
 
-		Set<Sequence> similarSequences = sequenceMatching(a, b, MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD);
+		Set<Sequence> similarSequences = sequenceMatching(x, y, MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD);
 		for (Sequence seq : similarSequences) {
 			System.out.println(seq);
 		}

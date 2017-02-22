@@ -42,7 +42,7 @@ public class SequenceAuxiliar {
 			return false;
 		}
 		for (int i = 0; i < this.mVertexes.size(); i++) {
-			if (this.mVertexes.get(i).vertex.mId != other.mVertexes.get(i).vertex.mId) {
+			if (this.mVertexes.get(i).vertex.hashCode() != other.mVertexes.get(i).vertex.hashCode()) {
 				return false;
 			}
 		}
