@@ -1,8 +1,10 @@
 package pt.utl.ist.meic.domain;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -133,6 +135,13 @@ public class Graph {
 				.collect(Collectors.toSet());
 	}
 	
+	public Set<Sequence> getTopNSequences(int size,Set<Sequence> toFilter) {
+		return toFilter.stream()
+				.sorted(Comparator.reverseOrder())
+				.limit(size)
+				.collect(Collectors.toSet());
+	}
+	
 	public void printSequences() {
 		System.out.println("TOTAL DE SEQUENCIAS -> "+mSequences.size());
 		int i = 0;
@@ -152,14 +161,73 @@ public class Graph {
 			if (vi.cluster.mId == lastId) {
 				count++;
 			} else {
-				result += "-> [" + convertId(lastId) + "(" + count + ")] ";
+				result += "-> [" + convertId(lastId) + "(" + count + ")]";
 				lastId = vi.cluster.mId;
 				count = 1;
 			}
 		}
 		//adicionar o ultimo a mao porque nao cai no else
-		result += "-> [" + convertId(lastId) + "(" + count + ")] ";
+		result += "-> [" + convertId(lastId) + "(" + count + ")]";
 		return result;
+	}
+	
+	public Set<Sequence> getAggregatedSeqs() {
+		Set<Sequence> toReturn = new HashSet<Sequence>();
+		for (Sequence seq : mSequences) {
+			int lastId = -1;
+			Sequence seqaux = new Sequence();
+			for(VertexInfo vi : seq.getClusters()){
+				if (vi.cluster.mId != lastId) {
+					lastId = vi.cluster.mId;
+					vi.arrTime = vi.date;
+					vi.leavTime = vi.date;
+					seqaux.addVertexInfo(vi);
+				}else{
+					seqaux.getClusters().get(seqaux.getClusters().size()-1).leavTime = vi.date;
+				}
+			}
+			toReturn.add(seqaux);
+			
+		}
+		SimpleDateFormat df = new SimpleDateFormat("HH:mm");
+		String builder = "";
+		for(Sequence seq : toReturn){
+			builder = "";
+			for(VertexInfo vi : seq.getClusters()){
+				builder += "-> [("+convertId(vi.cluster.mId)+") a:"+df.format(vi.arrTime)+" l:"+df.format(vi.leavTime)+"]";
+			}
+			//System.out.println("new aggr seq "+builder);
+		}
+		return toReturn;
+	}
+	
+	public Set<Sequence> getAggregatedSeqs(Set<Sequence> toAggregate) {
+		Set<Sequence> toReturn = new HashSet<Sequence>();
+		for (Sequence seq : toAggregate) {
+			int lastId = -1;
+			Sequence seqaux = new Sequence();
+			for(VertexInfo vi : seq.getClusters()){
+				if (vi.cluster.mId != lastId) {
+					lastId = vi.cluster.mId;
+					vi.arrTime = vi.date;
+					vi.leavTime = vi.date;
+					seqaux.addVertexInfo(vi);
+				}else{
+					seqaux.getClusters().get(seqaux.getClusters().size()-1).leavTime = vi.date;
+				}
+			}
+			toReturn.add(seqaux);
+			
+		}
+		SimpleDateFormat df = new SimpleDateFormat("HH:mm");
+		String builder = "";
+		for(Sequence seq : toReturn){
+			for(VertexInfo vi : seq.getClusters()){
+				builder += "-> [("+convertId(vi.cluster.mId)+") a:"+df.format(vi.arrTime)+" l:"+df.format(vi.leavTime)+"]";
+			}
+		}
+		System.out.println(builder);
+		return toReturn;
 	}
 
 	private static String convertId(int lastId) {

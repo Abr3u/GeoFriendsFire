@@ -8,32 +8,35 @@ public class VertexInfo {
 
 	public ClusterWithMean cluster;
 	public Date date;
+
+	public Date arrTime;
+	public Date leavTime;
 	
-	public VertexInfo(ClusterWithMean cluster,Date date) {
+	public VertexInfo(ClusterWithMean cluster, Date date) {
 		this.cluster = cluster;
 		this.date = date;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null)
-            return false;
-        if (!(obj instanceof VertexInfo))
-            return false;
-        VertexInfo other = (VertexInfo) obj;
-        return this.cluster.mId == other.cluster.mId;
+			return false;
+		if (!(obj instanceof VertexInfo))
+			return false;
+		VertexInfo other = (VertexInfo) obj;
+		return this.cluster.mId == other.cluster.mId;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return cluster.mId;
 	}
-	
+
 	@Override
 	public String toString() {
-		return "["+convertId(cluster.mId)+"]";
+		return "[" + convertId(cluster.mId) + "]";
 	}
-	
+
 	private String convertId(int lastId) {
 		switch (lastId) {
 		case 0:
@@ -51,5 +54,5 @@ public class VertexInfo {
 		}
 
 	}
-	
+
 }

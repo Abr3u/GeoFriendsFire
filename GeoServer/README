@@ -34,12 +34,12 @@ eventDetails done!
 settings done!
 direction done! - resolvido com longClick num evento (cardview)
 obter sequencias para cada user done! - getDaily().removeUniCluster().removeShort();
-sequenceMatching done! - algoritmo revisto = expand clean up; prune only at the end;
+sequenceMatching done! - algoritmo revisto! expand clean up; prune only at the end and after uni; 
+					agora recebe sequencias agregadas!! (vertexInfo tem arriving e leaving Time)
 
 Tomorrow:
-gerar score com as max length sequences devolvidas
-ver HGSM como e que eles dao score
-adicionar vertente tempo dispendido em cada clusterin
+gerar score com as max length sequences devolvidas - getUserSimilarity - ver HGSM como e que eles dao score
+adicionar vertente tempo dispendido em cada cluster
 adicionar vertente popularidade
 
 por alert dialog antes de ir para directions
