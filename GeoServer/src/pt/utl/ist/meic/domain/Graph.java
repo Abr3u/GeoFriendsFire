@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,10 +22,14 @@ public class Graph {
 
 	public List<VertexInfo> vertexes;
 	public Set<Sequence> mSequences;
+	
+	public Map<Integer,Double> cluster_percentage;
+
 
 	public Graph() {
 		vertexes = new ArrayList<VertexInfo>();
 		mSequences = new HashSet<Sequence>();
+		cluster_percentage = new HashMap<Integer,Double>();
 	}
 
 	public void addVertex(VertexInfo vertex) {
@@ -40,39 +46,31 @@ public class Graph {
 	public void buildSequences() {
 		getDailySequences();
 		removeSequencesUniCluster();
-		//removeMeaninglessClustersFromSequences();
 		removeShortSequences();
 	}
 
-	private void removeMeaninglessClustersFromSequences() {
-		//System.out.println("antes de meaningless "+mSequences.size());
-		int i, j;
-		for (Sequence seq : mSequences) {
-			List<VertexInfo> toRemove = new ArrayList<VertexInfo>();
-			for (i = 0; i < seq.getClusters().size(); i++) {
-				for (j = i + 1; j < seq.getClusters().size(); j++) {
-					VertexInfo current = seq.getClusters().get(i);
-					VertexInfo next = seq.getClusters().get(j);
-
-					long diffMilis = current.date.getTime() - next.date.getTime();
-					if (current.equals(next) && diffMilis < MEANINGLESS_THRESHOLD_MILI) {
-						// checkIn no mesmo cluster em menos de threshold
-						toRemove.add(next);
-						// avançar o current para o sitio do next (frente), remover next e
-						// comecar a contar outra vez a partir desse ponto
-						i = j;
-					}
-				}
+	public void buildPercentages() {
+		int total = vertexes.size();
+		for(VertexInfo vi : vertexes){
+			if(cluster_percentage.containsKey(vi.cluster.mId)){
+				cluster_percentage.put(vi.cluster.mId,cluster_percentage.get(vi.cluster.mId)+1);
+			}else{
+				cluster_percentage.put(vi.cluster.mId, 1d);
 			}
-			seq.getClusters().removeAll(toRemove);
+		}		
+		for(Map.Entry<Integer, Double> entry : cluster_percentage.entrySet()){
+			cluster_percentage.put(entry.getKey(), entry.getValue() / total);
 		}
-		//System.out.println("depois de meaningless "+mSequences.size());
+		
+		for(Map.Entry<Integer, Double> entry : cluster_percentage.entrySet()){
+			System.out.println("cluster "+entry.getKey()+" // "+entry.getValue()+"%");
+		}
 	}
-
+	
 	private void removeShortSequences() {
 		mSequences = mSequences.stream().filter(s -> s.getClusters().size() >= MIN_SEQUENCE_CHECKINS)
 				.collect(Collectors.toSet());
-		System.out.println(mSequences.size()+" big enough");
+		//System.out.println(mSequences.size()+" big enough");
 	}
 
 	private void removeSequencesUniCluster() {
@@ -84,7 +82,7 @@ public class Graph {
 			}
 		}
 		mSequences.removeAll(toRemove);
-		System.out.println(mSequences.size()+" multi cluster");
+		//System.out.println(mSequences.size()+" multi cluster");
 	}
 
 	private void getDailySequences() {
@@ -123,10 +121,14 @@ public class Graph {
 				}
 			}
 		}
-		System.out.println("criei " + count + " sequences");
-		System.out.println(mSequences.size() + " different");
+//		System.out.println("criei " + count + " sequences");
+//		System.out.println(mSequences.size() + " different");
 	}
 
+	
+	public Double getPercentageByClusterId(Integer cid){
+		return this.cluster_percentage.get(cid);
+	}
 	
 	public Set<Sequence> getTopNSequences(int size) {
 		return this.mSequences.stream()
@@ -247,6 +249,8 @@ public class Graph {
 		}
 
 	}
+
+
 	
 
 }

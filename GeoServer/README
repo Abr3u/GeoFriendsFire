@@ -17,6 +17,19 @@ k=5 -> 2.701799675821211E-10
 k=6 -> 2.356666682945554E-10
 k=8 -> 2.1862730014317916E-10
 
+
+cluster 0 // 11467.0 points
+cluster 1 // 4802.0 points
+cluster 2 // 45961.0 points
+cluster 3 // 16589.0 points
+cluster 4 // 51606.0 points
+
+cluster 0 // 0.08792026068621814%
+cluster 1 // 0.036818094690435114%
+cluster 2 // 0.35239409622388346%
+cluster 3 // 0.12719187272378762%
+cluster 4 // 0.3956756756756757%
+
 __________________________________________
 
 
@@ -36,11 +49,13 @@ direction done! - resolvido com longClick num evento (cardview)
 obter sequencias para cada user done! - getDaily().removeUniCluster().removeShort();
 sequenceMatching done! - algoritmo revisto! expand clean up; prune only at the end and after uni; 
 					agora recebe sequencias agregadas!! (vertexInfo tem arriving e leaving Time)
+score gerado com similar sequences!
+score gerado com cluster activity!
 
 Tomorrow:
-gerar score com as max length sequences devolvidas - getUserSimilarity - ver HGSM como e que eles dao score
-adicionar vertente tempo dispendido em cada cluster
+adicionar vertente layer
 adicionar vertente popularidade
+
 
 por alert dialog antes de ir para directions
 testar workload/furthest!!

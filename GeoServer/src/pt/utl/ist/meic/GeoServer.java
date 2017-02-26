@@ -28,7 +28,7 @@ import pt.utl.ist.meic.domain.SequenceAuxiliar;
 import pt.utl.ist.meic.domain.UserProfile;
 import pt.utl.ist.meic.domain.VertexInfo;
 import pt.utl.ist.meic.exceptions.CantExtendSequenceException;
-import utility.FileManager;
+import pt.utl.ist.meic.utility.FileManager;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceCosine;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
 import ca.pfv.spmf.algorithms.clustering.kmeans.AlgoKMeans;
@@ -47,45 +47,25 @@ public class GeoServer {
 																				// horas
 
 	private static List<ClusterWithMean> globalClusters;
+	private static Map<Integer,Double> globalPercentages;
+	private static Map<Integer,Long> globalCheckIns;
 
-	private static Map<String, UserProfile> usersProfiles;
+	private static List<UserProfile> usersProfiles;
 
 	public static void main(String[] args) throws ParseException, IOException {
 
 		// testSequenceMatching();
 
 		initGlobalClustersList();
-		// usersProfiles = new HashMap<String, UserProfile>();
+		initGlobalPercentages();
+		initGlobalCheckIns();
+		usersProfiles = new ArrayList<UserProfile>();
 		FileManager mFileManager = new FileManager();
 
 		// mFileManager.stuff();
 
-		List<CheckIn> userCheckIns = mFileManager.getUserCheckInsCsv("22", false);
-
-		Graph graph = getUserGraphFromCheckIns(userCheckIns);
-		graph.buildSequences();
-		graph.printSequences();
-		UserProfile profile22 = new UserProfile("22");
-		profile22.addNewGraph("0", graph);
-
-		userCheckIns = mFileManager.getUserCheckInsCsv("578", false);
-		graph = getUserGraphFromCheckIns(userCheckIns);
-		graph.buildSequences();
-		graph.printSequences();
-		UserProfile profile578 = new UserProfile("578");
-		profile578.addNewGraph("0", graph);
-
-		System.out.println("done");
-
-		getUserSimilarity(profile22, profile578, "0");
-
-		// Graph graph = new Graph();
-		// for(ClusterWithMean c : globalClusters){
-		// graph.addVertex(c);
-		// }
-		// graph.getGraphContentString();
-
-		// mFileManager.createCsvStayPoints("teste.csv");
+		testUserSimilarity(mFileManager);
+		
 
 		/*
 		 * applyKmeans("clusters1"); try { writeNewClustersFirebase(2); } catch
@@ -109,6 +89,60 @@ public class GeoServer {
 		// System.out.println("clusters -> "+clusters.size());
 
 	}
+
+	private static void testUserSimilarity(FileManager mFileManager) throws ParseException, IOException {
+		
+		List<CheckIn> userCheckIns;
+		Graph graph;
+				
+//		userCheckIns = mFileManager.getUserCheckInsCsv("22", false);
+//		graph = getUserGraphFromCheckIns(userCheckIns);
+//		// graph.printSequences();
+//		UserProfile profile22 = new UserProfile("22");
+//		profile22.addNewGraph("0", graph);
+//		usersProfiles.add(profile22);
+//
+//		userCheckIns = mFileManager.getUserCheckInsCsv("578", false);
+//		graph = getUserGraphFromCheckIns(userCheckIns);
+//		// graph.printSequences();
+//		UserProfile profile578 = new UserProfile("578");
+//		profile578.addNewGraph("0", graph);
+//		usersProfiles.add(profile578);
+		
+		userCheckIns = mFileManager.getUserCheckInsCsv("842", false);
+		graph = getUserGraphFromCheckIns(userCheckIns);
+		// graph.printSequences();
+		UserProfile profile842 = new UserProfile("842");
+		profile842.addNewGraph("0", graph);
+		usersProfiles.add(profile842);
+		
+		userCheckIns = mFileManager.getUserCheckInsCsv("1810", false);
+		graph = getUserGraphFromCheckIns(userCheckIns);
+		// graph.printSequences();
+		UserProfile profile1810 = new UserProfile("1810");
+		profile1810.addNewGraph("0", graph);
+		usersProfiles.add(profile1810);
+
+		
+		getUserSimilarityClusterActivity(profile842, profile1810,"0");
+		
+//		for(int i = 0;i<usersProfiles.size();i++){
+//			for(int j = 0;j<usersProfiles.size();j++){
+//				if(i != j && j>i){
+//					double score = 0;
+//					//score += getUserSimilaritySequences(usersProfiles.get(i), usersProfiles.get(j), "0");
+//					score += getUserSimilarityClusterTime(usersProfiles.get(i),usersProfiles.get(j));
+//				}
+//			}
+//		}
+//		
+//		
+//		for(UserProfile up : usersProfiles){
+//			up.printSimilarities();
+//		}
+		
+	}
+
 
 	private static void testSequenceMatching() {
 		ClusterWithMean clusterA = new ClusterWithMean(2);
@@ -249,22 +283,70 @@ public class GeoServer {
 
 	}
 
-	private static void getUserSimilarity(UserProfile profileA, UserProfile profileB, String level) {
-		Set<Sequence> seqsA = profileA.getGraphByLevel(level).getTopNSequences(1,
-				profileA.getGraphByLevel(level).getAggregatedSeqs());
-		Set<Sequence> seqsB = profileB.getGraphByLevel(level).getTopNSequences(1,
-				profileB.getGraphByLevel(level).getAggregatedSeqs());
+	private static double getUserSimilaritySequences(UserProfile profileA, UserProfile profileB, String level) {
+		if (!profileA.userId.equals(profileB.userId)) {
+			Graph graphA = profileA.getGraphByLevel(level);
+			Graph graphB = profileB.getGraphByLevel(level);
 
-		System.out.println("A: " + seqsA.iterator().next());
-		System.out.println("A: " + seqsB.iterator().next());
+			long N1 = graphA.vertexes.size();
+			long N2 = graphB.vertexes.size();
 
-		for (Sequence seqA : seqsA) {
-			for (Sequence seqB : seqsB) {
-				sequenceMatching(seqA, seqB, MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD);
-				// TODO: gerar score com as sequences devolvidas
+			// transformar seqs em seqs aggregadas e ir buscar as top N
+			Set<Sequence> seqsA = graphA.getTopNSequences(2, graphA.getAggregatedSeqs());
+			Set<Sequence> seqsB = graphB.getTopNSequences(2, graphB.getAggregatedSeqs());
+
+			double score = 0;
+			for (Sequence seqA : seqsA) {
+				for (Sequence seqB : seqsB) {
+					Set<Sequence> maxLengthSeqs = sequenceMatching(seqA, seqB, MATCHING_MAX_SEQ_LENGTH,
+							TRANSITION_TIME_THRESHOLD);
+					for (Sequence simseq : maxLengthSeqs) {
+						score += simseq.getClusters().size();
+					}
+				}
+			}
+			double simmilarity = score * (1.0 / N1 * N2);
+			return simmilarity;
+		}
+		return 0;
+	}
+
+	
+	private static double getUserSimilarityClusterActivity(UserProfile profileA, UserProfile profileB,String level) {
+		if (!profileA.userId.equals(profileB.userId)) {
+			Graph graphA = profileA.getGraphByLevel(level);
+			Graph graphB = profileB.getGraphByLevel(level);
+			
+			double score = 0;
+			
+			Map<Integer,Double> percentageA = graphA.cluster_percentage;
+			Map<Integer,Double> percentageB = graphB.cluster_percentage;
+			
+			for(Map.Entry<Integer, Double> entry : percentageA.entrySet()){
+				if(percentageB.containsKey(entry.getKey())){
+					double aux = percentageB.get(entry.getKey());
+					score += (aux < entry.getValue()) ? aux : entry.getValue();
+				}
+			}
+			System.out.println("activity score -> "+score);
+			return score;
+		}
+		return 0;
+	}
+	
+	private static Map<Integer, Long> createClusterTimeMap(Sequence seq) {
+		Map<Integer,Long> toReturn = new HashMap<Integer,Long>();
+		
+		for(VertexInfo vi : seq.getClusters()){
+			if(toReturn.containsKey(vi.cluster.mId)){
+				long previousTime = toReturn.get(vi.cluster.mId);
+				toReturn.put(vi.cluster.mId, previousTime + Math.abs(vi.leavTime.getTime()-vi.arrTime.getTime()));
+			}else{
+				toReturn.put(vi.cluster.mId, Math.abs(vi.leavTime.getTime()-vi.arrTime.getTime()));
 			}
 		}
-
+		
+		return toReturn;
 	}
 
 	// returns set of maximum length similar sequences
@@ -284,6 +366,7 @@ public class GeoServer {
 				}
 			}
 			sequenceSet.addAll(toAdd);
+			// as 1-length estao todas contidas nas 2-legth de certeza
 			if (step == 1) {
 				sequenceSet = pruneSequences(sequenceSet);
 			}
@@ -340,7 +423,7 @@ public class GeoServer {
 			if (seq.mVertexes.size() == 1) {
 				AuxiliarVertex v1 = seq.getLastVertex();
 				AuxiliarVertex v2 = aux.getLastVertex();
-				System.out.println("estou a analisar " + v1 + " com " + v2);
+				// System.out.println("estou a analisar " + v1 + " com " + v2);
 				if (v1.vertex.mId != v2.vertex.mId && consequentIndexes(v1, v2)) {
 					// se for tamanho 1, nao comparamos sequencias para o
 					// mesmo cluster
@@ -357,21 +440,23 @@ public class GeoServer {
 						SequenceAuxiliar result = new SequenceAuxiliar();
 						result.mVertexes.add(v1);
 						result.mVertexes.add(v2);
-						System.out.println("aumentei seq Unitaria para :: " + result);
+						// System.out.println("aumentei seq Unitaria para :: " +
+						// result);
 						toReturn.add(result);
 					}
 				}
 			} else if (seq.mVertexes.size() > 1) {
 				AuxiliarVertex v1 = seq.getLastVertex();
 				AuxiliarVertex v2 = aux.getFirstVertex();
-				System.out.println("estou a analisar " + v1 + " com " + v2);
+				// System.out.println("estou a analisar " + v1 + " com " + v2);
 				if (consequentIndexes(v1, v2)) {
 					// System.out.println("consequent!");
 					long travelTime1;
 					long travelTime2;
 					long delta;
 					if (v1.equals(v2)) {
-						System.out.println("same! calcular delta com seguinte");
+						// System.out.println("same! calcular delta com
+						// seguinte");
 
 						v2 = aux.getSecondVertex();
 
@@ -389,9 +474,9 @@ public class GeoServer {
 							toReturn.add(result);
 						}
 					} else {
-						System.out.println("nao encaixam!");
+						// System.out.println("nao encaixam!");
 						if (!shareIndexes(v1, v2)) {
-							System.out.println("nao partilham");
+							// System.out.println("nao partilham");
 							travelTime1 = Math.abs(a.getClusters().get(v1.index1).leavTime.getTime()
 									- a.getClusters().get(v2.index1).arrTime.getTime());
 							travelTime2 = Math.abs(b.getClusters().get(v1.index2).leavTime.getTime()
@@ -413,7 +498,6 @@ public class GeoServer {
 		return toReturn;
 
 	}
-	
 
 	private static boolean shareIndexes(AuxiliarVertex v1, AuxiliarVertex v2) {
 		return v1.index1 == v2.index1 || v1.index2 == v2.index2;
@@ -441,6 +525,8 @@ public class GeoServer {
 			}
 			graph.addVertex(new VertexInfo(minCluster, ci.getDate()));
 		}
+		graph.buildSequences();
+		graph.buildPercentages();
 		return graph;
 	}
 
@@ -489,6 +575,25 @@ public class GeoServer {
 		globalClusters.add(cluster);
 	}
 
+	private static void initGlobalPercentages() {
+		globalPercentages = new HashMap<Integer,Double>();
+		globalPercentages.put(0, 0.08792026068621814);
+		globalPercentages.put(1, 0.036818094690435114);
+		globalPercentages.put(2, 0.35239409622388346);
+		globalPercentages.put(3, 0.12719187272378762);
+		globalPercentages.put(4, 0.3956756756756757);
+	}
+	
+	private static void initGlobalCheckIns() {
+		globalCheckIns = new HashMap<Integer,Long>();
+		globalCheckIns.put(0, 11467l);
+		globalCheckIns.put(1, 4802l);
+		globalCheckIns.put(2, 45961l);
+		globalCheckIns.put(3, 16589l);
+		globalCheckIns.put(4, 51606l);
+	}
+	
+	
 	private static void applyKmeans(String pathToCSV) throws IOException {
 		DistanceFunction distanceFunction = new DistanceCosine();
 

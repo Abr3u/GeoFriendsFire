@@ -1,4 +1,4 @@
-package utility;
+package pt.utl.ist.meic.utility;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -34,6 +34,7 @@ public class FileManager {
 	private static final String NEW_LINE_SEPARATOR = "\n";
 
 	private static final String pathGlobalCSV = "C:/Users/ricar/Desktop/dataset/Gowalla_totalCheckins.csv";
+	private static final String pathNewYorkCSV = "C:/Users/ricar/Desktop/dataset/newYork.csv";
 
 	// New York
 	private static final Double LOW_LATI = 40.543155;
@@ -46,30 +47,88 @@ public class FileManager {
 
 	private List<CheckIn> userCheckIns;
 
-	public void stuff() throws IOException  {
-		System.out.println("getUserSP");
+	public List<CheckIn> stuff2() throws IOException, ParseException {
+		System.out.println("stuff2");
+		Reader in = new FileReader(pathNewYorkCSV);
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
+		List<CheckIn> list = new ArrayList<CheckIn>();
+		
+		for (CSVRecord record : records) {
+			Date date = df.parse(record.get(3));
+			Double latitude = Double.parseDouble(record.get(1));
+			Double longitude = Double.parseDouble(record.get(2));
+			list.add(new CheckIn(date, new DataPoint(latitude, longitude)));
+		}
+		return list;
+	}
+
+	public void stuff() throws IOException, ParseException {
+		// creating newYork.csv from global
+		System.out.println("stuff");
 		int checkIncounter = 0;
 		Reader in = new FileReader(pathGlobalCSV);
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 		String lastUser = "";
+
+		List<Auxiliar> list = new ArrayList<Auxiliar>();
+
 		for (CSVRecord record : records) {
 			// Filter checkIns outside the range and not belonging to the user
 			String user = record.get(0);
-			//Date date = df.parse(record.get(1));
+			Date date = df.parse(record.get(1));
 			Double latitude = Double.parseDouble(record.get(2));
 			Double longitude = Double.parseDouble(record.get(3));
 
-			if (!lastUser.equals(user) && latitude >= LOW_LATI && latitude <= HIGH_LATI && longitude >= LOW_LONGI && longitude <= HIGH_LONGI) {
-				System.out.println("user -- > "+lastUser+" ::: "+checkIncounter);
+			if (latitude >= LOW_LATI && latitude <= HIGH_LATI && longitude >= LOW_LONGI && longitude <= HIGH_LONGI) {
+				// System.out.println("user -- > "+lastUser+" :::
+				// "+checkIncounter);
 				lastUser = user;
 				checkIncounter = 0;
+				list.add(new Auxiliar(date, new DataPoint(latitude, longitude), user));
 			}
-			if(lastUser.equals(user)){
+			if (lastUser.equals(user)) {
 				checkIncounter++;
+			}
+		}
+		System.out.println(list.size() + " checkIns");
+		// BEGIN
+
+		FileWriter fileWriter = null;
+
+		try {
+			fileWriter = new FileWriter("newnewYork.csv");
+
+			// Write a new point object to the CSV file
+			for (Auxiliar point : list) {
+				fileWriter.append(String.valueOf(point.userId));
+				fileWriter.append(DELIMITER);
+				fileWriter.append(String.valueOf(point.mDataPoint.getLatitude()));
+				fileWriter.append(DELIMITER);
+				fileWriter.append(String.valueOf(point.mDataPoint.getLongitude()));
+				fileWriter.append(DELIMITER);
+				fileWriter.append(String.valueOf(point.getDateFormatted()));
+				fileWriter.append(NEW_LINE_SEPARATOR);
+			}
+
+			System.out.println("CSV file was created successfully !!!");
+
+		} catch (Exception e) {
+			System.out.println("Error in CsvFileWriter !!!");
+			e.printStackTrace();
+		} finally {
+
+			try {
+				fileWriter.flush();
+				fileWriter.close();
+			} catch (IOException e) {
+				System.out.println("Error while flushing/closing fileWriter !!!");
+				e.printStackTrace();
 			}
 
 		}
+		System.out.println("createCSVStayPoints --- END");
 
 	}
 
@@ -77,55 +136,45 @@ public class FileManager {
 		userCheckIns = new ArrayList<CheckIn>();
 		Reader in;
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+		int userIdInt = Integer.parseInt(userId);
 		if (createCSV) {
 			// checkIns do utilizador do csv global
-			in = new FileReader(pathGlobalCSV);
+			in = new FileReader(pathNewYorkCSV);
 			Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 			for (CSVRecord record : records) {
 				// Filter checkIns outside the range and not belonging to the
 				// user
 				String user = record.get(0);
-				Date date = df.parse(record.get(1));
-				Double latitude = Double.parseDouble(record.get(2));
-				Double longitude = Double.parseDouble(record.get(3));
+				Date date = df.parse(record.get(3));
+				Double latitude = Double.parseDouble(record.get(1));
+				Double longitude = Double.parseDouble(record.get(2));
 
 				// ajustar coordenadas de acordo com os users aqui
-				if (user.equals(userId) && latitude >= LOW_LATI && latitude <= HIGH_LATI && longitude >= LOW_LONGI && longitude <= HIGH_LONGI) {
+				if (user.equals(userId) && latitude >= LOW_LATI && latitude <= HIGH_LATI && longitude >= LOW_LONGI
+						&& longitude <= HIGH_LONGI) {
 					userCheckIns.add(new CheckIn(date, new DataPoint(latitude, longitude)));
+				}
+				// csv is order by id, no need to look past userId
+				if (Integer.parseInt(user) > userIdInt) {
+					break;
 				}
 
 			}
-			System.out.println("criar csv para user "+userId+" com tamanho -> "+userCheckIns.size());
-			createCsvCheckIns(userId+".csv");
+			System.out.println("criar csv para user " + userId + " com tamanho -> " + userCheckIns.size());
+			createCsvCheckIns(userId + ".csv");
 			return userCheckIns;
 		} else {
 			// checkIns do csv do utilizador
-			in = new FileReader(userId+".csv");
+			in = new FileReader(userId + ".csv");
 			Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 			for (CSVRecord record : records) {
 				Date date = df.parse(record.get(2));
 				Double latitude = Double.parseDouble(record.get(0));
 				Double longitude = Double.parseDouble(record.get(1));
 				userCheckIns.add(new CheckIn(date, new DataPoint(latitude, longitude)));
-			}			
+			}
 			return userCheckIns;
 		}
-	}
-
-	private static double distanceBetween(double lat1, double lat2, double lon1, double lon2) {
-
-		final int R = 6371; // Radius of the earth
-
-		Double latDistance = Math.toRadians(lat2 - lat1);
-		Double lonDistance = Math.toRadians(lon2 - lon1);
-		Double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2) + Math.cos(Math.toRadians(lat1))
-				* Math.cos(Math.toRadians(lat2)) * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-		Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		double distance = R * c * 1000; // convert to meters
-
-		distance = Math.pow(distance, 2);
-
-		return Math.sqrt(distance);
 	}
 
 	public void createCsvCheckIns(String fileName) {
@@ -162,6 +211,24 @@ public class FileManager {
 
 		}
 		System.out.println("createCSVStayPoints --- END");
+	}
+
+	private class Auxiliar {
+		public DataPoint mDataPoint;
+		private DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+		private Date mDate;
+		public String userId;
+
+		public Auxiliar(Date date, DataPoint dataPoint, String user) {
+			this.mDataPoint = dataPoint;
+			this.mDate = date;
+			this.userId = user;
+		}
+
+		public String getDateFormatted() {
+			return df.format(mDate);
+		}
+
 	}
 
 }
