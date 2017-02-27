@@ -2,6 +2,7 @@ package pt.utl.ist.meic;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.attribute.UserPrincipalLookupService;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -51,7 +52,7 @@ public class GeoServer {
 	private static Map<Integer,Long> globalCheckIns;
 
 	private static List<UserProfile> usersProfiles;
-
+	
 	public static void main(String[] args) throws ParseException, IOException {
 
 		// testSequenceMatching();
@@ -59,12 +60,14 @@ public class GeoServer {
 		initGlobalClustersList();
 		initGlobalPercentages();
 		initGlobalCheckIns();
+		
 		usersProfiles = new ArrayList<UserProfile>();
 		FileManager mFileManager = new FileManager();
+		
+		initUserProfiles(mFileManager.getIdListFromFile());
 
-		// mFileManager.stuff();
-
-		testUserSimilarity(mFileManager);
+		//testUserSimilarity(mFileManager);
+//		mFileManager.createCsvSimilarities(usersProfiles, "similarities.csv");
 		
 
 		/*
@@ -90,59 +93,63 @@ public class GeoServer {
 
 	}
 
+	private static void initUserProfiles(List<String> ids) {
+		for(String id : ids){
+			UserProfile profile = new UserProfile(id);
+			usersProfiles.add(profile);
+		}
+	}
+
 	private static void testUserSimilarity(FileManager mFileManager) throws ParseException, IOException {
 		
 		List<CheckIn> userCheckIns;
 		Graph graph;
 				
-//		userCheckIns = mFileManager.getUserCheckInsCsv("22", false);
-//		graph = getUserGraphFromCheckIns(userCheckIns);
-//		// graph.printSequences();
-//		UserProfile profile22 = new UserProfile("22");
-//		profile22.addNewGraph("0", graph);
-//		usersProfiles.add(profile22);
-//
-//		userCheckIns = mFileManager.getUserCheckInsCsv("578", false);
-//		graph = getUserGraphFromCheckIns(userCheckIns);
-//		// graph.printSequences();
-//		UserProfile profile578 = new UserProfile("578");
-//		profile578.addNewGraph("0", graph);
-//		usersProfiles.add(profile578);
+		userCheckIns = mFileManager.getUserCheckInsCsv("22", false);
+		graph = getUserGraphFromCheckIns(userCheckIns);
+		UserProfile profile22 = new UserProfile("22");
+		profile22.addNewGraph("0", graph);
+		usersProfiles.add(profile22);
+
+		userCheckIns = mFileManager.getUserCheckInsCsv("578", false);
+		graph = getUserGraphFromCheckIns(userCheckIns);
+		UserProfile profile578 = new UserProfile("578");
+		profile578.addNewGraph("0", graph);
+		usersProfiles.add(profile578);
 		
 		userCheckIns = mFileManager.getUserCheckInsCsv("842", false);
 		graph = getUserGraphFromCheckIns(userCheckIns);
-		// graph.printSequences();
 		UserProfile profile842 = new UserProfile("842");
 		profile842.addNewGraph("0", graph);
 		usersProfiles.add(profile842);
 		
 		userCheckIns = mFileManager.getUserCheckInsCsv("1810", false);
 		graph = getUserGraphFromCheckIns(userCheckIns);
-		// graph.printSequences();
 		UserProfile profile1810 = new UserProfile("1810");
 		profile1810.addNewGraph("0", graph);
 		usersProfiles.add(profile1810);
 
+		calculateSimilarities();
 		
-		getUserSimilarityClusterActivity(profile842, profile1810,"0");
-		
-//		for(int i = 0;i<usersProfiles.size();i++){
-//			for(int j = 0;j<usersProfiles.size();j++){
-//				if(i != j && j>i){
-//					double score = 0;
-//					//score += getUserSimilaritySequences(usersProfiles.get(i), usersProfiles.get(j), "0");
-//					score += getUserSimilarityClusterTime(usersProfiles.get(i),usersProfiles.get(j));
-//				}
-//			}
-//		}
-//		
-//		
-//		for(UserProfile up : usersProfiles){
-//			up.printSimilarities();
-//		}
 		
 	}
 
+
+	private static void calculateSimilarities() {
+		for(int i = 0;i<usersProfiles.size();i++){
+			for(int j = 0;j<usersProfiles.size();j++){
+				if(i != j && j>i){
+					UserProfile p1 = usersProfiles.get(i);
+					UserProfile p2 = usersProfiles.get(j);
+					double seqScore = getUserSimilaritySequences(p1, p2, "0");
+					double actScore = getUserSimilarityClusterActivity(p1, p2,"0");
+					double finalScore = 0.6 * seqScore + 0.4 * actScore;
+					p1.addSimilarityScore(p2.userId, finalScore);
+					p2.addSimilarityScore(p1.userId, finalScore);
+				}
+			}
+		}
+	}
 
 	private static void testSequenceMatching() {
 		ClusterWithMean clusterA = new ClusterWithMean(2);
@@ -268,18 +275,6 @@ public class GeoServer {
 		Set<Sequence> set = new HashSet<>();
 		set.add(test1);
 		set.add(test2);
-		// List<Sequence> aux = new
-		// ArrayList<Sequence>(Graph.getAggregatedSeqs(set));
-		//
-		//
-		// Set<Sequence> similarSequences = sequenceMatching(aux.get(0),
-		// aux.get(1), MATCHING_MAX_SEQ_LENGTH,
-		// TRANSITION_TIME_THRESHOLD);
-		//
-		// System.out.println("SIMILAR");
-		// for (Sequence seq : similarSequences) {
-		// System.out.println(seq);
-		// }
 
 	}
 
@@ -292,8 +287,8 @@ public class GeoServer {
 			long N2 = graphB.vertexes.size();
 
 			// transformar seqs em seqs aggregadas e ir buscar as top N
-			Set<Sequence> seqsA = graphA.getTopNSequences(2, graphA.getAggregatedSeqs());
-			Set<Sequence> seqsB = graphB.getTopNSequences(2, graphB.getAggregatedSeqs());
+			Set<Sequence> seqsA = graphA.getTopNSequences(5, graphA.getAggregatedSeqs());
+			Set<Sequence> seqsB = graphB.getTopNSequences(5, graphB.getAggregatedSeqs());
 
 			double score = 0;
 			for (Sequence seqA : seqsA) {
@@ -328,7 +323,7 @@ public class GeoServer {
 					score += (aux < entry.getValue()) ? aux : entry.getValue();
 				}
 			}
-			System.out.println("activity score -> "+score);
+			//System.out.println("activity score -> "+score);
 			return score;
 		}
 		return 0;
@@ -375,10 +370,10 @@ public class GeoServer {
 		sequenceSet = pruneSequences(sequenceSet);
 		Set<Sequence> toReturn = new HashSet<Sequence>();
 
-		System.out.println("adicionar para devolver sequencias normais");
+		//System.out.println("adicionar para devolver sequencias normais");
 		for (SequenceAuxiliar seq : sequenceSet) {
 			toReturn.add(seq.toNormalSequence());
-			System.out.println(seq);
+			//System.out.println(seq);
 		}
 		return toReturn;
 
@@ -403,12 +398,15 @@ public class GeoServer {
 	}
 
 	private static Set<SequenceAuxiliar> pruneSequences(Set<SequenceAuxiliar> sequenceSet) {
-		int maxLength = sequenceSet.iterator().next().mVertexes.size();
-		for (SequenceAuxiliar seq : sequenceSet) {
-			maxLength = (seq.mVertexes.size() > maxLength) ? seq.mVertexes.size() : maxLength;
+		if(sequenceSet.size() > 0){
+			int maxLength = sequenceSet.iterator().next().mVertexes.size();
+			for (SequenceAuxiliar seq : sequenceSet) {
+				maxLength = (seq.mVertexes.size() > maxLength) ? seq.mVertexes.size() : maxLength;
+			}
+			final int maxLengthFinal = maxLength;// woooooooow amazing
+			return sequenceSet.stream().filter(x -> x.mVertexes.size() == maxLengthFinal).collect(Collectors.toSet());
 		}
-		final int maxLengthFinal = maxLength;// woooooooow amazing
-		return sequenceSet.stream().filter(x -> x.mVertexes.size() == maxLengthFinal).collect(Collectors.toSet());
+		return sequenceSet;
 	}
 
 	private static Set<SequenceAuxiliar> extendSequence(Set<SequenceAuxiliar> set, SequenceAuxiliar seq,
@@ -470,7 +468,7 @@ public class GeoServer {
 							SequenceAuxiliar result = new SequenceAuxiliar();
 							result.mVertexes.addAll(seq.mVertexes);
 							result.mVertexes.add(aux.getSecondVertex());
-							System.out.println("aumentei seq para :: " + result);
+							//System.out.println("aumentei seq para :: " + result);
 							toReturn.add(result);
 						}
 					} else {
@@ -487,7 +485,7 @@ public class GeoServer {
 								SequenceAuxiliar result = new SequenceAuxiliar();
 								result.mVertexes.addAll(seq.mVertexes);
 								result.mVertexes.add(v2);
-								System.out.println("aumentei seq para :: " + result);
+								//System.out.println("aumentei seq para :: " + result);
 								toReturn.add(result);
 							}
 						}

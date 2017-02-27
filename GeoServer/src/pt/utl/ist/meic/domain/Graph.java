@@ -61,10 +61,6 @@ public class Graph {
 		for(Map.Entry<Integer, Double> entry : cluster_percentage.entrySet()){
 			cluster_percentage.put(entry.getKey(), entry.getValue() / total);
 		}
-		
-		for(Map.Entry<Integer, Double> entry : cluster_percentage.entrySet()){
-			System.out.println("cluster "+entry.getKey()+" // "+entry.getValue()+"%");
-		}
 	}
 	
 	private void removeShortSequences() {

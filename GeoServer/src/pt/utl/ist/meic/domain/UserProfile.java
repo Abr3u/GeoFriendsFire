@@ -32,12 +32,16 @@ public class UserProfile {
 			similarityScores.put(userId, score);
 		}
 	}
-
+	
 	public void printSimilarities() {
 		System.out.println("Similarites for user "+userId);
 		similarityScores.entrySet().stream()
 		.sorted(Map.Entry.<String, Double>comparingByValue().reversed())
 		.forEach(System.out::println);
+	}
+	
+	public Map<String,Double> getSimilarities(){
+		return this.similarityScores;
 	}
 
 }

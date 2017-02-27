@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,6 +28,7 @@ import org.apache.commons.csv.CSVRecord;
 import one.util.streamex.StreamEx;
 import pt.utl.ist.meic.domain.CheckIn;
 import pt.utl.ist.meic.domain.DataPoint;
+import pt.utl.ist.meic.domain.UserProfile;
 
 public class FileManager {
 
@@ -47,20 +49,25 @@ public class FileManager {
 
 	private List<CheckIn> userCheckIns;
 
-	public List<CheckIn> stuff2() throws IOException, ParseException {
+	public List<String> stuff2() throws IOException, ParseException {
+		//gets the Ids of the users from new york
 		System.out.println("stuff2");
 		Reader in = new FileReader(pathNewYorkCSV);
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
-		List<CheckIn> list = new ArrayList<CheckIn>();
-		
+		List<String> idsList = new ArrayList<String>();
+		String lastId = "";
 		for (CSVRecord record : records) {
+			String userId = String.valueOf(record.get(0));
 			Date date = df.parse(record.get(3));
 			Double latitude = Double.parseDouble(record.get(1));
 			Double longitude = Double.parseDouble(record.get(2));
-			list.add(new CheckIn(date, new DataPoint(latitude, longitude)));
+			if(!userId.equals(lastId)){
+				idsList.add(userId);
+				lastId = userId;
+			}
 		}
-		return list;
+		return idsList;
 	}
 
 	public void stuff() throws IOException, ParseException {
@@ -177,6 +184,37 @@ public class FileManager {
 		}
 	}
 
+	public void createTXTFileUserIds(List<String> ids) {
+		System.out.println("createCsvStayPoints");
+		FileWriter fileWriter = null;
+
+		try {
+			fileWriter = new FileWriter("userIds.txt");
+
+			// Write a new point object to the CSV file
+			for (String id : ids) {
+				fileWriter.append(id);
+				fileWriter.append(NEW_LINE_SEPARATOR);
+			}
+
+			System.out.println("TXT file was created successfully !!!");
+
+		} catch (Exception e) {
+			System.out.println("Error in TxtFileWriter !!!");
+			e.printStackTrace();
+		} finally {
+
+			try {
+				fileWriter.flush();
+				fileWriter.close();
+			} catch (IOException e) {
+				System.out.println("Error while flushing/closing fileWriter !!!");
+				e.printStackTrace();
+			}
+
+		}
+	}
+	
 	public void createCsvCheckIns(String fileName) {
 		System.out.println("createCsvStayPoints");
 		FileWriter fileWriter = null;
@@ -210,9 +248,62 @@ public class FileManager {
 			}
 
 		}
-		System.out.println("createCSVStayPoints --- END");
+	}
+	
+	public void createCsvSimilarities(List<UserProfile> profiles, String fileName) {
+		System.out.println("createCsvSimilarities");
+
+		try {
+		 final FileWriter fileWriter = new FileWriter(fileName);
+
+			// Write a new point object to the CSV file
+			for(UserProfile profile : profiles){				
+				profile.getSimilarities().entrySet().stream()
+				.sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+				.forEach(x->{
+					
+					try {
+						fileWriter.append(String.valueOf(profile.userId));
+						fileWriter.append(DELIMITER);
+						fileWriter.append(String.valueOf(x.getKey()));
+						fileWriter.append(DELIMITER);
+						fileWriter.append(String.valueOf(x.getValue()));
+						fileWriter.append(NEW_LINE_SEPARATOR);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				});
+			}
+			fileWriter.flush();
+			fileWriter.close();
+
+			System.out.println("CSV file was created successfully !!!");
+
+		} catch (Exception e) {
+			System.out.println("Error in CsvFileWriter !!!");
+			e.printStackTrace();
+		}
 	}
 
+	public List<String> getIdListFromFile() {
+		List<String> toReturn = new ArrayList<String>();
+
+		Path path = Paths.get("C:/Android/GeoFriendsFire/GeoServer/userIds.txt");
+        try (Stream<String> lines = Files.lines(path)) {
+            lines.forEach(s -> {
+            	if(!s.isEmpty()){
+            		toReturn.add(s);
+            	}
+            });
+        } catch (IOException ex) {
+        	
+        }
+		System.out.println(toReturn.size()+" unique Ids");
+		return toReturn;
+	}
+	
+	
 	private class Auxiliar {
 		public DataPoint mDataPoint;
 		private DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
@@ -230,5 +321,7 @@ public class FileManager {
 		}
 
 	}
+
+	
 
 }
