@@ -29,6 +29,7 @@ import pt.utl.ist.meic.domain.SequenceAuxiliar;
 import pt.utl.ist.meic.domain.UserProfile;
 import pt.utl.ist.meic.domain.VertexInfo;
 import pt.utl.ist.meic.exceptions.CantExtendSequenceException;
+import pt.utl.ist.meic.firebase.FirebaseHelper;
 import pt.utl.ist.meic.utility.FileManager;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceCosine;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
@@ -37,6 +38,8 @@ import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
 import ca.pfv.spmf.patterns.cluster.DoubleArray;
 
 public class GeoServer {
+
+	private static final String pathKmeansNewYorkCSV = "C:/Android/GeoFriendsFire/GeoServer/dataset/newYork.csv";
 
 	private static final int NUM_CLUSTERS = 5;// kmeans
 	private static final String DELIMITER = ",";
@@ -48,27 +51,47 @@ public class GeoServer {
 																				// horas
 
 	private static List<ClusterWithMean> globalClusters;
-	private static Map<Integer,Double> globalPercentages;
-	private static Map<Integer,Long> globalCheckIns;
+	private static Map<Integer, Double> globalPercentages;
+	private static Map<Integer, Long> globalCheckIns;
 
 	private static List<UserProfile> usersProfiles;
-	
+
+	private static long mTotalCheckIns = 130425;//newYork
+
 	public static void main(String[] args) throws ParseException, IOException {
 
+		 FileManager mFileManager = new FileManager();
+		
+		 initGlobalClustersList();
+//		 initGlobalPercentages();
+//		 initGlobalCheckIns();
+		 initUserProfiles(mFileManager.getIdListFromFile());
+		
+		 calculateGraphs(mFileManager,"0");
+		 calculateSimilarities();
+		 
+		try {
+			FirebaseHelper.writeNewFriendsFirebase(usersProfiles);
+		} catch (FirebaseException | JacksonUtilityException e) {
+			e.printStackTrace();
+		}
+
+		// applyKmeans(pathKmeansNewYorkCSV);
+
+//		try {
+//			FirebaseHelper.writeNewClustersFirebase(globalClusters, 0, mTotalCheckIns);
+//		} catch (FirebaseException | JacksonUtilityException e) {
+//			e.printStackTrace();
+//		}
+
+		// mFileManager.createCsvSimilarities(usersProfiles,
+		// "similarities10Plus.csv");
+
+		// testUserSimilarity(mFileManager);
+		// mFileManager.createCsvSimilarities(usersProfiles,
+		// "similarities.csv");
+
 		// testSequenceMatching();
-
-		initGlobalClustersList();
-		initGlobalPercentages();
-		initGlobalCheckIns();
-		
-		usersProfiles = new ArrayList<UserProfile>();
-		FileManager mFileManager = new FileManager();
-		
-		initUserProfiles(mFileManager.getIdListFromFile());
-
-		//testUserSimilarity(mFileManager);
-//		mFileManager.createCsvSimilarities(usersProfiles, "similarities.csv");
-		
 
 		/*
 		 * applyKmeans("clusters1"); try { writeNewClustersFirebase(2); } catch
@@ -93,18 +116,37 @@ public class GeoServer {
 
 	}
 
-	private static void initUserProfiles(List<String> ids) {
-		for(String id : ids){
-			UserProfile profile = new UserProfile(id);
-			usersProfiles.add(profile);
+	private static void calculateGraphs(FileManager fileManager, String level) throws ParseException, IOException {
+		List<CheckIn> userCheckIns;
+		Graph graph;
+
+		for (UserProfile profile : usersProfiles) {
+			userCheckIns = fileManager.getUserCheckInsCsv(profile.userId, false);
+			graph = getUserGraphFromCheckIns(userCheckIns);
+			profile.addNewGraph(level, graph);
 		}
 	}
 
+	private static void initUserProfiles(List<String> ids) {
+		usersProfiles = new ArrayList<UserProfile>();
+		for (String id : ids) {
+			UserProfile profile = new UserProfile(id);
+			usersProfiles.add(profile);
+		}
+		// TODO: remove pedrada
+		UserProfile profile = new UserProfile("578");
+		usersProfiles.add(profile);
+		profile = new UserProfile("842");
+		usersProfiles.add(profile);
+		profile = new UserProfile("1810");
+		usersProfiles.add(profile);
+	}
+
 	private static void testUserSimilarity(FileManager mFileManager) throws ParseException, IOException {
-		
+
 		List<CheckIn> userCheckIns;
 		Graph graph;
-				
+
 		userCheckIns = mFileManager.getUserCheckInsCsv("22", false);
 		graph = getUserGraphFromCheckIns(userCheckIns);
 		UserProfile profile22 = new UserProfile("22");
@@ -116,13 +158,13 @@ public class GeoServer {
 		UserProfile profile578 = new UserProfile("578");
 		profile578.addNewGraph("0", graph);
 		usersProfiles.add(profile578);
-		
+
 		userCheckIns = mFileManager.getUserCheckInsCsv("842", false);
 		graph = getUserGraphFromCheckIns(userCheckIns);
 		UserProfile profile842 = new UserProfile("842");
 		profile842.addNewGraph("0", graph);
 		usersProfiles.add(profile842);
-		
+
 		userCheckIns = mFileManager.getUserCheckInsCsv("1810", false);
 		graph = getUserGraphFromCheckIns(userCheckIns);
 		UserProfile profile1810 = new UserProfile("1810");
@@ -130,19 +172,17 @@ public class GeoServer {
 		usersProfiles.add(profile1810);
 
 		calculateSimilarities();
-		
-		
+
 	}
 
-
 	private static void calculateSimilarities() {
-		for(int i = 0;i<usersProfiles.size();i++){
-			for(int j = 0;j<usersProfiles.size();j++){
-				if(i != j && j>i){
+		for (int i = 0; i < usersProfiles.size(); i++) {
+			for (int j = 0; j < usersProfiles.size(); j++) {
+				if (i != j && j > i) {
 					UserProfile p1 = usersProfiles.get(i);
 					UserProfile p2 = usersProfiles.get(j);
 					double seqScore = getUserSimilaritySequences(p1, p2, "0");
-					double actScore = getUserSimilarityClusterActivity(p1, p2,"0");
+					double actScore = getUserSimilarityClusterActivity(p1, p2, "0");
 					double finalScore = 0.6 * seqScore + 0.4 * actScore;
 					p1.addSimilarityScore(p2.userId, finalScore);
 					p2.addSimilarityScore(p1.userId, finalScore);
@@ -296,7 +336,8 @@ public class GeoServer {
 					Set<Sequence> maxLengthSeqs = sequenceMatching(seqA, seqB, MATCHING_MAX_SEQ_LENGTH,
 							TRANSITION_TIME_THRESHOLD);
 					for (Sequence simseq : maxLengthSeqs) {
-						score += simseq.getClusters().size();
+						double size = simseq.getClusters().size();
+						score += size * Math.pow(2.0, size - 1);
 					}
 				}
 			}
@@ -306,41 +347,40 @@ public class GeoServer {
 		return 0;
 	}
 
-	
-	private static double getUserSimilarityClusterActivity(UserProfile profileA, UserProfile profileB,String level) {
+	private static double getUserSimilarityClusterActivity(UserProfile profileA, UserProfile profileB, String level) {
 		if (!profileA.userId.equals(profileB.userId)) {
 			Graph graphA = profileA.getGraphByLevel(level);
 			Graph graphB = profileB.getGraphByLevel(level);
-			
+
 			double score = 0;
-			
-			Map<Integer,Double> percentageA = graphA.cluster_percentage;
-			Map<Integer,Double> percentageB = graphB.cluster_percentage;
-			
-			for(Map.Entry<Integer, Double> entry : percentageA.entrySet()){
-				if(percentageB.containsKey(entry.getKey())){
+
+			Map<Integer, Double> percentageA = graphA.cluster_percentage;
+			Map<Integer, Double> percentageB = graphB.cluster_percentage;
+
+			for (Map.Entry<Integer, Double> entry : percentageA.entrySet()) {
+				if (percentageB.containsKey(entry.getKey())) {
 					double aux = percentageB.get(entry.getKey());
 					score += (aux < entry.getValue()) ? aux : entry.getValue();
 				}
 			}
-			//System.out.println("activity score -> "+score);
+			// System.out.println("activity score -> "+score);
 			return score;
 		}
 		return 0;
 	}
-	
+
 	private static Map<Integer, Long> createClusterTimeMap(Sequence seq) {
-		Map<Integer,Long> toReturn = new HashMap<Integer,Long>();
-		
-		for(VertexInfo vi : seq.getClusters()){
-			if(toReturn.containsKey(vi.cluster.mId)){
+		Map<Integer, Long> toReturn = new HashMap<Integer, Long>();
+
+		for (VertexInfo vi : seq.getClusters()) {
+			if (toReturn.containsKey(vi.cluster.mId)) {
 				long previousTime = toReturn.get(vi.cluster.mId);
-				toReturn.put(vi.cluster.mId, previousTime + Math.abs(vi.leavTime.getTime()-vi.arrTime.getTime()));
-			}else{
-				toReturn.put(vi.cluster.mId, Math.abs(vi.leavTime.getTime()-vi.arrTime.getTime()));
+				toReturn.put(vi.cluster.mId, previousTime + Math.abs(vi.leavTime.getTime() - vi.arrTime.getTime()));
+			} else {
+				toReturn.put(vi.cluster.mId, Math.abs(vi.leavTime.getTime() - vi.arrTime.getTime()));
 			}
 		}
-		
+
 		return toReturn;
 	}
 
@@ -370,10 +410,10 @@ public class GeoServer {
 		sequenceSet = pruneSequences(sequenceSet);
 		Set<Sequence> toReturn = new HashSet<Sequence>();
 
-		//System.out.println("adicionar para devolver sequencias normais");
+		// System.out.println("adicionar para devolver sequencias normais");
 		for (SequenceAuxiliar seq : sequenceSet) {
 			toReturn.add(seq.toNormalSequence());
-			//System.out.println(seq);
+			// System.out.println(seq);
 		}
 		return toReturn;
 
@@ -398,7 +438,7 @@ public class GeoServer {
 	}
 
 	private static Set<SequenceAuxiliar> pruneSequences(Set<SequenceAuxiliar> sequenceSet) {
-		if(sequenceSet.size() > 0){
+		if (sequenceSet.size() > 0) {
 			int maxLength = sequenceSet.iterator().next().mVertexes.size();
 			for (SequenceAuxiliar seq : sequenceSet) {
 				maxLength = (seq.mVertexes.size() > maxLength) ? seq.mVertexes.size() : maxLength;
@@ -468,7 +508,8 @@ public class GeoServer {
 							SequenceAuxiliar result = new SequenceAuxiliar();
 							result.mVertexes.addAll(seq.mVertexes);
 							result.mVertexes.add(aux.getSecondVertex());
-							//System.out.println("aumentei seq para :: " + result);
+							// System.out.println("aumentei seq para :: " +
+							// result);
 							toReturn.add(result);
 						}
 					} else {
@@ -485,7 +526,8 @@ public class GeoServer {
 								SequenceAuxiliar result = new SequenceAuxiliar();
 								result.mVertexes.addAll(seq.mVertexes);
 								result.mVertexes.add(v2);
-								//System.out.println("aumentei seq para :: " + result);
+								// System.out.println("aumentei seq para :: " +
+								// result);
 								toReturn.add(result);
 							}
 						}
@@ -548,67 +590,67 @@ public class GeoServer {
 		globalClusters = new ArrayList<ClusterWithMean>();
 
 		ClusterWithMean cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 40.801093651170824, -73.89930599057355 }));
+		cluster.setMean(new DoubleArray(new double[] { 40.68596772385074, -73.99656293456547 }));
 		cluster.mId = 0;
 		globalClusters.add(cluster);
 
 		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 40.60970277282131, -74.00150411120603 }));
+		cluster.setMean(new DoubleArray(new double[] { 40.77761934847919,-73.92851136376517 }));
 		cluster.mId = 1;
 		globalClusters.add(cluster);
 
 		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 40.75669592004704, -73.960743752147 }));
+		cluster.setMean(new DoubleArray(new double[] { 40.75076361515444, -73.96725029838117 }));
 		cluster.mId = 2;
 		globalClusters.add(cluster);
 
 		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 40.69826256184573, -73.99754039600585 }));
+		cluster.setMean(new DoubleArray(new double[] { 40.72968661755094, -73.99184556681594 }));
 		cluster.mId = 3;
 		globalClusters.add(cluster);
 
 		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 40.73388423756347, -73.98810826426154 }));
+		cluster.setMean(new DoubleArray(new double[] { 40.83586092995377, -73.89130396728055 }));
 		cluster.mId = 4;
 		globalClusters.add(cluster);
 	}
 
 	private static void initGlobalPercentages() {
-		globalPercentages = new HashMap<Integer,Double>();
+		globalPercentages = new HashMap<Integer, Double>();
 		globalPercentages.put(0, 0.08792026068621814);
 		globalPercentages.put(1, 0.036818094690435114);
 		globalPercentages.put(2, 0.35239409622388346);
 		globalPercentages.put(3, 0.12719187272378762);
 		globalPercentages.put(4, 0.3956756756756757);
 	}
-	
+
 	private static void initGlobalCheckIns() {
-		globalCheckIns = new HashMap<Integer,Long>();
+		globalCheckIns = new HashMap<Integer, Long>();
 		globalCheckIns.put(0, 11467l);
 		globalCheckIns.put(1, 4802l);
 		globalCheckIns.put(2, 45961l);
 		globalCheckIns.put(3, 16589l);
 		globalCheckIns.put(4, 51606l);
 	}
-	
-	
+
 	private static void applyKmeans(String pathToCSV) throws IOException {
 		DistanceFunction distanceFunction = new DistanceCosine();
 
 		// Apply the algorithm
 		AlgoKMeans algoKMeans = new AlgoKMeans();
+		System.out.println("applying K-means");
 		globalClusters = algoKMeans.runAlgorithm(pathToCSV, NUM_CLUSTERS, distanceFunction, DELIMITER);
 		algoKMeans.printStatistics();
 
 		// Print the clusters found by the algorithm
 		// For each cluster:
 		int i = 0;
+		mTotalCheckIns = 0;
 		for (ClusterWithMean cluster : globalClusters) {
 			System.out.println("Cluster " + i++);
 			System.out.println("size -> " + cluster.getVectors().size());
 			System.out.println("mean -> " + cluster.getmean().toString());
+			mTotalCheckIns += cluster.getVectors().size();
 		}
-
-		// writeClustersToDisk();
 	}
 }

@@ -48,7 +48,8 @@ public class FileManager {
 	private static final int SP_MAX_TIME_SECONDS = 30 * 60;
 
 	private List<CheckIn> userCheckIns;
-
+	
+	
 	public List<String> stuff2() throws IOException, ParseException {
 		//gets the Ids of the users from new york
 		System.out.println("stuff2");
@@ -287,11 +288,12 @@ public class FileManager {
 	}
 
 	public List<String> getIdListFromFile() {
+		//limited to 10
 		List<String> toReturn = new ArrayList<String>();
 
 		Path path = Paths.get("C:/Android/GeoFriendsFire/GeoServer/userIds.txt");
         try (Stream<String> lines = Files.lines(path)) {
-            lines.forEach(s -> {
+            lines.limit(10).forEach(s -> {
             	if(!s.isEmpty()){
             		toReturn.add(s);
             	}

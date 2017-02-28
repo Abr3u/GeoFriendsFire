@@ -49,14 +49,18 @@ direction done! - resolvido com longClick num evento (cardview)
 obter sequencias para cada user done! - getDaily().removeUniCluster().removeShort();
 sequenceMatching done! - algoritmo revisto! expand clean up; prune only at the end and after uni; 
 					agora recebe sequencias agregadas!! (vertexInfo tem arriving e leaving Time)
-score gerado com similar sequences!
-score gerado com cluster activity!
+finalScore done! - gerado com similar sequences + clister activity
+writeFriendsFirebase done!
 
 Tomorrow:
-testar valores para o finalScore
-adicionar vertente layer
-adicionar vertente popularidade
+security rules
 
+testar valores para o finalScore
+
+??? - adicionar vertente layer/adicionar vertente popularidade - ?? not sure if needed
+
+artigos mail
+geofire - favoritos
 
 por alert dialog antes de ir para directions
 testar workload/furthest!!

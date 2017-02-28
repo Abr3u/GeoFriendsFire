@@ -14,28 +14,32 @@ import net.thegreshams.firebase4j.error.FirebaseException;
 import net.thegreshams.firebase4j.error.JacksonUtilityException;
 import net.thegreshams.firebase4j.model.FirebaseResponse;
 import net.thegreshams.firebase4j.service.Firebase;
+import pt.utl.ist.meic.domain.UserProfile;
 
 public class FirebaseHelper {
 	
 	private static final String FIREBASE_URL = "https://geofriendsfire.firebaseio.com";
 	
-	private static void writeNewClustersFirebase(List<ClusterWithMean> globalClusters, int level)
+	
+	
+	
+	public static void writeNewClustersFirebase(List<ClusterWithMean> globalClusters, int level,long totalCheckIns)
 			throws FirebaseException, JacksonUtilityException, UnsupportedEncodingException {
 
 		deleteClustersFirebase(level);
 
-		Firebase firebase;
-		if (level == 0) {
-			firebase = new Firebase(FIREBASE_URL + "/clusters");
-		} else {
-			firebase = new Firebase(FIREBASE_URL + "/clustersLevel" + level);
-		}
+		Firebase firebase = new Firebase(FIREBASE_URL + "/clusters" + level);
+		
 		for (int i = 0; i < globalClusters.size(); i++) {
-			// "POST cluster to /clusters
+			// "PUT cluster to /clusters
 			Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
-			dataMap.put("clusterMean", globalClusters.get(i).getmean().toString());
-			FirebaseResponse response = firebase.post("cluster" + i, dataMap);
-			System.out.println("\n\nResult of POST cluster:\n" + response.getRawBody().toString());
+			dataMap.put("mean", globalClusters.get(i).getmean().toString());
+			dataMap.put("size", globalClusters.get(i).getVectors().size());
+			dataMap.put("sizePerc", new Double(globalClusters.get(i).getVectors().size()) / totalCheckIns);
+			
+			
+			FirebaseResponse response = firebase.put("cluster" + i, dataMap);
+			System.out.println("\n\nResult of PUT cluster:\n" + response.getRawBody().toString());
 			System.out.println("\n");
 		}
 
@@ -44,12 +48,32 @@ public class FirebaseHelper {
 
 	private static void deleteClustersFirebase(int level) throws FirebaseException, UnsupportedEncodingException {
 		Firebase firebase = new Firebase(FIREBASE_URL);
-		FirebaseResponse response;
-		if (level == 0) {
-			response = firebase.delete("clusters");
-		} else {
-			response = firebase.delete("clustersLevel" + level);
+		FirebaseResponse response = firebase.delete("clusters" + level);
+		System.out.println(response.getBody().toString());
+	}
+	
+	public static void writeNewFriendsFirebase(List<UserProfile> profiles)
+			throws FirebaseException, JacksonUtilityException, UnsupportedEncodingException {
+
+		deleteFriendsFirebase();
+
+		Firebase firebase = new Firebase(FIREBASE_URL + "/friends");
+		for (UserProfile profile : profiles) {
+			// "POST cluster to /clusters
+			Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
+			dataMap.putAll(profile.getSimilarities());
+			
+			FirebaseResponse response = firebase.put("user"+profile.userId, dataMap);
+			System.out.println("\n\nResult of PUT friends:\n" + response.getRawBody().toString());
+			System.out.println("\n");
 		}
+
+	}
+
+
+	private static void deleteFriendsFirebase() throws FirebaseException, UnsupportedEncodingException {
+		Firebase firebase = new Firebase(FIREBASE_URL);
+		FirebaseResponse response = firebase.delete("friends");
 		System.out.println(response.getBody().toString());
 	}
 }
