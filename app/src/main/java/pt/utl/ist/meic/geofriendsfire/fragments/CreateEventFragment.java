@@ -40,7 +40,6 @@ public class CreateEventFragment extends Fragment {
     TextView eventDescription;
 
     private DatabaseReference mDatabase;
-    private Context mContext;
 
 
     @Override
@@ -55,12 +54,12 @@ public class CreateEventFragment extends Fragment {
     @OnClick(R.id.createEventButton)
     public void createNewEventButtonClicked() {
 
-        GPSTracker mGpsTracker = new GPSTracker(mContext);
+        GPSTracker mGpsTracker = new GPSTracker(getContext());
 
         if (!mGpsTracker.canGetLocation()) {
-            Toast.makeText(mContext, "can not get location", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "can not get location", Toast.LENGTH_LONG).show();
         }else if(eventDescription.getText().toString().trim().isEmpty()){
-            Toast.makeText(mContext, "plz provide an event description", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "plz provide an event description", Toast.LENGTH_SHORT).show();
         }
         else {
             double latitude = mGpsTracker.getLatitude();
@@ -71,8 +70,8 @@ public class CreateEventFragment extends Fragment {
             SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
             String creationDate = df.format(new Date());
 
-            String myId = ((MyApplicationContext)mContext.getApplicationContext()).getFirebaseUser().getUid();
-            String myName = ((MyApplicationContext)mContext.getApplicationContext()).getFirebaseUser().getDisplayName();
+            String myId = ((MyApplicationContext)getContext().getApplicationContext()).getFirebaseUser().getUid();
+            String myName = ((MyApplicationContext)getContext().getApplicationContext()).getFirebaseUser().getDisplayName();
 
             Event newEvent = new Event(myId,myName,description ,category,creationDate);
 
@@ -91,11 +90,7 @@ public class CreateEventFragment extends Fragment {
             GeoFire geoFire = new GeoFire(ref);
             geoFire.setLocation(eventID, new GeoLocation(latitude, longitude));
 
-            ((DrawerMainActivity)mContext).setupViewPagerEvents();
+            ((DrawerMainActivity)getContext()).setupViewPagerEvents();
         }
-    }
-
-    public void setContext(Context context) {
-        this.mContext = context;
     }
 }

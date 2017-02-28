@@ -199,6 +199,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
                                 mDrawerLayout.closeDrawers();
                                 return true;
                             case R.id.nav_friends:
+                                setupViewPagerFriends();
                                 mDrawerLayout.closeDrawers();
                                 return true;
                             case R.id.nav_settings:
@@ -213,6 +214,12 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
                 }
 
         );
+    }
+
+    public void setupViewPagerFriends() {
+        mAdapter.clear();
+        mAdapter.add(FragmentKeys.Friends);
+        mTabLayout.setVisibility(View.GONE);
     }
 
     public void setupViewPagerEvents() {

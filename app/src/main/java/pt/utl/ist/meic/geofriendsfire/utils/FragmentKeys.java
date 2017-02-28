@@ -9,7 +9,8 @@ public enum FragmentKeys {
     EventsNearby,
     MyEvents,
     EventDetailsMap,
-    CreateEvent;
+    CreateEvent,
+    Friends;
 
 
     public String getPageTitle(){

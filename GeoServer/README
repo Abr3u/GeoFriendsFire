@@ -51,28 +51,30 @@ sequenceMatching done! - algoritmo revisto! expand clean up; prune only at the e
 					agora recebe sequencias agregadas!! (vertexInfo tem arriving e leaving Time)
 finalScore done! - gerado com similar sequences + clister activity
 writeFriendsFirebase done!
+friends tab android done!
 
 Tomorrow:
-security rules
+ver diffs entre meus amigos e amigos reais
+ver medidas de listas ordenadas, discussao proj
+
+geofire - favoritos
+artigos mail
 
 testar valores para o finalScore
+testar workload/furthest!!
+
 
 ??? - adicionar vertente layer/adicionar vertente popularidade - ?? not sure if needed
-
-artigos mail
-geofire - favoritos
-
-por alert dialog antes de ir para directions
-testar workload/furthest!!
 
 ver exemplos de rxJava de onlineDetection;
 ver exemplos de rxJava de polling
 
+Extra:
+por alert dialog antes de ir para directions
+userDetails
+security rules
 track de localizacoes - maybe RxLocation?
 clustering de markers, mapa style
-
-Extra:
-criar anotation para ver se tem wifi/gps
-mvvm
+mvvm, mvp
 mostrar ao user os seus clusters?
 api google maps, directions, places, roads;
