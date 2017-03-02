@@ -58,7 +58,7 @@ public class GeoServer {
 
 	private static long mTotalCheckIns = 130425;//newYork
 	
-	private static int testTotalUsers = 500;
+	private static int testTotalUsers = 6652;
 	private static double testPrct = 0.7;
 
 	public static void main(String[] args) throws ParseException, IOException {
@@ -67,20 +67,20 @@ public class GeoServer {
 		 
 		 //mFileManager.getNumberFriends(testTotalUsers);
 		
-//		 initGlobalClustersList();
-////		 initGlobalPercentages();
-////		 initGlobalCheckIns();
-//		 initUserProfiles(mFileManager.getIdListFromFile(testTotalUsers));
-//		
-//		 calculateGraphs(mFileManager,"0");
-//		 calculateSimilarities();
+		 initGlobalClustersList();
+//		 initGlobalPercentages();
+//		 initGlobalCheckIns();
+		 initUserProfiles(mFileManager.getIdListFromFile(testTotalUsers));
+		
+		 calculateGraphs(mFileManager,"0");
+		 calculateSimilarities();
 //		 
 		 String friendsPath = "friends70of"+testTotalUsers+".csv";
 		 String foundPath = "found70of"+testTotalUsers+".csv";
 //		 
-//		 int limit = (int) (testPrct * testTotalUsers);
-//		 mFileManager.createCsvSimilarities(usersProfiles, friendsPath,limit);
-//		 mFileManager.createFoundCSV(friendsPath,testTotalUsers);
+		 int limit = (int) (testPrct * testTotalUsers);
+		 mFileManager.createCsvSimilarities(usersProfiles, friendsPath,limit);
+		 mFileManager.createFoundCSV(friendsPath,testTotalUsers);
 		 mFileManager.createFoundPercentageCSV(foundPath, testTotalUsers);
 		 
 //		try {
