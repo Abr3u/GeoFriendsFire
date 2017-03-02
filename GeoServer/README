@@ -30,7 +30,12 @@ cluster 2 // 0.35239409622388346%
 cluster 3 // 0.12719187272378762%
 cluster 4 // 0.3956756756756757%
 
-__________________________________________
+
+500 users , 265157 friends
+500 users , top 70% - 2511 friends found
+
+
+____________________________________
 
 
 But you can write a generic class ValueHolder<T> and mark the variable of it final! 
@@ -49,18 +54,18 @@ direction done! - resolvido com longClick num evento (cardview)
 obter sequencias para cada user done! - getDaily().removeUniCluster().removeShort();
 sequenceMatching done! - algoritmo revisto! expand clean up; prune only at the end and after uni; 
 					agora recebe sequencias agregadas!! (vertexInfo tem arriving e leaving Time)
-finalScore done! - gerado com similar sequences + clister activity
+finalScore done! - gerado com similar sequences + cluster activity
 writeFriendsFirebase done!
 friends tab android done!
+friendsFound done! - absolute and percentage
 
 Tomorrow:
-ver diffs entre meus amigos e amigos reais
+ver diffs entre meus amigos e amigos reais -> ajustar parametros - score / percentagem de amigos usada
 ver medidas de listas ordenadas, discussao proj
 
 geofire - favoritos
 artigos mail
 
-testar valores para o finalScore
 testar workload/furthest!!
 
 

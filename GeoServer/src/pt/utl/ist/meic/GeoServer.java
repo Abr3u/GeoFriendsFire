@@ -57,24 +57,37 @@ public class GeoServer {
 	private static List<UserProfile> usersProfiles;
 
 	private static long mTotalCheckIns = 130425;//newYork
+	
+	private static int testTotalUsers = 500;
+	private static double testPrct = 0.7;
 
 	public static void main(String[] args) throws ParseException, IOException {
 
 		 FileManager mFileManager = new FileManager();
-		
-		 initGlobalClustersList();
-//		 initGlobalPercentages();
-//		 initGlobalCheckIns();
-		 initUserProfiles(mFileManager.getIdListFromFile());
-		
-		 calculateGraphs(mFileManager,"0");
-		 calculateSimilarities();
 		 
-		try {
-			FirebaseHelper.writeNewFriendsFirebase(usersProfiles);
-		} catch (FirebaseException | JacksonUtilityException e) {
-			e.printStackTrace();
-		}
+		 //mFileManager.getNumberFriends(testTotalUsers);
+		
+//		 initGlobalClustersList();
+////		 initGlobalPercentages();
+////		 initGlobalCheckIns();
+//		 initUserProfiles(mFileManager.getIdListFromFile(testTotalUsers));
+//		
+//		 calculateGraphs(mFileManager,"0");
+//		 calculateSimilarities();
+//		 
+		 String friendsPath = "friends70of"+testTotalUsers+".csv";
+		 String foundPath = "found70of"+testTotalUsers+".csv";
+//		 
+//		 int limit = (int) (testPrct * testTotalUsers);
+//		 mFileManager.createCsvSimilarities(usersProfiles, friendsPath,limit);
+//		 mFileManager.createFoundCSV(friendsPath,testTotalUsers);
+		 mFileManager.createFoundPercentageCSV(foundPath, testTotalUsers);
+		 
+//		try {
+//			FirebaseHelper.writeNewFriendsFirebase(usersProfiles);
+//		} catch (FirebaseException | JacksonUtilityException e) {
+//			e.printStackTrace();
+//		}
 
 		// applyKmeans(pathKmeansNewYorkCSV);
 
@@ -121,7 +134,7 @@ public class GeoServer {
 		Graph graph;
 
 		for (UserProfile profile : usersProfiles) {
-			userCheckIns = fileManager.getUserCheckInsCsv(profile.userId, false);
+			userCheckIns = fileManager.getUserCheckInsCsv(profile.userId);
 			graph = getUserGraphFromCheckIns(userCheckIns);
 			profile.addNewGraph(level, graph);
 		}
@@ -133,13 +146,6 @@ public class GeoServer {
 			UserProfile profile = new UserProfile(id);
 			usersProfiles.add(profile);
 		}
-		// TODO: remove pedrada
-		UserProfile profile = new UserProfile("578");
-		usersProfiles.add(profile);
-		profile = new UserProfile("842");
-		usersProfiles.add(profile);
-		profile = new UserProfile("1810");
-		usersProfiles.add(profile);
 	}
 
 	private static void testUserSimilarity(FileManager mFileManager) throws ParseException, IOException {
@@ -147,25 +153,25 @@ public class GeoServer {
 		List<CheckIn> userCheckIns;
 		Graph graph;
 
-		userCheckIns = mFileManager.getUserCheckInsCsv("22", false);
+		userCheckIns = mFileManager.getUserCheckInsCsv("22");
 		graph = getUserGraphFromCheckIns(userCheckIns);
 		UserProfile profile22 = new UserProfile("22");
 		profile22.addNewGraph("0", graph);
 		usersProfiles.add(profile22);
 
-		userCheckIns = mFileManager.getUserCheckInsCsv("578", false);
+		userCheckIns = mFileManager.getUserCheckInsCsv("578");
 		graph = getUserGraphFromCheckIns(userCheckIns);
 		UserProfile profile578 = new UserProfile("578");
 		profile578.addNewGraph("0", graph);
 		usersProfiles.add(profile578);
 
-		userCheckIns = mFileManager.getUserCheckInsCsv("842", false);
+		userCheckIns = mFileManager.getUserCheckInsCsv("842");
 		graph = getUserGraphFromCheckIns(userCheckIns);
 		UserProfile profile842 = new UserProfile("842");
 		profile842.addNewGraph("0", graph);
 		usersProfiles.add(profile842);
 
-		userCheckIns = mFileManager.getUserCheckInsCsv("1810", false);
+		userCheckIns = mFileManager.getUserCheckInsCsv("1810");
 		graph = getUserGraphFromCheckIns(userCheckIns);
 		UserProfile profile1810 = new UserProfile("1810");
 		profile1810.addNewGraph("0", graph);

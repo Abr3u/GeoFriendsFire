@@ -1,5 +1,6 @@
 package pt.utl.ist.meic.utility;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -15,7 +16,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -36,7 +39,12 @@ public class FileManager {
 	private static final String NEW_LINE_SEPARATOR = "\n";
 
 	private static final String pathGlobalCSV = "C:/Users/ricar/Desktop/dataset/Gowalla_totalCheckins.csv";
-	private static final String pathNewYorkCSV = "C:/Users/ricar/Desktop/dataset/newYork.csv";
+	private static final String pathNewYorkCSV = "C:/Users/ricar/Desktop/dataset/newYork.csv";// users
+																								// e
+																								// datas
+	private static final String pathUserCheckInsCSV = "C:/Android/GeoFriendsFire/GeoServer/dataset/usersCI/";
+	private static final String pathGowallaFriends = "C:/Android/GeoFriendsFire/GeoServer/dataset/Gowalla_edges.csv";
+	private static final String pathGowallaFriendCount = "C:/Android/GeoFriendsFire/GeoServer/dataset/friendCount.csv";
 
 	// New York
 	private static final Double LOW_LATI = 40.543155;
@@ -44,32 +52,7 @@ public class FileManager {
 	private static final Double LOW_LONGI = -74.056834;
 	private static final Double HIGH_LONGI = -73.726044;
 
-	// StayPoint filtering
-	private static final int SP_MAX_TIME_SECONDS = 30 * 60;
-
 	private List<CheckIn> userCheckIns;
-	
-	
-	public List<String> stuff2() throws IOException, ParseException {
-		//gets the Ids of the users from new york
-		System.out.println("stuff2");
-		Reader in = new FileReader(pathNewYorkCSV);
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
-		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
-		List<String> idsList = new ArrayList<String>();
-		String lastId = "";
-		for (CSVRecord record : records) {
-			String userId = String.valueOf(record.get(0));
-			Date date = df.parse(record.get(3));
-			Double latitude = Double.parseDouble(record.get(1));
-			Double longitude = Double.parseDouble(record.get(2));
-			if(!userId.equals(lastId)){
-				idsList.add(userId);
-				lastId = userId;
-			}
-		}
-		return idsList;
-	}
 
 	public void stuff() throws IOException, ParseException {
 		// creating newYork.csv from global
@@ -140,12 +123,14 @@ public class FileManager {
 
 	}
 
-	public List<CheckIn> getUserCheckInsCsv(String userId, boolean createCSV) throws ParseException, IOException {
+	public List<CheckIn> getUserCheckInsCsv(String userId) throws ParseException, IOException {
 		userCheckIns = new ArrayList<CheckIn>();
 		Reader in;
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 		int userIdInt = Integer.parseInt(userId);
-		if (createCSV) {
+		String userCheckInsPath = pathUserCheckInsCSV + userId + ".csv";
+		File file = new File(userCheckInsPath);
+		if (!file.exists()) {
 			// checkIns do utilizador do csv global
 			in = new FileReader(pathNewYorkCSV);
 			Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
@@ -169,11 +154,11 @@ public class FileManager {
 
 			}
 			System.out.println("criar csv para user " + userId + " com tamanho -> " + userCheckIns.size());
-			createCsvCheckIns(userId + ".csv");
+			createCsvCheckIns(userCheckInsPath);
 			return userCheckIns;
 		} else {
 			// checkIns do csv do utilizador
-			in = new FileReader(userId + ".csv");
+			in = new FileReader(userCheckInsPath);
 			Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 			for (CSVRecord record : records) {
 				Date date = df.parse(record.get(2));
@@ -215,7 +200,7 @@ public class FileManager {
 
 		}
 	}
-	
+
 	public void createCsvCheckIns(String fileName) {
 		System.out.println("createCsvStayPoints");
 		FileWriter fileWriter = null;
@@ -250,31 +235,30 @@ public class FileManager {
 
 		}
 	}
-	
-	public void createCsvSimilarities(List<UserProfile> profiles, String fileName) {
+
+	public void createCsvSimilarities(List<UserProfile> profiles, String fileName, int limit) {
 		System.out.println("createCsvSimilarities");
 
 		try {
-		 final FileWriter fileWriter = new FileWriter(fileName);
+			final FileWriter fileWriter = new FileWriter(fileName);
 
 			// Write a new point object to the CSV file
-			for(UserProfile profile : profiles){				
+			for (UserProfile profile : profiles) {
 				profile.getSimilarities().entrySet().stream()
-				.sorted(Map.Entry.<String, Double>comparingByValue().reversed())
-				.forEach(x->{
-					
-					try {
-						fileWriter.append(String.valueOf(profile.userId));
-						fileWriter.append(DELIMITER);
-						fileWriter.append(String.valueOf(x.getKey()));
-						fileWriter.append(DELIMITER);
-						fileWriter.append(String.valueOf(x.getValue()));
-						fileWriter.append(NEW_LINE_SEPARATOR);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				});
+						.sorted(Map.Entry.<String, Double>comparingByValue().reversed()).limit(limit).forEach(x -> {
+
+							try {
+								fileWriter.append(String.valueOf(profile.userId));
+								fileWriter.append(DELIMITER);
+								fileWriter.append(String.valueOf(x.getKey()));
+								fileWriter.append(DELIMITER);
+								fileWriter.append(String.valueOf(x.getValue()));
+								fileWriter.append(NEW_LINE_SEPARATOR);
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						});
 			}
 			fileWriter.flush();
 			fileWriter.close();
@@ -287,25 +271,231 @@ public class FileManager {
 		}
 	}
 
-	public List<String> getIdListFromFile() {
-		//limited to 10
+	public List<String> getIdListFromFile(int limit) {
+		// limited to 400
 		List<String> toReturn = new ArrayList<String>();
 
 		Path path = Paths.get("C:/Android/GeoFriendsFire/GeoServer/userIds.txt");
-        try (Stream<String> lines = Files.lines(path)) {
-            lines.limit(10).forEach(s -> {
-            	if(!s.isEmpty()){
-            		toReturn.add(s);
-            	}
-            });
-        } catch (IOException ex) {
-        	
-        }
-		System.out.println(toReturn.size()+" unique Ids");
+		try (Stream<String> lines = Files.lines(path)) {
+			lines.limit(limit).forEach(s -> {
+				if (!s.isEmpty()) {
+					toReturn.add(s);
+				}
+			});
+		} catch (IOException ex) {
+
+		}
+		System.out.println(toReturn.size() + " unique Ids");
 		return toReturn;
 	}
+
+	private void createCsvFriendsFound(String fileName, Map<String, Integer> friendsFound, int totalFound) {
+		System.out.println("createCsvFriendsFound");
+		FileWriter fileWriter = null;
+
+		try {
+			fileWriter = new FileWriter(fileName);
+
+			// Write a new point object to the CSV file
+			for (Map.Entry<String, Integer> entry : friendsFound.entrySet()) {
+				fileWriter.append(String.valueOf(entry.getKey()));
+				fileWriter.append(DELIMITER);
+				fileWriter.append(String.valueOf(entry.getValue()));
+				fileWriter.append(NEW_LINE_SEPARATOR);
+			}
+			// fileWriter.append(String.valueOf(totalFound));
+
+			System.out.println("CSV file was created successfully !!!");
+
+		} catch (Exception e) {
+			System.out.println("Error in CsvFileWriter !!!");
+			e.printStackTrace();
+		} finally {
+
+			try {
+				fileWriter.flush();
+				fileWriter.close();
+			} catch (IOException e) {
+				System.out.println("Error while flushing/closing fileWriter !!!");
+				e.printStackTrace();
+			}
+
+		}
+	}
 	
-	
+	private void createCsvFriendsFoundPrct(String fileName, HashMap<String,Double> user_foundTotal, int totalFound) {
+		System.out.println("createCsvFriendsFoundPrct");
+		FileWriter fileWriter = null;
+
+		try {
+			fileWriter = new FileWriter(fileName);
+
+			// Write a new point object to the CSV file
+			for (Map.Entry<String, Double> entry : user_foundTotal.entrySet()) {
+				fileWriter.append(String.valueOf(entry.getKey()));
+				fileWriter.append(DELIMITER);
+				fileWriter.append(String.valueOf(entry.getValue()));
+				fileWriter.append(NEW_LINE_SEPARATOR);
+			}
+			// fileWriter.append(String.valueOf(totalFound));
+
+			System.out.println("CSV file was created successfully !!!");
+
+		} catch (Exception e) {
+			System.out.println("Error in CsvFileWriter !!!");
+			e.printStackTrace();
+		} finally {
+
+			try {
+				fileWriter.flush();
+				fileWriter.close();
+			} catch (IOException e) {
+				System.out.println("Error while flushing/closing fileWriter !!!");
+				e.printStackTrace();
+			}
+
+		}
+	}
+
+	private void convertTXTtoCSV() throws IOException {
+		final Path path = Paths.get("C:/Users/ricar/Desktop/dataset/");
+		final Path txt = path.resolve("Gowalla_edges.txt");
+		final Path csv = path.resolve("Gowalla_edges.csv");
+		try (final Stream<String> lines = Files.lines(txt);
+				final PrintWriter pw = new PrintWriter(Files.newBufferedWriter(csv, StandardOpenOption.CREATE_NEW))) {
+			lines.map((line) -> line.split("\\s+")).map((line) -> Stream.of(line).collect(Collectors.joining(",")))
+					.forEach(pw::println);
+		}
+	}
+
+	public void getNumberFriends(int numberUsers) throws IOException, ParseException {
+		// gets the number of friends
+		System.out.println("get Number of friends for first " + numberUsers + " users");
+		Reader in = new FileReader(pathGowallaFriends);
+
+		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
+		Map<String, Integer> user_friends = new HashMap<String, Integer>();
+		String lastId = records.iterator().next().get(0);
+		int count = 0;
+		for (CSVRecord record : records) {
+			String userId = String.valueOf(record.get(0));
+			// primeiros 500 acabam no 3314
+			if (Integer.parseInt(userId) <= 3314) {
+				if (!userId.equals(lastId)) {
+					user_friends.put(lastId, count);
+					lastId = userId;
+					count = 1;
+				} else {
+					count++;
+				}
+			}
+		}
+		user_friends.put(lastId, count);
+
+		FileWriter fileWriter = null;
+
+		try {
+			fileWriter = new FileWriter("friendCount.csv");
+
+			// Write a new point object to the CSV file
+			for (Map.Entry<String, Integer> entry : user_friends.entrySet()) {
+				fileWriter.append(String.valueOf(entry.getKey()));
+				fileWriter.append(DELIMITER);
+				fileWriter.append(String.valueOf(entry.getValue()));
+				fileWriter.append(NEW_LINE_SEPARATOR);
+			}
+			int totalFound = user_friends.entrySet().stream().mapToInt(x -> x.getValue()).sum();
+			// fileWriter.append(String.valueOf(totalFound));
+
+			System.out.println("CSV file was created successfully !!!");
+
+		} catch (Exception e) {
+			System.out.println("Error in CsvFileWriter !!!");
+			e.printStackTrace();
+		} finally {
+
+			try {
+				fileWriter.flush();
+				fileWriter.close();
+			} catch (IOException e) {
+				System.out.println("Error while flushing/closing fileWriter !!!");
+				e.printStackTrace();
+			}
+
+		}
+		System.out.println("createCSVFriendCount --- END");
+
+	}
+
+	public void createFoundCSV(String geofriends, int total) throws IOException {
+		Map<String, List<String>> gowalla_friends = new HashMap<String, List<String>>();
+
+		Reader in = new FileReader(pathGowallaFriends);
+		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
+		for (CSVRecord record : records) {
+			String key = record.get(0);
+			String value = record.get(1);
+			if (gowalla_friends.containsKey(key)) {
+				ArrayList<String> aux = new ArrayList<String>(gowalla_friends.get(key));
+				aux.add(value);
+				gowalla_friends.put(key, aux);
+			} else {
+				gowalla_friends.put(key, new ArrayList<String>() {
+					{
+						add(value);
+					}
+				});
+			}
+		}
+
+		HashMap<String, Integer> user_friendsFound = new HashMap<String, Integer>();
+		in = new FileReader(geofriends);
+		records = CSVFormat.EXCEL.parse(in);
+		for (CSVRecord record : records) {
+			String key = record.get(0);
+			String value = record.get(1);
+			if (gowalla_friends.containsKey(key)) {
+				for (String friend : gowalla_friends.get(key)) {
+					if (friend.equals(value)) {
+						// increment number of friends found
+						if (user_friendsFound.containsKey(key)) {
+							user_friendsFound.put(key, user_friendsFound.get(key) + 1);
+						} else {
+							user_friendsFound.put(key, 1);
+						}
+					}
+				}
+			}
+		}
+		int totalFound = user_friendsFound.entrySet().stream().mapToInt(x -> x.getValue()).sum();
+		createCsvFriendsFound("found70of" + total + ".csv", user_friendsFound, totalFound);
+	}
+
+	public void createFoundPercentageCSV(String geofriends, int total) throws IOException {
+		Map<String, Integer> user_friendCount = new HashMap<String, Integer>();
+
+		Reader in = new FileReader(pathGowallaFriendCount);
+		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
+		for (CSVRecord record : records) {
+			String key = record.get(0);
+			Integer value = Integer.parseInt(record.get(1));
+			user_friendCount.put(key, value);
+		}
+
+		HashMap<String,Double> user_foundTotal = new HashMap<String,Double>();
+		in = new FileReader(geofriends);
+		records = CSVFormat.EXCEL.parse(in);
+		for (CSVRecord record : records) {
+			String key = record.get(0);
+			String value = record.get(1);
+			if (user_friendCount.containsKey(key)) {
+				//found,total
+				user_foundTotal.put(key, Double.parseDouble(value) / user_friendCount.get(key));
+			}
+		}
+		createCsvFriendsFoundPrct("found70of" + total + "Prct.csv", user_foundTotal, total);
+	}
+
 	private class Auxiliar {
 		public DataPoint mDataPoint;
 		private DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
@@ -323,7 +513,5 @@ public class FileManager {
 		}
 
 	}
-
-	
 
 }
