@@ -1,42 +1,5 @@
-USA
-latitude 25 50
-longitude -125 -70
-=
-3670300
-
-New York
-inferior left -> 40.543155, -74.056834
-superior right -> 40.904894, -73.726044
-=
-130425
-
-Kmeans clusters
-k=2 -> 3.2098474496243083E-9
-k=4 -> 4.671376571847712E-10
-k=5 -> 2.701799675821211E-10
-k=6 -> 2.356666682945554E-10
-k=8 -> 2.1862730014317916E-10
-
-
-cluster 0 // 11467.0 points
-cluster 1 // 4802.0 points
-cluster 2 // 45961.0 points
-cluster 3 // 16589.0 points
-cluster 4 // 51606.0 points
-
-cluster 0 // 0.08792026068621814%
-cluster 1 // 0.036818094690435114%
-cluster 2 // 0.35239409622388346%
-cluster 3 // 0.12719187272378762%
-cluster 4 // 0.3956756756756757%
-
-
-500 users , 265157 friends
-500 users , top 70% - 2511 friends found
-
-
-____________________________________
-
+______________________________
+Stuff:
 
 But you can write a generic class ValueHolder<T> and mark the variable of it final! 
 And then just instead of "a = val" you write "aHolder.setValue(val)"! It's so easy!
@@ -58,21 +21,25 @@ finalScore done! - gerado com similar sequences + cluster activity
 writeFriendsFirebase done!
 friends tab android done!
 friendsFound done! - absolute and percentage
+medidas - prctFriendsFound per User
+		- overall precision
+		- overall recall
 
 Tomorrow:
-ver diffs entre meus amigos e amigos reais -> ajustar parametros - score / percentagem de amigos usada
+SERVER
+aumentar scope - pensar em como criar os novos datasets necessarios!!
+pensar em como normalizar seq score com activity score numa escala. para depois poder mudar as percentagens.
 ver medidas de listas ordenadas, discussao proj
-
 geofire - favoritos
 artigos mail
 
+APP
 testar workload/furthest!!
-
-
-??? - adicionar vertente layer/adicionar vertente popularidade - ?? not sure if needed
-
 ver exemplos de rxJava de onlineDetection;
 ver exemplos de rxJava de polling
+
+??? - adicionar vertente layer/adicionar vertente popularidade - ?? not sure if needed
+??? - porquE K-means??
 
 Extra:
 por alert dialog antes de ir para directions
@@ -83,3 +50,25 @@ clustering de markers, mapa style
 mvvm, mvp
 mostrar ao user os seus clusters?
 api google maps, directions, places, roads;
+_________________________________________________
+
+Brainstorm
+
+\item Precision is the ratio of the number of relevant friends suggested relative to the total number of friends suggested -
+\item Recall is the ratio of the number of relevant friends suggested relative to the total number of relevant friends - found! - encontrados/real
+
+
+\item Precision is the ratio of totalFound relative to the total number of friends suggested in geofire
+\item Recall is the ratio of totalFound relative to the total number of relevant friends in gowalla
+
+
+
+
+
+
+
+
+
+
+
+

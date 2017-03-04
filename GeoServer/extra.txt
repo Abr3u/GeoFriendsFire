@@ -1,0 +1,95 @@
+Geographical Stats
+
+USA
+latitude 25 50
+longitude -125 -70
+=
+3670300
+
+New York
+inferior left -> 40.543155, -74.056834
+superior right -> 40.904894, -73.726044
+=
+130425
+
+Kmeans clusters
+k=2 -> 3.2098474496243083E-9
+k=4 -> 4.671376571847712E-10
+k=5 -> 2.701799675821211E-10
+k=6 -> 2.356666682945554E-10
+k=8 -> 2.1862730014317916E-10
+
+
+cluster 0 // 11467.0 points
+cluster 1 // 4802.0 points
+cluster 2 // 45961.0 points
+cluster 3 // 16589.0 points
+cluster 4 // 51606.0 points
+
+cluster 0 // 0.08792026068621814%
+cluster 1 // 0.036818094690435114%
+cluster 2 // 0.35239409622388346%
+cluster 3 // 0.12719187272378762%
+cluster 4 // 0.3956756756756757%
+___________________________________________________________________
+Statistics
+
+usando users de NY que têm pelo menos um amigo em NY - 340 users
+sugerindo 50% - 170 users;
+comparando top5 seqs de cada
+seq - somatorio [tamanho (m) da seq(i) * 2^(m-1)]
+act - percentagem (0-100) de parecença entre U1 e U2
+
+_________________________________________________
+Result1:
+finalScore = 0.6seqScore + 0.4actScore
+
+precision 0.030761245674740485
+recall 0.5594713656387665
+_________________________________________________
+Result2:
+finalScore = seqScore + actScore;
+
+precision 0.030813148788927335
+recall 0.5604153555695406
+_________________________________________________
+Result3:
+finalScore = actScore;
+
+precision 0.030847750865051902
+recall 0.5610446821900567
+_________________________________________________
+Result4:
+finalScore = seqScore;
+
+precision 0.03152249134948097
+recall 0.5733165512901196
+_________________________________________________
+Result5:
+finalScore = 10seqScore + actScore
+
+precision 0.030951557093425605
+recall 0.5629326620516047
+_________________________________________________
+Result6:
+finalScore = 100seqScore + actScore
+
+precision 0.03134948096885813
+recall 0.5701699181875394
+_________________________________________________
+Result7:
+finalScore = seqScore
+top 50 seqs
+
+precision 0.03155709342560554
+recall 0.5739458779106357
+
+
+
+
+
+
+
+
+
+

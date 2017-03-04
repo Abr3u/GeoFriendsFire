@@ -58,33 +58,35 @@ public class GeoServer {
 
 	private static long mTotalCheckIns = 130425;//newYork
 	
-	private static int testTotalUsers = 6652;
-	private static double testPrct = 0.7;
+	private static int totalSuggested = 170;
 
 	public static void main(String[] args) throws ParseException, IOException {
 
 		 FileManager mFileManager = new FileManager();
-		 
-		 //mFileManager.getNumberFriends(testTotalUsers);
+		 List<String> idList = mFileManager.getIdListFromFileNy();
+		 int totalUsers = idList.size();
 		
+		 String friendsPath = "friends"+totalSuggested+"of"+totalUsers+".csv";
+		 String foundPath = "found"+totalSuggested+"of"+totalUsers+".csv";
+		 String foundPrctPath = "foundPRCT"+totalSuggested+"of"+totalUsers+".csv";
+		 
 		 initGlobalClustersList();
 //		 initGlobalPercentages();
 //		 initGlobalCheckIns();
-		 initUserProfiles(mFileManager.getIdListFromFile(testTotalUsers));
+		 initUserProfiles(idList);
 		
 		 calculateGraphs(mFileManager,"0");
 		 calculateSimilarities();
-//		 
-		 String friendsPath = "friends70of"+testTotalUsers+".csv";
-		 String foundPath = "found70of"+testTotalUsers+".csv";
-//		 
-		 int limit = (int) (testPrct * testTotalUsers);
-		 mFileManager.createCsvSimilarities(usersProfiles, friendsPath,limit);
-		 mFileManager.createFoundCSV(friendsPath,testTotalUsers);
-		 mFileManager.createFoundPercentageCSV(foundPath, testTotalUsers);
 		 
+		 mFileManager.createCsvSimilarities(usersProfiles, friendsPath,totalSuggested);
+		 mFileManager.createFoundCSV(friendsPath,foundPath);
+		 mFileManager.createFoundPrctCSV(foundPath,foundPrctPath);
+		 
+		 System.out.println("precision "+mFileManager.calculatePrecision(foundPath,totalSuggested));
+		 System.out.println("recall "+mFileManager.calculateRecall(foundPath,totalUsers));
+//		 
 //		try {
-//			FirebaseHelper.writeNewFriendsFirebase(usersProfiles);
+//			FirebaseHelper.writeNewFriendsFirebase(usersProfiles,5,10);
 //		} catch (FirebaseException | JacksonUtilityException e) {
 //			e.printStackTrace();
 //		}
@@ -148,39 +150,6 @@ public class GeoServer {
 		}
 	}
 
-	private static void testUserSimilarity(FileManager mFileManager) throws ParseException, IOException {
-
-		List<CheckIn> userCheckIns;
-		Graph graph;
-
-		userCheckIns = mFileManager.getUserCheckInsCsv("22");
-		graph = getUserGraphFromCheckIns(userCheckIns);
-		UserProfile profile22 = new UserProfile("22");
-		profile22.addNewGraph("0", graph);
-		usersProfiles.add(profile22);
-
-		userCheckIns = mFileManager.getUserCheckInsCsv("578");
-		graph = getUserGraphFromCheckIns(userCheckIns);
-		UserProfile profile578 = new UserProfile("578");
-		profile578.addNewGraph("0", graph);
-		usersProfiles.add(profile578);
-
-		userCheckIns = mFileManager.getUserCheckInsCsv("842");
-		graph = getUserGraphFromCheckIns(userCheckIns);
-		UserProfile profile842 = new UserProfile("842");
-		profile842.addNewGraph("0", graph);
-		usersProfiles.add(profile842);
-
-		userCheckIns = mFileManager.getUserCheckInsCsv("1810");
-		graph = getUserGraphFromCheckIns(userCheckIns);
-		UserProfile profile1810 = new UserProfile("1810");
-		profile1810.addNewGraph("0", graph);
-		usersProfiles.add(profile1810);
-
-		calculateSimilarities();
-
-	}
-
 	private static void calculateSimilarities() {
 		for (int i = 0; i < usersProfiles.size(); i++) {
 			for (int j = 0; j < usersProfiles.size(); j++) {
@@ -189,139 +158,12 @@ public class GeoServer {
 					UserProfile p2 = usersProfiles.get(j);
 					double seqScore = getUserSimilaritySequences(p1, p2, "0");
 					double actScore = getUserSimilarityClusterActivity(p1, p2, "0");
-					double finalScore = 0.6 * seqScore + 0.4 * actScore;
+					double finalScore = seqScore;
 					p1.addSimilarityScore(p2.userId, finalScore);
 					p2.addSimilarityScore(p1.userId, finalScore);
 				}
 			}
 		}
-	}
-
-	private static void testSequenceMatching() {
-		ClusterWithMean clusterA = new ClusterWithMean(2);
-		clusterA.mId = 0;
-		ClusterWithMean clusterB = new ClusterWithMean(2);
-		clusterB.mId = 1;
-		ClusterWithMean clusterC = new ClusterWithMean(2);
-		clusterC.mId = 2;
-		ClusterWithMean clusterD = new ClusterWithMean(2);
-		clusterD.mId = 3;
-
-		Calendar cal = Calendar.getInstance();
-		Date now = new Date();
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 60);
-		Date oneHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 90);
-		Date oneHourHalf = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 120);
-		Date twoHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 144);
-		Date twoFourHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 180);
-		Date threeHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 240);
-		Date fourHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 270);
-		Date fourHalfHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 271);
-		Date fourHalfHourTest = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 300);
-		Date fiveHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 360);
-		Date sixHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 408);
-		Date sixEightHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 420);
-		Date sevenHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 468);
-		Date sevenEightHour = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 469);
-		Date sevenEightHourTest = new Date(cal.getTimeInMillis());
-
-		cal.setTime(now);
-		cal.add(Calendar.MINUTE, 480);
-		Date eightHour = new Date(cal.getTimeInMillis());
-
-		Sequence test1 = new Sequence();
-		test1.addVertexInfo(new VertexInfo(clusterA, now));
-		test1.addVertexInfo(new VertexInfo(clusterA, oneHour));
-		test1.addVertexInfo(new VertexInfo(clusterA, twoHour));
-		test1.addVertexInfo(new VertexInfo(clusterA, threeHour));
-		test1.addVertexInfo(new VertexInfo(clusterC, fourHour));
-		test1.addVertexInfo(new VertexInfo(clusterC, fiveHour));
-		test1.addVertexInfo(new VertexInfo(clusterC, sixHour));
-		test1.addVertexInfo(new VertexInfo(clusterC, sevenHour));
-		test1.addVertexInfo(new VertexInfo(clusterC, eightHour));
-
-		Sequence test2 = new Sequence();
-		test2.addVertexInfo(new VertexInfo(clusterA, new Date()));
-		test2.addVertexInfo(new VertexInfo(clusterB, oneHour));
-		test2.addVertexInfo(new VertexInfo(clusterC, fourHour));
-
-		Sequence a = new Sequence();
-		a.addVertexInfo(new VertexInfo(clusterA, new Date()));
-		a.addVertexInfo(new VertexInfo(clusterB, oneHour));
-		a.addVertexInfo(new VertexInfo(clusterC, threeHour));
-		a.addVertexInfo(new VertexInfo(clusterA, fourHalfHour));
-		a.addVertexInfo(new VertexInfo(clusterD, fourHalfHourTest));
-
-		Sequence b = new Sequence();
-		b.addVertexInfo(new VertexInfo(clusterC, new Date()));
-		b.addVertexInfo(new VertexInfo(clusterA, twoHour));
-		b.addVertexInfo(new VertexInfo(clusterB, fourHalfHour));
-		b.addVertexInfo(new VertexInfo(clusterC, sixEightHour));
-		b.addVertexInfo(new VertexInfo(clusterB, sevenEightHour));
-		b.addVertexInfo(new VertexInfo(clusterD, sevenEightHourTest));
-
-		Sequence x = new Sequence();
-		x.addVertexInfo(new VertexInfo(clusterA, new Date()));
-		x.addVertexInfo(new VertexInfo(clusterB, oneHourHalf));
-		x.addVertexInfo(new VertexInfo(clusterC, twoHour));
-		x.addVertexInfo(new VertexInfo(clusterA, threeHour));
-		x.addVertexInfo(new VertexInfo(clusterB, fourHalfHour));
-		x.addVertexInfo(new VertexInfo(clusterC, fourHalfHourTest));
-
-		Sequence y = new Sequence();
-		y.addVertexInfo(new VertexInfo(clusterA, new Date()));
-		y.addVertexInfo(new VertexInfo(clusterD, oneHour));
-		y.addVertexInfo(new VertexInfo(clusterB, oneHour));
-		y.addVertexInfo(new VertexInfo(clusterC, twoFourHour));
-		y.addVertexInfo(new VertexInfo(clusterA, new Date(twoFourHour.getTime() + fourHalfHour.getTime())));
-		y.addVertexInfo(new VertexInfo(clusterB, new Date(twoFourHour.getTime() + sixEightHour.getTime())));
-		y.addVertexInfo(new VertexInfo(clusterC, new Date(twoFourHour.getTime() + sevenEightHour.getTime())));
-
-		Set<Sequence> set = new HashSet<>();
-		set.add(test1);
-		set.add(test2);
-
 	}
 
 	private static double getUserSimilaritySequences(UserProfile profileA, UserProfile profileB, String level) {
@@ -347,7 +189,7 @@ public class GeoServer {
 					}
 				}
 			}
-			double simmilarity = score * (1.0 / N1 * N2);
+			double simmilarity = score * (1.0 / N1 * N2) + N1+N2;
 			return simmilarity;
 		}
 		return 0;
@@ -359,35 +201,34 @@ public class GeoServer {
 			Graph graphB = profileB.getGraphByLevel(level);
 
 			double score = 0;
+			long N1 = graphA.vertexes.size();
+			long N2 = graphB.vertexes.size();
 
 			Map<Integer, Double> percentageA = graphA.cluster_percentage;
 			Map<Integer, Double> percentageB = graphB.cluster_percentage;
 
+			//somar diferencas
 			for (Map.Entry<Integer, Double> entry : percentageA.entrySet()) {
 				if (percentageB.containsKey(entry.getKey())) {
 					double aux = percentageB.get(entry.getKey());
-					score += (aux < entry.getValue()) ? aux : entry.getValue();
+					score += Math.abs(aux-entry.getValue());
 				}
 			}
+			score = transformScoreToDiffPrct(score);
+			score = 1 - score;//igualdade
 			// System.out.println("activity score -> "+score);
-			return score;
+			double simmilarity = score * (1.0 / N1 * N2) + N1 + N2;
+			return simmilarity * 100;
 		}
 		return 0;
 	}
 
-	private static Map<Integer, Long> createClusterTimeMap(Sequence seq) {
-		Map<Integer, Long> toReturn = new HashMap<Integer, Long>();
-
-		for (VertexInfo vi : seq.getClusters()) {
-			if (toReturn.containsKey(vi.cluster.mId)) {
-				long previousTime = toReturn.get(vi.cluster.mId);
-				toReturn.put(vi.cluster.mId, previousTime + Math.abs(vi.leavTime.getTime() - vi.arrTime.getTime()));
-			} else {
-				toReturn.put(vi.cluster.mId, Math.abs(vi.leavTime.getTime() - vi.arrTime.getTime()));
-			}
-		}
-
-		return toReturn;
+	private static double transformScoreToDiffPrct(double score) {
+		double min = 0;
+		double max = NUM_CLUSTERS-1;
+		double newmax = 1;
+		double newmin = 0;
+		return ((score - min)/(max-min))*(newmax-newmin)+newmin;
 	}
 
 	// returns set of maximum length similar sequences
