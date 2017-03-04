@@ -1,8 +1,5 @@
 package pt.utl.ist.meic.geofriendsfire.fragments;
 
-/**
- * Created by ricar on 09/02/2017.
- */
 
 
 import android.app.AlertDialog;
@@ -48,13 +45,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
-public class MapFragment extends Fragment implements GeoQueryEventListener, GoogleMap.OnCameraChangeListener,
+public class MapFragment extends BaseFragment implements GeoQueryEventListener, GoogleMap.OnCameraChangeListener,
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private static final String EVENTS_LOCATIONS_REF = "/eventsLocations";
@@ -62,6 +61,9 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
 
     private static final int INITIAL_ZOOM_LEVEL = 15;
     private static final double INITIAL_RADIUS = 0.1;
+
+    @BindView(R.id.networkDetectorHolder)
+    TextView networkDetectorHolder;
 
     private GoogleMap map;
     private View rootView;
@@ -101,9 +103,13 @@ public class MapFragment extends Fragment implements GeoQueryEventListener, Goog
             try {
                 rootView = inflater.inflate(R.layout.map_fragment, container, false);
             } catch (InflateException e) {
+                ButterKnife.bind(this,rootView);
+                super.setNetworkDetectorHolder(networkDetectorHolder);
                 setUpMap();
                 return rootView;
             }
+            ButterKnife.bind(this,rootView);
+            super.setNetworkDetectorHolder(networkDetectorHolder);
             setUpMapIfNeeded();
 
             // setup GeoFire

@@ -24,6 +24,8 @@ friendsFound done! - absolute and percentage
 medidas - prctFriendsFound per User
 		- overall precision
 		- overall recall
+		
+online Detection - except map fragments
 
 Tomorrow:
 SERVER
@@ -34,9 +36,9 @@ geofire - favoritos
 artigos mail
 
 APP
+logica de resident domain
 testar workload/furthest!!
-ver exemplos de rxJava de onlineDetection;
-ver exemplos de rxJava de polling
+ver exemplos de rxJava de polling para mandar locations
 
 ??? - adicionar vertente layer/adicionar vertente popularidade - ?? not sure if needed
 ??? - porquE K-means??

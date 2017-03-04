@@ -25,6 +25,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
@@ -34,8 +36,11 @@ import pt.utl.ist.meic.geofriendsfire.utils.Utils;
  * Created by ricar on 11/02/2017.
  */
 
-public class EventDetailsMapFragment extends Fragment implements GoogleMap.OnCameraChangeListener,
+public class EventDetailsMapFragment extends BaseFragment implements GoogleMap.OnCameraChangeListener,
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+
+    @BindView(R.id.networkDetectorHolder)
+    TextView networkDetectorHolder;
 
     private static final int INITIAL_ZOOM_LEVEL = 15;
 
@@ -56,9 +61,13 @@ public class EventDetailsMapFragment extends Fragment implements GoogleMap.OnCam
         try {
             rootView = inflater.inflate(R.layout.event_details_map_fragment, container, false);
         } catch (InflateException e) {
+            ButterKnife.bind(this,rootView);
+            super.setNetworkDetectorHolder(networkDetectorHolder);
             setUpMap();
             return rootView;
         }
+        ButterKnife.bind(this,rootView);
+        super.setNetworkDetectorHolder(networkDetectorHolder);
         setUpMap();
         setupCardView(mEvent);
         return rootView;
