@@ -206,6 +206,10 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
                                 mDrawerLayout.closeDrawers();
                                 startActivity(new Intent(DrawerMainActivity.this, SettingsActivity.class));
                                 return false;
+                            case R.id.nav_test:
+                                setupViewPagerTest();
+                                mDrawerLayout.closeDrawers();
+                                return true;
                             default:
                                 mDrawerLayout.closeDrawers();
                                 return true;
@@ -214,6 +218,12 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
                 }
 
         );
+    }
+
+    public void setupViewPagerTest() {
+        mAdapter.clear();
+        mAdapter.add(FragmentKeys.Test);
+        mTabLayout.setVisibility(View.GONE);
     }
 
     public void setupViewPagerFriends() {

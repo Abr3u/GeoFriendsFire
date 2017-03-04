@@ -27,7 +27,7 @@ import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
 import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 
-public class CreateEventFragment extends Fragment {
+public class CreateEventFragment extends BaseFragment {
 
 
     private static final String EVENTS_REF = "/events";
@@ -39,15 +39,18 @@ public class CreateEventFragment extends Fragment {
     @BindView(R.id.eventDescription)
     TextView eventDescription;
 
+    @BindView(R.id.networkDetectorHolder)
+    TextView networkDetectorHolder;
+
     private DatabaseReference mDatabase;
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_create_event, container, false);
-        mDatabase = FirebaseDatabase.getInstance().getReference();
         ButterKnife.bind(this,view);
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        super.setNetworkDetectorHolder(networkDetectorHolder);
         return view;
     }
 

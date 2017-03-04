@@ -13,6 +13,7 @@ import pt.utl.ist.meic.geofriendsfire.fragments.EventsNearbyListFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.FriendsFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.MapFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.MyEventsListFragment;
+import pt.utl.ist.meic.geofriendsfire.fragments.BaseFragment;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.utils.FragmentKeys;
 

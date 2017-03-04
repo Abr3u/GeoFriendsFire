@@ -3,9 +3,14 @@ package pt.utl.ist.meic.geofriendsfire;
 import android.app.Application;
 
 import com.google.firebase.auth.FirebaseUser;
+import com.squareup.leakcanary.LeakCanary;
+import com.squareup.leakcanary.RefWatcher;
 
 
 public class MyApplicationContext extends Application{
+
+    private RefWatcher refWatcher;
+    private static MyApplicationContext instance;
 
     private FirebaseUser firebaseUser;
     private int maximumWorkLoad;
@@ -14,8 +19,23 @@ public class MyApplicationContext extends Application{
     @Override
     public void onCreate() {
         super.onCreate();
+        if (LeakCanary.isInAnalyzerProcess(this)) {
+            // This process is dedicated to LeakCanary for heap analysis.
+            // You should not init your app in this process.
+            return;
+        }
+        instance = (MyApplicationContext) getApplicationContext();
+        refWatcher = LeakCanary.install(this);
         maximumWorkLoad = 4;
         furthestEvent = 20;
+    }
+
+    public static MyApplicationContext getInstance() {
+        return instance;
+    }
+
+    public RefWatcher getRefWatcher() {
+        return refWatcher;
     }
 
     public void setFirebaseUser(FirebaseUser firebaseUser) {

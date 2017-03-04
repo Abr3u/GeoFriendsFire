@@ -12,6 +12,15 @@
     </item>
     <item
         is-multidex="false"
+        jar="C:\Users\ricar\.gradle\caches\modules-2\files-2.1\com.squareup.leakcanary\leakcanary-watcher\1.5\288101b16513158c2923ad3fb6161d1452b65e73\leakcanary-watcher-1.5.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.0"
+        sha1="288101b16513158c2923ad3fb6161d1452b65e73">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\leakcanary-watcher-1.5_fd18d46715022124e4da9a4d11c92c7d2d5fdee2.jar" />
+    </item>
+    <item
+        is-multidex="false"
         jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-media-compat\25.0.0\jars\classes.jar"
         jumboMode="true"
         optimize="true"
@@ -27,6 +36,15 @@
         revision="25.0.0"
         sha1="665d21a8a069c96b4d9e8b434f5096d865b4e261">
         <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\internal_impl-25.0.0_22cb95a9c37d9b6dcc32f163b1780d2efc1b939c.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\io.reactivex.rxjava2\rxandroid\2.0.1\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.0"
+        sha1="4119ea97a7191ff9b8f33b534ea220448f62f491">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\io.reactivex.rxjava2-rxandroid-2.0.1_5fd3f5a4865ed35b1f99a8df91e240f2dfe223ac.jar" />
     </item>
     <item
         is-multidex="false"
@@ -102,6 +120,15 @@
     </item>
     <item
         is-multidex="false"
+        jar="C:\Users\ricar\.gradle\caches\modules-2\files-2.1\com.squareup.haha\haha\2.0.3\640a438d2d415c056ca6a673ac26b183b044e160\haha-2.0.3.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.0"
+        sha1="640a438d2d415c056ca6a673ac26b183b044e160">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\haha-2.0.3_4b9f747542192a27483eddd7934998be3404ae51.jar" />
+    </item>
+    <item
+        is-multidex="false"
         jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\support-fragment\25.0.0\jars\libs\internal_impl-25.0.0.jar"
         jumboMode="true"
         optimize="true"
@@ -120,12 +147,12 @@
     </item>
     <item
         is-multidex="false"
-        jar="C:\Users\ricar\.gradle\caches\modules-2\files-2.1\io.reactivex.rxjava2\rxjava\2.0.0-RC5\ecd92d1147d9858c23087801a3bc2f323d481472\rxjava-2.0.0-RC5.jar"
+        jar="C:\Users\ricar\.gradle\caches\modules-2\files-2.1\io.reactivex.rxjava2\rxjava\2.0.1\57f850a6b317e5582f1dbaff10a9e7d7e1fcdcfb\rxjava-2.0.1.jar"
         jumboMode="true"
         optimize="true"
         revision="25.0.0"
-        sha1="ecd92d1147d9858c23087801a3bc2f323d481472">
-        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\rxjava-2.0.0-RC5_686b95b62ecd12b9e1a0e2e7baf4857456a4f7ae.jar" />
+        sha1="57f850a6b317e5582f1dbaff10a9e7d7e1fcdcfb">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\rxjava-2.0.1_be265dc5244fba49a17e1ca43d3d91d4e1f13549.jar" />
     </item>
     <item
         is-multidex="false"
@@ -196,8 +223,17 @@
         jumboMode="true"
         optimize="true"
         revision="25.0.0"
-        sha1="db1c746d7b0fa0c1527a8d8c9806b49bbb43b744">
+        sha1="e44ee44c4cc0b522fafcc7e2e3780763ccec5205">
         <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\instant-run-bootstrap_5dbfbffea4364c30cabe44fcc1bf5970d46b3294.jar" />
+    </item>
+    <item
+        is-multidex="false"
+        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.squareup.leakcanary\leakcanary-android\1.5\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.0"
+        sha1="c7a2672b3122b897a0751f327929ae405ea02bf7">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.squareup.leakcanary-leakcanary-android-1.5_961aa609d3109104ad19565b8a9e37c7bf96b411.jar" />
     </item>
     <item
         is-multidex="false"
@@ -207,15 +243,6 @@
         revision="25.0.0"
         sha1="d7c42c80f6509b9ea4db28ca7859ffae08ec5741">
         <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.android.support-support-v4-25.0.0_0bfec1092afd3779bfdf1236f69684e8b647b327.jar" />
-    </item>
-    <item
-        is-multidex="false"
-        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\io.reactivex.rxjava2\rxandroid\2.0.0-RC1\jars\classes.jar"
-        jumboMode="true"
-        optimize="true"
-        revision="25.0.0"
-        sha1="a28fb1a3ec251e799cd7ea3b9e396ec4d5e0dcbf">
-        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\io.reactivex.rxjava2-rxandroid-2.0.0-RC1_77d1086b891bbc9e45bb6081d31a77110d0ad734.jar" />
     </item>
     <item
         is-multidex="false"
@@ -273,6 +300,15 @@
     </item>
     <item
         is-multidex="false"
+        jar="C:\Users\ricar\.gradle\caches\modules-2\files-2.1\com.squareup.leakcanary\leakcanary-analyzer\1.5\3277b0b0c2ace34a2edb5ddf9d1f67829561fb8f\leakcanary-analyzer-1.5.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.0"
+        sha1="3277b0b0c2ace34a2edb5ddf9d1f67829561fb8f">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\leakcanary-analyzer-1.5_1ec789e11c1341796a78d22497732f63cbff3876.jar" />
+    </item>
+    <item
+        is-multidex="false"
         jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.android.support\cardview-v7\25.0.0\jars\classes.jar"
         jumboMode="true"
         optimize="true"
@@ -315,15 +351,6 @@
         revision="25.0.0"
         sha1="4ccbcda5c72027c7f7c14be9ff8640d9cb0d8da0">
         <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.android.support-support-core-utils-25.0.0_231fb02ca77725444b200acfd06bb31c526f927f.jar" />
-    </item>
-    <item
-        is-multidex="false"
-        jar="C:\Android\GeoFriendsFire\app\build\intermediates\exploded-aar\com.github.frangsierra\rx2firebase\1.0.0\jars\classes.jar"
-        jumboMode="true"
-        optimize="true"
-        revision="25.0.0"
-        sha1="aff3bae0712fb09e565cdd7ceeaa5e356071a888">
-        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\com.github.frangsierra-rx2firebase-1.0.0_d58fb4bb2e83eb2685cc58f003153e530295e756.jar" />
     </item>
     <item
         is-multidex="false"
