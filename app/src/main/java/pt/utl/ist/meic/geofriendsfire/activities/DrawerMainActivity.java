@@ -40,6 +40,8 @@ import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+import pt.utl.ist.meic.geofriendsfire.LocationTrackingService;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.DynamicViewPagerAdapter;
@@ -52,11 +54,19 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
     @BindView(R.id.drawer_layout)
     DrawerLayout mDrawerLayout;
 
+    @BindView(R.id.nav_view)
+    NavigationView mNavigationView;
+
     @BindView(R.id.viewpager)
     ViewPager mViewPager;
 
     @BindView(R.id.tabs)
     TabLayout mTabLayout;
+
+    @OnClick(R.id.fab)
+    public void onFABClick(View view) {
+        showAlertDialog();
+    }
 
     private MyApplicationContext mContext;
 
@@ -81,24 +91,14 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
 
         //design
         setupToolBar();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        if (navigationView != null) {
-            setupDrawerContent(navigationView);
-        }
+        setupDrawerContent(mNavigationView);
 
         mAdapter = new DynamicViewPagerAdapter(getSupportFragmentManager(), new ArrayList<FragmentKeys>());
         mViewPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
         setupViewPagerEvents();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showAlertDialog();
-            }
-        });
+        startService(new Intent(this, LocationTrackingService.class));
     }
 
     private void setupToolBar() {

@@ -25,8 +25,9 @@ medidas - prctFriendsFound per User
 		- overall precision
 		- overall recall
 		
-online Detection - except map fragments
-
+online Detection done!
+location tracking done!
+______________________________________________________________
 Tomorrow:
 SERVER
 aumentar scope - pensar em como criar os novos datasets necessarios!!
@@ -47,7 +48,6 @@ Extra:
 por alert dialog antes de ir para directions
 userDetails
 security rules
-track de localizacoes - maybe RxLocation?
 clustering de markers, mapa style
 mvvm, mvp
 mostrar ao user os seus clusters?
