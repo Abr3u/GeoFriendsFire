@@ -3,6 +3,7 @@ package pt.utl.ist.meic.geofriendsfire.activities;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -22,7 +23,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -33,6 +33,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +52,9 @@ import pt.utl.ist.meic.geofriendsfire.models.User;
 import pt.utl.ist.meic.geofriendsfire.utils.FragmentKeys;
 
 public class DrawerMainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
+
+    private static final String PARCEL_FRAGMENT = "fragment";
+    private static final String PARCEL_EVENT = "event";
 
     @BindView(R.id.drawer_layout)
     DrawerLayout mDrawerLayout;
@@ -69,6 +74,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
     }
 
     private MyApplicationContext mContext;
+    private Intent locationServiceIntent;
 
     // Firebase
     private FirebaseAuth mFirebaseAuth;
@@ -76,6 +82,9 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
     private DatabaseReference mDatabase;
     private GoogleApiClient mGoogleApiClient;
     private DynamicViewPagerAdapter mAdapter;
+
+    private int fragment;
+    private Event detailedEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,9 +105,48 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter = new DynamicViewPagerAdapter(getSupportFragmentManager(), new ArrayList<FragmentKeys>());
         mViewPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
-        setupViewPagerEvents();
+        mTabLayout.setVisibility(View.GONE);
+        Log.d("ggg","set tabs to gone");
+        if(savedInstanceState != null){
+            int savedFrag = Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_FRAGMENT));
+            switch(savedFrag){
+                case 0:
+                    setupViewPagerMap();
+                    break;
+                case 1:
+                    setupViewPagerEvents();
+                    break;
+                case 2:
+                    setupViewPagerFriends();
+                    break;
+                case 3:
+                    setupViewPagerEventDetails((Event)Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_EVENT)));
+                    break;
+                case 4:
+                    setupViewPagerCreateEvent();
+                    break;
+            }
+        }else{
+            setupViewPagerEvents();
+        }
 
-        startService(new Intent(this, LocationTrackingService.class));
+        locationServiceIntent = new Intent(this, LocationTrackingService.class);
+        startService(locationServiceIntent);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(PARCEL_FRAGMENT, Parcels.wrap(fragment));
+        if(detailedEvent != null){
+            outState.putParcelable(PARCEL_EVENT, Parcels.wrap(detailedEvent));
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService(locationServiceIntent);
     }
 
     private void setupToolBar() {
@@ -227,26 +275,30 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
     }
 
     public void setupViewPagerFriends() {
+        fragment = 2;
         mAdapter.clear();
         mAdapter.add(FragmentKeys.Friends);
         mTabLayout.setVisibility(View.GONE);
     }
 
     public void setupViewPagerEvents() {
+        fragment = 1;
         mAdapter.clear();
         mAdapter.add(FragmentKeys.EventsNearby);
         mAdapter.add(FragmentKeys.MyEvents);
-
         mTabLayout.setVisibility(View.VISIBLE);
     }
 
     public void setupViewPagerMap() {
+        fragment = 0;
         mAdapter.clear();
         mAdapter.add(FragmentKeys.EventsNearbyMap);
         mTabLayout.setVisibility(View.GONE);
     }
 
     public void setupViewPagerEventDetails(Event event) {
+        fragment = 3;
+        detailedEvent = event;
         mAdapter.clear();
         mAdapter.setEventForDetails(event);
         mAdapter.add(FragmentKeys.EventDetailsMap);
@@ -254,6 +306,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
     }
 
     public void setupViewPagerCreateEvent() {
+        fragment = 4;
         mAdapter.clear();
         mAdapter.add(FragmentKeys.CreateEvent);
         mTabLayout.setVisibility(View.GONE);

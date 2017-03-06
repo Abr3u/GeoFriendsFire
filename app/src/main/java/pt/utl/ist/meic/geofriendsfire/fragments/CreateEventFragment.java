@@ -15,6 +15,8 @@ import com.firebase.geofire.GeoLocation;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import org.parceler.Parcels;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -29,6 +31,8 @@ import pt.utl.ist.meic.geofriendsfire.models.Event;
 
 public class CreateEventFragment extends BaseFragment {
 
+    private static final String PARCEL_DESCRIPTION = "description";
+    private static final String PARCEL_CATEGORY = "category";
 
     private static final String EVENTS_REF = "/events";
     private static final String EVENTS_LOCATIONS_REF = "/eventsLocations";
@@ -51,6 +55,11 @@ public class CreateEventFragment extends BaseFragment {
         ButterKnife.bind(this,view);
         mDatabase = FirebaseDatabase.getInstance().getReference();
         super.setNetworkDetectorHolder(networkDetectorHolder);
+
+        if(savedInstanceState != null){
+            eventDescription.setText(Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_DESCRIPTION)));
+            eventCategory.setSelection(Integer.parseInt(Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_CATEGORY))));
+        }
         return view;
     }
 
@@ -95,5 +104,12 @@ public class CreateEventFragment extends BaseFragment {
 
             ((DrawerMainActivity)getContext()).setupViewPagerEvents();
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(PARCEL_DESCRIPTION, Parcels.wrap(eventDescription.getText().toString().trim()));
+        outState.putParcelable(PARCEL_CATEGORY, Parcels.wrap(""+eventCategory.getSelectedItemId()));
     }
 }

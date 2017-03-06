@@ -24,8 +24,8 @@ public class LocationTrackingService extends Service
 {
     private static final String TAG = "testGPS";
     private static final int LOCATION_AGGREGATION_THRESHOLD = 0;
-    private static final int LOCATION_INTERVAL = 2*60*1000;//30mins
-    private static final float LOCATION_DISTANCE = 0f;
+    private static final int LOCATION_INTERVAL = 30*60*1000;//30mins
+    private static final float LOCATION_DISTANCE = 250f;//meters
 
     private LocationManager mLocationManager;
     private DatabaseReference mDatabase;

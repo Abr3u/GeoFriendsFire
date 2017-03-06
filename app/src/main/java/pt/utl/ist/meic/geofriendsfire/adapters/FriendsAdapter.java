@@ -35,6 +35,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     private final TypedValue mTypedValue = new TypedValue();
     private int mBackground;
+
     private List<Friend> mValues;
 
     public FriendsAdapter(Context context, DatabaseReference ref) {
@@ -51,7 +52,9 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                     Friend friend = new Friend();
                     friend.username = snap.getKey();
                     friend.score = snap.getValue(Double.class);
-                    mValues.add(friend);
+                    if(!mValues.contains(friend)){
+                        mValues.add(friend);
+                    }
                 }
                 orderFriendsByValue();
             }
@@ -69,6 +72,14 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         // Store reference to listener so it can be removed on app stop
         mValueEventListener = valueEventListener;
 
+    }
+
+    public List<Friend> getValues() {
+        return mValues;
+    }
+
+    public void setValues(List<Friend> values) {
+        this.mValues = values;
     }
 
     private void orderFriendsByValue() {

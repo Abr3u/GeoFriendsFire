@@ -1,5 +1,6 @@
 package pt.utl.ist.meic.geofriendsfire.adapters;
 
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
@@ -35,9 +36,9 @@ public class DynamicViewPagerAdapter extends ArrayFragmentStatePagerAdapter<Frag
             case MyEvents:
                 return new MyEventsListFragment();
             case EventDetailsMap:
-                EventDetailsMapFragment frag3 = new EventDetailsMapFragment();
-                frag3.setEvent(mEvent);
-                return frag3;
+                EventDetailsMapFragment frag = new EventDetailsMapFragment();
+                frag.setEvent(mEvent);
+                return frag;
             case CreateEvent:
                 return new CreateEventFragment();
             case Friends:

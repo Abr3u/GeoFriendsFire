@@ -64,7 +64,12 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
                 .queryAtLocation(currentLocation, mCurrentRadius);
 
         this.geoQuery.addGeoQueryEventListener(this);
+    }
 
+    public void cleanupListener() {
+        if (geoQuery != null) {
+            geoQuery.removeAllListeners();
+        }
     }
 
     @Override
@@ -134,6 +139,22 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
     @Override
     public int getItemCount() {
         return mValues.size();
+    }
+
+    public List<Event> getValues(){
+        return this.mValues;
+    }
+
+    public void setValues(List<Event> values){
+        this.mValues = values;
+    }
+
+    public Map<String,Event> getValuesMap(){
+        return this.mEventsMap;
+    }
+
+    public void setValuesMap(Map<String,Event> map){
+        this.mEventsMap = map;
     }
 
     /*
@@ -216,6 +237,7 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
     }
+
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;

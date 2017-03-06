@@ -40,6 +40,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.parceler.Parcels;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +58,9 @@ import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 public class MapFragment extends BaseFragment implements GeoQueryEventListener, GoogleMap.OnCameraChangeListener,
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
+    private static final String PARCEL_VALUES = "values";
+    private static final String PARCEL_VALUES_MAP = "valuesMap";
+    private static final String PARCEL_RADIUS = "radius";
     private static final String EVENTS_LOCATIONS_REF = "/eventsLocations";
     private static final String EVENTS_REF = "/events";
 
@@ -89,14 +94,21 @@ public class MapFragment extends BaseFragment implements GeoQueryEventListener, 
             }
         }
 
+
         GPSTracker gpsTracker = new GPSTracker(getContext());
         if (!gpsTracker.canGetLocation()) {
             Toast.makeText(getContext(), "cant get current location", Toast.LENGTH_LONG).show();
         } else {
+            if(savedInstanceState != null){
+                mValues = Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_VALUES));
+                mEventsMap = Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_VALUES_MAP));
+                mRadius = Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_RADIUS));
+            }else{
+                mEventsMap = new HashMap<>();
+                mValues = new ArrayList<>();
+                mRadius = INITIAL_RADIUS;
+            }
             this.markers = new HashMap<String, Marker>();
-            this.mEventsMap = new HashMap<>();
-            this.mValues = new ArrayList<>();
-            this.mRadius = INITIAL_RADIUS;
 
             mCurrentLocation = new GeoLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude());
 
@@ -134,6 +146,15 @@ public class MapFragment extends BaseFragment implements GeoQueryEventListener, 
             }
         }
         super.onDestroyView();
+    }
+
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(PARCEL_VALUES, Parcels.wrap(mValues));
+        outState.putParcelable(PARCEL_VALUES_MAP, Parcels.wrap(mEventsMap));
+        outState.putParcelable(PARCEL_RADIUS, Parcels.wrap(mRadius));
     }
 
     protected void setUpMapIfNeeded() {

@@ -246,6 +246,15 @@
     </item>
     <item
         is-multidex="false"
+        jar="C:\Users\ricar\.gradle\caches\modules-2\files-2.1\org.parceler\parceler-api\1.1.6\2a06b6b1ecf5dadee8a874dfb51ad018fde3e6c5\parceler-api-1.1.6.jar"
+        jumboMode="false"
+        optimize="true"
+        revision="25.0.0"
+        sha1="2a06b6b1ecf5dadee8a874dfb51ad018fde3e6c5">
+        <dex dex="C:\Android\GeoFriendsFire\app\build\intermediates\pre-dexed\debug\parceler-api-1.1.6_efed2ffc89fecc2c262722d093b9b15a4a4e3488.jar" />
+    </item>
+    <item
+        is-multidex="false"
         jar="C:\Users\ricar\.gradle\caches\modules-2\files-2.1\com.squareup.leakcanary\leakcanary-analyzer\1.5\3277b0b0c2ace34a2edb5ddf9d1f67829561fb8f\leakcanary-analyzer-1.5.jar"
         jumboMode="false"
         optimize="true"

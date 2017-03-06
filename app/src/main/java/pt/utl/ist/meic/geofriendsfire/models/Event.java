@@ -4,10 +4,13 @@ import com.firebase.geofire.GeoLocation;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
+import org.parceler.Parcel;
+
 import java.util.HashMap;
 import java.util.Map;
 
 @IgnoreExtraProperties
+@Parcel
 public class Event {
 
     @Exclude

@@ -160,6 +160,23 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
 
     }
 
+
+    public List<Event> getValues(){
+        return this.mValues;
+    }
+
+    public void setValues(List<Event> values){
+        this.mValues = values;
+    }
+
+    public Map<String,Event> getValuesMap(){
+        return this.mEventsMap;
+    }
+
+    public void setValuesMap(Map<String,Event> map){
+        this.mEventsMap = map;
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
