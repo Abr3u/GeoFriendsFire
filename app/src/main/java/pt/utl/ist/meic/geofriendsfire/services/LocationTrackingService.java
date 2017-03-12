@@ -1,10 +1,11 @@
-package pt.utl.ist.meic.geofriendsfire;
+package pt.utl.ist.meic.geofriendsfire.services;
 
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -19,17 +20,26 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import io.reactivex.subjects.PublishSubject;
+import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
+import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
 public class LocationTrackingService extends Service
 {
     private static final String TAG = "testGPS";
-    private static final int LOCATION_AGGREGATION_THRESHOLD = 0;
-    private static final int LOCATION_INTERVAL = 30*60*1000;//30mins
-    private static final float LOCATION_DISTANCE = 250f;//meters
+    private static final int LOCATION_AGGREGATION_THRESHOLD = 5;
+    private static final int LOCATION_INTERVAL = 10*1000;//30mins
+    private static final float LOCATION_DISTANCE = 0f;//meters
 
     private LocationManager mLocationManager;
     private DatabaseReference mDatabase;
     private List<TimeLocation> mLocations;
+    private PublishSubject<Location> mLastKnowLocation;
+
+    // Binder given to clients
+    private final IBinder mBinder = new MyBinder();
 
     private class TimeLocation{
         private DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss Z");
@@ -60,7 +70,7 @@ public class LocationTrackingService extends Service
             tl.time = new Date();
             tl.location = location;
             mLocations.add(tl);
-
+            mLastKnowLocation.onNext(location);
             if(mLocations.size() > LOCATION_AGGREGATION_THRESHOLD){
                 sendLocationsFirebase();
                 mLocations.clear();
@@ -105,24 +115,24 @@ public class LocationTrackingService extends Service
     @Override
     public IBinder onBind(Intent arg0)
     {
-        return null;
+        return mBinder;
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId)
-    {
-        Log.e(TAG, "onStartCommand");
-        super.onStartCommand(intent, flags, startId);
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        mLocations = new ArrayList<TimeLocation>();
-        return START_STICKY;
+    public class MyBinder extends Binder {
+        public LocationTrackingService getService() {
+            return LocationTrackingService.this;
+        }
     }
+
 
     @Override
     public void onCreate()
     {
         Log.e(TAG, "onCreate");
         initializeLocationManager();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mLocations = new ArrayList<TimeLocation>();
+        mLastKnowLocation = PublishSubject.create();
         try {
             mLocationManager.requestLocationUpdates(
                     LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
@@ -162,4 +172,9 @@ public class LocationTrackingService extends Service
             mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         }
     }
+
+    public PublishSubject<Location> getLastKnownLocation(){
+        return mLastKnowLocation;
+    }
+
 }

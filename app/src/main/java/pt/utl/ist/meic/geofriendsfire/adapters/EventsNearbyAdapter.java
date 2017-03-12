@@ -61,7 +61,7 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
         this.mCurrentRadius = MIN_RADIUS;
 
         this.geoQuery = new GeoFire(FirebaseDatabase.getInstance().getReference(EVENTS_LOCATIONS_REF))
-                .queryAtLocation(currentLocation, mCurrentRadius);
+                .queryAtLocation(mCurrentLocation, mCurrentRadius);
 
         this.geoQuery.addGeoQueryEventListener(this);
     }

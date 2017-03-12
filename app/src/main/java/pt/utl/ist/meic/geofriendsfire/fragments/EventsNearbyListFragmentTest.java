@@ -9,6 +9,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,14 +22,18 @@ import org.parceler.Parcels;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyAdapter;
+import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyAdapterTest;
 import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
+import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
 
-public class EventsNearbyListFragment extends BaseFragment {
+public class EventsNearbyListFragmentTest extends BaseFragment {
 
     private static final String PARCEL_VALUES = "values";
-    private static final String PARCEL_VALUES_MAP = "valuesMap";
 
     @BindView(R.id.networkDetectorHolder)
     TextView networkDetectorHolder;
@@ -36,7 +41,8 @@ public class EventsNearbyListFragment extends BaseFragment {
     @BindView(R.id.recyclerview)
     RecyclerView recyclerView;
 
-    private EventsNearbyAdapter mAdapter;
+    private EventsNearbyAdapterTest mAdapter;
+    private EventsNearbyService mService;
 
     @Nullable
     @Override
@@ -45,21 +51,35 @@ public class EventsNearbyListFragment extends BaseFragment {
         ButterKnife.bind(this, view);
         super.setNetworkDetectorHolder(networkDetectorHolder);
 
-        GPSTracker gpsTracker = new GPSTracker(getContext());
-        if (!gpsTracker.canGetLocation()) {
-            Toast.makeText(getContext(), "cant get current location", Toast.LENGTH_LONG).show();
-        } else {
-            GeoLocation currentLocation = new GeoLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude());
-            mAdapter = new EventsNearbyAdapter(getContext(), currentLocation);
-            setupRecyclerView();
-        }
+        Intent events = new Intent(getContext(), EventsNearbyService.class);
+        getContext().bindService(events, eventsConnection, Context.BIND_AUTO_CREATE);
 
         if(savedInstanceState != null){
             mAdapter.setValues(Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_VALUES)));
-            mAdapter.setValuesMap(Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_VALUES_MAP)));
         }
         return view;
     }
+
+    private ServiceConnection eventsConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            EventsNearbyService.MyBinder binder = (EventsNearbyService.MyBinder) service;
+            mService = binder.getService();
+            mService.getEventsNearby()
+                    .getObservable()
+                    .subscribe(x -> {
+                        mAdapter.addItem(x);
+                    });
+            mAdapter = new EventsNearbyAdapterTest(getContext());
+            setupRecyclerView();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+        }
+    };
 
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -69,13 +89,11 @@ public class EventsNearbyListFragment extends BaseFragment {
     @Override
     public void onStop() {
         super.onStop();
-        mAdapter.cleanupListener();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(PARCEL_VALUES, Parcels.wrap(mAdapter.getValues()));
-        outState.putParcelable(PARCEL_VALUES_MAP, Parcels.wrap(mAdapter.getValuesMap()));
     }
 }

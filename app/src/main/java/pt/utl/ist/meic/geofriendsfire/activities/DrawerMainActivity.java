@@ -3,9 +3,7 @@ package pt.utl.ist.meic.geofriendsfire.activities;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
-import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
@@ -43,7 +41,7 @@ import java.util.Map;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import pt.utl.ist.meic.geofriendsfire.LocationTrackingService;
+import pt.utl.ist.meic.geofriendsfire.services.LocationTrackingService;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.DynamicViewPagerAdapter;
@@ -74,7 +72,6 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
     }
 
     private MyApplicationContext mContext;
-    private Intent locationServiceIntent;
 
     // Firebase
     private FirebaseAuth mFirebaseAuth;
@@ -106,7 +103,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mViewPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
         mTabLayout.setVisibility(View.GONE);
-        Log.d("ggg","set tabs to gone");
+
         if(savedInstanceState != null){
             int savedFrag = Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_FRAGMENT));
             switch(savedFrag){
@@ -129,9 +126,6 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         }else{
             setupViewPagerEvents();
         }
-
-        locationServiceIntent = new Intent(this, LocationTrackingService.class);
-        startService(locationServiceIntent);
     }
 
     @Override
@@ -141,12 +135,6 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         if(detailedEvent != null){
             outState.putParcelable(PARCEL_EVENT, Parcels.wrap(detailedEvent));
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        stopService(locationServiceIntent);
     }
 
     private void setupToolBar() {

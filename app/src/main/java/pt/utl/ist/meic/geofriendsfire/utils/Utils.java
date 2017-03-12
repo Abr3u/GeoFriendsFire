@@ -1,7 +1,35 @@
 package pt.utl.ist.meic.geofriendsfire.utils;
 
 
+import android.location.Location;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
+
 public class Utils {
+
+    private static double one_lati_in_km = 110.575;
+    private static double one_longi_in_km = 111.303;
+
+
+    //radius in km
+    public static Map<String,Double> getBoundingBox(Location location, double radius){
+        double latiRatio = radius / one_lati_in_km;
+        double longiRatio = radius / one_longi_in_km;
+
+        return new HashMap<String,Double>(){{
+            this.put("left",location.getLatitude()-latiRatio);
+            this.put("right",location.getLatitude()+latiRatio);
+            this.put("bot",location.getLongitude()-longiRatio);
+            this.put("top",location.getLongitude()+longiRatio);
+        }};
+    }
+
     /*
  * Calculate distance between two points in latitude and longitude.
  * Uses Haversine method as its base.
@@ -24,5 +52,24 @@ public class Utils {
         distance = Math.pow(distance, 2);
 
         return Math.sqrt(distance);
+    }
+
+
+    public static class ObservableList<T> {
+
+        public final List<T> list;
+        private final PublishSubject<T> onAdd;
+
+        public ObservableList() {
+            this.list = new ArrayList<T>();
+            this.onAdd = PublishSubject.create();
+        }
+        public void add(T value) {
+            list.add(value);
+            onAdd.onNext(value);
+        }
+        public Observable<T> getObservable() {
+            return onAdd;
+        }
     }
 }

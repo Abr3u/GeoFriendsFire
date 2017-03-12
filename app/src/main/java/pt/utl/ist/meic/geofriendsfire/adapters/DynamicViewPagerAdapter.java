@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import pt.utl.ist.meic.geofriendsfire.fragments.CreateEventFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventDetailsMapFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventsNearbyListFragment;
+import pt.utl.ist.meic.geofriendsfire.fragments.EventsNearbyListFragmentTest;
 import pt.utl.ist.meic.geofriendsfire.fragments.FriendsFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.MapFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.MyEventsListFragment;
@@ -32,7 +33,8 @@ public class DynamicViewPagerAdapter extends ArrayFragmentStatePagerAdapter<Frag
             case EventsNearbyMap:
                 return new MapFragment();
             case EventsNearby:
-                return new EventsNearbyListFragment();
+                //TODO: in work
+                return new EventsNearbyListFragmentTest();
             case MyEvents:
                 return new MyEventsListFragment();
             case EventDetailsMap:

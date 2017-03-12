@@ -27,20 +27,30 @@ medidas - prctFriendsFound per User
 		
 online Detection done!
 location tracking done!
-saveState on screen rotation
+saveState on screen rotation done!
+started resident domain logic - eventsNearbyService#monitoring;
 ______________________________________________________________
 Tomorrow:
+
+testar logica do resident domain - mock locations
+
+escrever event recommendation - geofire, geohash, bounding boxes
+		friend recommendation - como filtro o dataset. qual o workflow depois de ter os dados de location
+
+
 SERVER
 aumentar scope - pensar em como criar os novos datasets necessarios!!
 pensar em como normalizar seq score com activity score numa escala. para depois poder mudar as percentagens.
+
 ver medidas de listas ordenadas, discussao proj
 geofire - favoritos
 artigos mail
 
 APP
+ver geofire workflow vs 
 logica de resident domain
+
 testar workload/furthest!!
-ver exemplos de rxJava de polling para mandar locations
 
 ??? - adicionar vertente layer/adicionar vertente popularidade - ?? not sure if needed
 ??? - porquE K-means??

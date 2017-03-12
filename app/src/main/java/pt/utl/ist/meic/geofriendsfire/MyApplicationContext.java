@@ -1,16 +1,26 @@
 package pt.utl.ist.meic.geofriendsfire;
 
 import android.app.Application;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 
 import com.google.firebase.auth.FirebaseUser;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
+
+import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
+import pt.utl.ist.meic.geofriendsfire.services.LocationTrackingService;
 
 
 public class MyApplicationContext extends Application{
 
     private RefWatcher refWatcher;
     private static MyApplicationContext instance;
+    //private static EventsNearbyService mEventsNearbyService;
+    private static LocationTrackingService mLocationTrackingService;
 
     private FirebaseUser firebaseUser;
     private int maximumWorkLoad;
@@ -28,10 +38,34 @@ public class MyApplicationContext extends Application{
         refWatcher = LeakCanary.install(this);
         maximumWorkLoad = 4;
         furthestEvent = 20;
+        Intent locations = new Intent(this, LocationTrackingService.class);
+        bindService(locations, locationConnection, Context.BIND_AUTO_CREATE);
     }
+
+    private ServiceConnection locationConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            LocationTrackingService.MyBinder binder = (LocationTrackingService.MyBinder) service;
+            mLocationTrackingService = binder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+        }
+    };
 
     public static MyApplicationContext getInstance() {
         return instance;
+    }
+
+    /*public static EventsNearbyService getEventsServiceInstance() {
+        return mEventsNearbyService;
+    }*/
+
+    public static LocationTrackingService getLocationsServiceInstance() {
+        return mLocationTrackingService;
     }
 
     public RefWatcher getRefWatcher() {
