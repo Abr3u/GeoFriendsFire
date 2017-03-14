@@ -120,27 +120,6 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
         }
     }
 
-    private void startMonitoringSettings() {
-        mDisposable.add(MyApplicationContext.getInstance()
-                .getFurthestEventObservable()
-                .subscribe(x -> {
-                    Log.d("ttt","mudou furthest");
-                    mFurthest = x;
-                    initListener();
-                })
-        );
-
-        mDisposable.add(MyApplicationContext.getInstance()
-                .getMaxWorkloadObservable()
-                .subscribe(x -> {
-                    Log.d("ttt","mudou WorkLoad");
-                    mWorkload = x;
-                    initListener();
-                })
-        );
-
-    }
-
     private void startMonitoringCurrentLocation() {
         Log.d("ttt", "startMonitoringCurrentLocation");
 
@@ -149,7 +128,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
                 .subscribe(x -> {
                     Log.d("ttt","monitoring Location "+x);
                     if (isOutside(x)) {
-                        initListener();
+                        restartListener();
                     }
                 })
         );
@@ -190,7 +169,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
         }
     }
 
-    public void initListener() {
+    public void restartListener() {
         restartVars();
 
         Location lastKnowLocation =
@@ -222,15 +201,17 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
 
         mFurthest = MyApplicationContext.getInstance().getFurthestEvent();
         mWorkload = MyApplicationContext.getInstance().getMaximumWorkLoad();
-        startMonitoringSettings();
     }
 
     public void restartVars(){
         mDisposable.dispose();
         mEventsMap.clear();
         residentialDomainLimits.clear();
-        this.mCurrentRadius = MIN_RADIUS;
         mValuesObservable.list.clear();
+
+        this.mCurrentRadius = MIN_RADIUS;
+        mFurthest = MyApplicationContext.getInstance().getFurthestEvent();
+        mWorkload = MyApplicationContext.getInstance().getMaximumWorkLoad();
     }
 
     @Override

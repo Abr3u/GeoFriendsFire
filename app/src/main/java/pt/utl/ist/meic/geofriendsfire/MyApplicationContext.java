@@ -69,10 +69,6 @@ public class MyApplicationContext extends Application{
         return instance;
     }
 
-    /*public static EventsNearbyService getEventsServiceInstance() {
-        return mEventsNearbyService;
-    }*/
-
     public static LocationTrackingService getLocationsServiceInstance() {
         return mLocationTrackingService;
     }

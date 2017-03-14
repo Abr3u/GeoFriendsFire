@@ -20,6 +20,7 @@ import org.parceler.Parcels;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.disposables.CompositeDisposable;
+import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyAdapterTest;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
@@ -73,7 +74,8 @@ public class EventsNearbyListFragmentTest extends BaseFragment {
                     })
             );
 
-            mService.initListener();
+            startMonitoringSettings();
+            mService.restartListener();
         }
 
         @Override
@@ -82,6 +84,18 @@ public class EventsNearbyListFragmentTest extends BaseFragment {
             mService = null;
         }
     };
+
+    private void startMonitoringSettings() {
+        mDisposable.add(MyApplicationContext.getInstance()
+                .getFurthestEventObservable()
+                .subscribe(x -> mService.restartListener())
+        );
+
+        mDisposable.add(MyApplicationContext.getInstance()
+                .getMaxWorkloadObservable()
+                .subscribe(x -> mService.restartListener())
+        );
+    }
 
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
