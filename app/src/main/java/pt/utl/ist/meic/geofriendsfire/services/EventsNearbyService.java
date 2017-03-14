@@ -17,14 +17,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import org.reactivestreams.Subscriber;
-
 import java.util.HashMap;
 import java.util.Map;
 
 import io.reactivex.disposables.CompositeDisposable;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
-import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
@@ -39,14 +36,16 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     private static final double MIN_RADIUS = 0.1;
 
     private Map<String, Event> mEventsMap;
-    private Utils.ObservableList<Event> mValues;
+    private Utils.ObservableList<Event> mValuesObservable;
 
     private GeoQuery geoQuery;
     private GeoLocation mCurrentLocation;
     private double mCurrentRadius;
 
     private Map<String, Double> residentialDomainLimits;
-    private Subscriber subscriber;
+    CompositeDisposable mDisposable = new CompositeDisposable();
+    private int mFurthest;
+    private int mWorkload;
 
     // Binder given to clients
     private final IBinder mBinder = new MyBinder();
@@ -61,18 +60,17 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
 
     @Override
     public void onKeyEntered(final String key, final GeoLocation location) {
-        int maxWorkload = MyApplicationContext.getInstance().getMaximumWorkLoad();
-        int furthestEvent = MyApplicationContext.getInstance().getFurthestEvent();
-
-        if (this.mValues.list.size() < maxWorkload && mCurrentRadius < furthestEvent) {
+        if (this.mValuesObservable.list.size() < mWorkload && mCurrentRadius < mFurthest) {
             // New Event nearby
             FirebaseDatabase.getInstance().getReference(EVENTS_REF).child(key).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Event v = dataSnapshot.getValue(Event.class);
-                    v.geoLocation = location;
+                    v.latitude = location.latitude;
+                    v.longitude = location.longitude;
                     v.setRef(key);
-                    mValues.add(v);
+                    Log.d("ttt","add event "+v);
+                    mValuesObservable.add(v);
                     mEventsMap.put(key, v);
                 }
 
@@ -91,9 +89,9 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
         Event event = this.mEventsMap.get(key);
         if (event != null) {
             // Remove data from the list
-            int eventIndex = mValues.list.indexOf(event);
+            int eventIndex = mValuesObservable.list.indexOf(event);
             mEventsMap.remove(event);
-            mValues.list.remove(event);
+            mValuesObservable.list.remove(event);
         }
     }
 
@@ -101,39 +99,57 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     public void onKeyMoved(String key, GeoLocation location) {
         Event event = this.mEventsMap.get(key);
         if (event != null) {
-            event.geoLocation = location;
+            event.latitude = location.latitude;
+            event.longitude = location.longitude;
         }
     }
 
     @Override
     public void onGeoQueryReady() {
-        int maxWorkload = MyApplicationContext.getInstance().getMaximumWorkLoad();
-        int furthestEvent = MyApplicationContext.getInstance().getFurthestEvent();
-        if (this.mValues.list.size() < maxWorkload && mCurrentRadius < furthestEvent) {
-            Log.d("aaa", "NEARBY :: " + this.mValues.list.size() + " era mais pequeno que o WL " + maxWorkload);
+        if (this.mValuesObservable.list.size() < mWorkload && mCurrentRadius < mFurthest) {
+            Log.d("ttt", "onReady :: " + this.mValuesObservable.list.size() + " era mais pequeno que o WL " + mWorkload);
             mCurrentRadius = mCurrentRadius + 0.2;
             geoQuery.setRadius(mCurrentRadius);
         } else {
+            Log.d("ttt", "ja pssou algum maximo com Current radius -> " + mCurrentRadius
+                    +" // "+mValuesObservable.list.size()+" tamanho" );
             //ja tem os events maximos ou ja passou do furthest limit
             cleanupListener();
             calculateResidentialDomainLimits();
             startMonitoringCurrentLocation();
         }
-        Log.d("aaa", "nearby Current radius -> " + mCurrentRadius);
+    }
+
+    private void startMonitoringSettings() {
+        mDisposable.add(MyApplicationContext.getInstance()
+                .getFurthestEventObservable()
+                .subscribe(x -> {
+                    Log.d("ttt","mudou furthest");
+                    mFurthest = x;
+                    initListener();
+                })
+        );
+
+        mDisposable.add(MyApplicationContext.getInstance()
+                .getMaxWorkloadObservable()
+                .subscribe(x -> {
+                    Log.d("ttt","mudou WorkLoad");
+                    mWorkload = x;
+                    initListener();
+                })
+        );
+
     }
 
     private void startMonitoringCurrentLocation() {
-        Log.d("ttt", "startMonitoring");
+        Log.d("ttt", "startMonitoringCurrentLocation");
 
-        CompositeDisposable disposable = new CompositeDisposable();
-
-        disposable.add(MyApplicationContext.getLocationsServiceInstance()
-                .getLastKnownLocation()
+        mDisposable.add(MyApplicationContext.getLocationsServiceInstance()
+                .getLastKnownLocationObservable()
                 .subscribe(x -> {
-                    Log.d("ttt","monitoring "+x);
+                    Log.d("ttt","monitoring Location "+x);
                     if (isOutside(x)) {
                         initListener();
-                        disposable.dispose();
                     }
                 })
         );
@@ -148,11 +164,8 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     }
 
     private void calculateResidentialDomainLimits() {
-        MyApplicationContext.getLocationsServiceInstance()
-                .getLastKnownLocation()
-                .subscribe(x -> {
-                    residentialDomainLimits = Utils.getBoundingBox(x, mCurrentRadius);
-                });
+        residentialDomainLimits = Utils.getBoundingBox(MyApplicationContext.getLocationsServiceInstance()
+                .getLastKnownLocation(), mCurrentRadius);
     }
 
     @Override
@@ -177,21 +190,14 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
         }
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        initListener();
-    }
-
     public void initListener() {
-        mEventsMap = new HashMap<>();
-        mValues = new Utils.ObservableList<Event>();
-        residentialDomainLimits = new HashMap<String, Double>();
-        this.mCurrentRadius = MIN_RADIUS;
+        restartVars();
 
-        GPSTracker tracker = new GPSTracker(this);
-        if (tracker.canGetLocation()) {
-            this.mCurrentLocation = new GeoLocation(tracker.getLatitude(), tracker.getLongitude());
+        Location lastKnowLocation =
+                MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
+        if (lastKnowLocation != null) {
+            Log.d("ttt","criei listeners geofire");
+            this.mCurrentLocation = new GeoLocation(lastKnowLocation.getLatitude(), lastKnowLocation.getLongitude());
 
             this.geoQuery = new GeoFire(FirebaseDatabase.getInstance().getReference(EVENTS_LOCATIONS_REF))
                     .queryAtLocation(mCurrentLocation, mCurrentRadius);
@@ -201,9 +207,36 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     }
 
     public void cleanupListener() {
+        Log.d("ttt","cleanupListener");
         if (geoQuery != null) {
             geoQuery.removeAllListeners();
         }
+    }
+
+    public void initVars(){
+        mDisposable = new CompositeDisposable();
+        mEventsMap = new HashMap<>();
+        mValuesObservable = new Utils.ObservableList<>();
+        residentialDomainLimits = new HashMap<String, Double>();
+        this.mCurrentRadius = MIN_RADIUS;
+
+        mFurthest = MyApplicationContext.getInstance().getFurthestEvent();
+        mWorkload = MyApplicationContext.getInstance().getMaximumWorkLoad();
+        startMonitoringSettings();
+    }
+
+    public void restartVars(){
+        mDisposable.dispose();
+        mEventsMap.clear();
+        residentialDomainLimits.clear();
+        this.mCurrentRadius = MIN_RADIUS;
+        mValuesObservable.list.clear();
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        initVars();
     }
 
     @Override
@@ -212,7 +245,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     }
 
 
-    public Utils.ObservableList<Event> getEventsNearby() {
-        return mValues;
+    public Utils.ObservableList<Event> getEventsNearbyObservable() {
+        return mValuesObservable;
     }
 }

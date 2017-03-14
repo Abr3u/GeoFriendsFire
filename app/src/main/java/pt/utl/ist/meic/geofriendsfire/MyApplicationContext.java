@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
 
+import io.reactivex.subjects.PublishSubject;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
 import pt.utl.ist.meic.geofriendsfire.services.LocationTrackingService;
 
@@ -19,12 +20,14 @@ public class MyApplicationContext extends Application{
 
     private RefWatcher refWatcher;
     private static MyApplicationContext instance;
-    //private static EventsNearbyService mEventsNearbyService;
     private static LocationTrackingService mLocationTrackingService;
 
     private FirebaseUser firebaseUser;
+
     private int maximumWorkLoad;
     private int furthestEvent;
+    private PublishSubject<Integer> maxWorkloadObservable;
+    private PublishSubject<Integer> furthestEventObservable;
 
     @Override
     public void onCreate() {
@@ -36,8 +39,14 @@ public class MyApplicationContext extends Application{
         }
         instance = (MyApplicationContext) getApplicationContext();
         refWatcher = LeakCanary.install(this);
-        maximumWorkLoad = 4;
-        furthestEvent = 20;
+        maximumWorkLoad = 2;
+        furthestEvent = 5;
+
+        maxWorkloadObservable = PublishSubject.create();
+        furthestEventObservable = PublishSubject.create();
+        maxWorkloadObservable.onNext(maximumWorkLoad);
+        furthestEventObservable.onNext(furthestEvent);
+
         Intent locations = new Intent(this, LocationTrackingService.class);
         bindService(locations, locationConnection, Context.BIND_AUTO_CREATE);
     }
@@ -86,6 +95,7 @@ public class MyApplicationContext extends Application{
 
     public void setMaximumWorkLoad(int maximumWorkLoad) {
         this.maximumWorkLoad = maximumWorkLoad;
+        this.maxWorkloadObservable.onNext(maximumWorkLoad);
     }
 
     public int getFurthestEvent() {
@@ -94,5 +104,14 @@ public class MyApplicationContext extends Application{
 
     public void setFurthestEvent(int furthestEvent) {
         this.furthestEvent = furthestEvent;
+        this.furthestEventObservable.onNext(furthestEvent);
+    }
+
+    public PublishSubject<Integer> getMaxWorkloadObservable() {
+        return maxWorkloadObservable;
+    }
+
+    public PublishSubject<Integer> getFurthestEventObservable() {
+        return furthestEventObservable;
     }
 }

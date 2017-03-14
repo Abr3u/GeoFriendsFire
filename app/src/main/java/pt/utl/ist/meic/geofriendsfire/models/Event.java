@@ -5,6 +5,7 @@ import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import org.parceler.Parcel;
+import org.parceler.Transient;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,9 +13,10 @@ import java.util.Map;
 @IgnoreExtraProperties
 @Parcel
 public class Event {
-
     @Exclude
-    public GeoLocation geoLocation;
+    public double latitude;
+    @Exclude
+    public double longitude;
     @Exclude
     public String ref;
     public String authorId;

@@ -72,7 +72,8 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
                         double longitude = dataSnapshot.child("1").getValue(Double.class);
 
                         Event v = new Event(eventAux.authorId,eventAux.authorName,eventAux.description,eventAux.category,eventAux.creationDate);
-                        v.geoLocation = new GeoLocation(latitude,longitude);
+                        v.latitude = latitude;
+                        v.longitude = longitude;
                         v.setRef(eventKey);
 
                         // Update RecyclerView
@@ -205,7 +206,7 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
             public boolean onLongClick(View view) {
                 Event event = mValues.get(position);
                 Uri gmmIntentUri = Uri.parse("google.navigation:" +
-                        "q="+event.geoLocation.latitude+","+event.geoLocation.longitude+"&mode=w");
+                        "q="+event.latitude+","+event.longitude+"&mode=w");
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
                 mContext.startActivity(mapIntent);

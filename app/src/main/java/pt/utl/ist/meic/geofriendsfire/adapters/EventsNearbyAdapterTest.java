@@ -2,6 +2,7 @@ package pt.utl.ist.meic.geofriendsfire.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
@@ -12,19 +13,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.firebase.geofire.GeoLocation;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.disposables.CompositeDisposable;
+import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
-import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
 
-public class EventsNearbyAdapterTest extends RecyclerView.Adapter<EventsNearbyAdapterTest.ViewHolder>{
+public class EventsNearbyAdapterTest extends RecyclerView.Adapter<EventsNearbyAdapterTest.ViewHolder> {
 
     private static final String EVENTS_LOCATIONS_REF = "/eventsLocations";
     private static final String EVENTS_REF = "/events";
@@ -42,8 +43,8 @@ public class EventsNearbyAdapterTest extends RecyclerView.Adapter<EventsNearbyAd
         mValues = new ArrayList<>();
     }
 
-    public void addItem(Event e){
-        if(!mValues.contains(e)){
+    public void addItem(Event e) {
+        if (!mValues.contains(e)) {
             mValues.add(e);
             notifyDataSetChanged();
         }
@@ -62,11 +63,11 @@ public class EventsNearbyAdapterTest extends RecyclerView.Adapter<EventsNearbyAd
         Event e = mValues.get(position);
         holder.mTextView.setText(e.description);
 
-        GeoLocation eventLocation = e.geoLocation;
-        GPSTracker tracker = new GPSTracker(mContext);
-        //TODO: ir buscar lastKnown ao Service
-        if(tracker.canGetLocation()){
-            double distance = Utils.distance(tracker.getLatitude(), eventLocation.latitude, tracker.getLongitude(), eventLocation.longitude);
+        Location lastKnowLocation =
+                MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
+
+        if(lastKnowLocation != null){
+            double distance = Utils.distance(lastKnowLocation.getLatitude(), e.latitude, lastKnowLocation.getLongitude(), e.longitude);
             holder.mTextView2.setText(String.format("%.3f", distance / 1000) + " kms away");//to km
         }
 
@@ -74,8 +75,8 @@ public class EventsNearbyAdapterTest extends RecyclerView.Adapter<EventsNearbyAd
             @Override
             public void onClick(View v) {
                 Event event = mValues.get(position);
-                if(mContext instanceof DrawerMainActivity){
-                    ((DrawerMainActivity)mContext).setupViewPagerEventDetails(event);
+                if (mContext instanceof DrawerMainActivity) {
+                    ((DrawerMainActivity) mContext).setupViewPagerEventDetails(event);
                 }
             }
         });
@@ -85,7 +86,7 @@ public class EventsNearbyAdapterTest extends RecyclerView.Adapter<EventsNearbyAd
             public boolean onLongClick(View view) {
                 Event event = mValues.get(position);
                 Uri gmmIntentUri = Uri.parse("google.navigation:" +
-                        "q="+event.geoLocation.latitude+","+event.geoLocation.longitude+"&mode=w");
+                        "q=" + event.latitude + "," + event.longitude + "&mode=w");
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
                 mContext.startActivity(mapIntent);
@@ -122,11 +123,11 @@ public class EventsNearbyAdapterTest extends RecyclerView.Adapter<EventsNearbyAd
         return mValues.size();
     }
 
-    public List<Event> getValues(){
+    public List<Event> getValues() {
         return this.mValues;
     }
 
-    public void setValues(List<Event> values){
+    public void setValues(List<Event> values) {
         this.mValues = values;
     }
 

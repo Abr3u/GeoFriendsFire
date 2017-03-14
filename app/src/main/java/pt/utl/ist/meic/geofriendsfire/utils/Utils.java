@@ -68,6 +68,7 @@ public class Utils {
             list.add(value);
             onAdd.onNext(value);
         }
+
         public Observable<T> getObservable() {
             return onAdd;
         }

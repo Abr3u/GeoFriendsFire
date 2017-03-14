@@ -14,21 +14,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.firebase.geofire.GeoLocation;
 
 import org.parceler.Parcels;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
-import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
+import io.reactivex.disposables.CompositeDisposable;
 import pt.utl.ist.meic.geofriendsfire.R;
-import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyAdapter;
 import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyAdapterTest;
-import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
 
 public class EventsNearbyListFragmentTest extends BaseFragment {
@@ -44,6 +37,8 @@ public class EventsNearbyListFragmentTest extends BaseFragment {
     private EventsNearbyAdapterTest mAdapter;
     private EventsNearbyService mService;
 
+    private CompositeDisposable mDisposable;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -51,12 +46,14 @@ public class EventsNearbyListFragmentTest extends BaseFragment {
         ButterKnife.bind(this, view);
         super.setNetworkDetectorHolder(networkDetectorHolder);
 
+        Log.d("ttt", "oncreateview");
+
         Intent events = new Intent(getContext(), EventsNearbyService.class);
         getContext().bindService(events, eventsConnection, Context.BIND_AUTO_CREATE);
 
-        if(savedInstanceState != null){
-            mAdapter.setValues(Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_VALUES)));
-        }
+        mDisposable = new CompositeDisposable();
+        mAdapter = new EventsNearbyAdapterTest(getContext());
+        setupRecyclerView();
         return view;
     }
 
@@ -67,17 +64,22 @@ public class EventsNearbyListFragmentTest extends BaseFragment {
                                        IBinder service) {
             EventsNearbyService.MyBinder binder = (EventsNearbyService.MyBinder) service;
             mService = binder.getService();
-            mService.getEventsNearby()
+
+            mDisposable.add(mService.getEventsNearbyObservable()
                     .getObservable()
                     .subscribe(x -> {
+                        Log.d("ttt","received Event "+x);
                         mAdapter.addItem(x);
-                    });
-            mAdapter = new EventsNearbyAdapterTest(getContext());
-            setupRecyclerView();
+                    })
+            );
+
+            mService.initListener();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
+            mDisposable.dispose();
+            mService = null;
         }
     };
 
@@ -87,13 +89,20 @@ public class EventsNearbyListFragmentTest extends BaseFragment {
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d("ttt","onsave");
+        outState.putParcelable(PARCEL_VALUES, Parcels.wrap(mAdapter.getValues()));
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putParcelable(PARCEL_VALUES, Parcels.wrap(mAdapter.getValues()));
+    public void onViewStateRestored(Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if(savedInstanceState != null){
+            Log.d("ttt","onRestore");
+            mAdapter.setValues(Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_VALUES)));
+        }else{
+            Log.d("ttt","onRestore era null");
+        }
     }
 }

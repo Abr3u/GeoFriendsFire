@@ -4,11 +4,11 @@ package pt.utl.ist.meic.geofriendsfire.fragments;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.InflateException;
 import android.view.LayoutInflater;
@@ -51,7 +51,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
-import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
@@ -94,9 +93,9 @@ public class MapFragment extends BaseFragment implements GeoQueryEventListener, 
             }
         }
 
-
-        GPSTracker gpsTracker = new GPSTracker(getContext());
-        if (!gpsTracker.canGetLocation()) {
+        Location lastKnowLocation =
+                MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
+        if (lastKnowLocation == null) {
             Toast.makeText(getContext(), "cant get current location", Toast.LENGTH_LONG).show();
         } else {
             if(savedInstanceState != null){
@@ -110,7 +109,7 @@ public class MapFragment extends BaseFragment implements GeoQueryEventListener, 
             }
             this.markers = new HashMap<String, Marker>();
 
-            mCurrentLocation = new GeoLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude());
+            mCurrentLocation = new GeoLocation(lastKnowLocation.getLatitude(), lastKnowLocation.getLongitude());
 
             try {
                 rootView = inflater.inflate(R.layout.map_fragment, container, false);
@@ -211,10 +210,10 @@ public class MapFragment extends BaseFragment implements GeoQueryEventListener, 
         description.setText(event.description);
 
         TextView extra = (TextView) cardview.findViewById(R.id.iv_extra);
-        if (mCurrentLocation == null || event.geoLocation == null) {
+        if (mCurrentLocation == null) {
             extra.setText(event.creationDate);
         }else{
-            double distance = Utils.distance(mCurrentLocation.latitude, event.geoLocation.latitude, mCurrentLocation.longitude, event.geoLocation.longitude);
+            double distance = Utils.distance(mCurrentLocation.latitude, event.latitude, mCurrentLocation.longitude, event.longitude);
             extra.setText(String.format("%.3f", distance / 1000) + " kms away");
         }
 
@@ -222,7 +221,7 @@ public class MapFragment extends BaseFragment implements GeoQueryEventListener, 
             @Override
             public boolean onLongClick(View view) {
                 Uri gmmIntentUri = Uri.parse("google.navigation:" +
-                        "q="+event.geoLocation.latitude+","+event.geoLocation.longitude+"&mode=w");
+                        "q="+event.latitude+","+event.longitude+"&mode=w");
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
                 startActivity(mapIntent);
@@ -309,7 +308,8 @@ public class MapFragment extends BaseFragment implements GeoQueryEventListener, 
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Event v = dataSnapshot.getValue(Event.class);
-                    v.geoLocation = location;
+                    v.latitude = location.latitude;
+                    v.longitude = location.longitude;
                     v.setRef(key);
                     mValues.add(v);
                     mEventsMap.put(key, v);
@@ -354,7 +354,8 @@ public class MapFragment extends BaseFragment implements GeoQueryEventListener, 
 
         Event event = this.mEventsMap.get(key);
         if (event != null) {
-            event.geoLocation = location;
+            event.latitude = location.latitude;
+            event.longitude = location.longitude;
         }
     }
 

@@ -1,7 +1,6 @@
 package pt.utl.ist.meic.geofriendsfire.fragments;
 
-import android.content.Context;
-import android.support.v4.app.Fragment;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,7 +25,6 @@ import butterknife.OnClick;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
-import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 
 public class CreateEventFragment extends BaseFragment {
@@ -66,16 +64,20 @@ public class CreateEventFragment extends BaseFragment {
     @OnClick(R.id.createEventButton)
     public void createNewEventButtonClicked() {
 
-        GPSTracker mGpsTracker = new GPSTracker(getContext());
+        Location lastKnowLocation =
+                MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
 
-        if (!mGpsTracker.canGetLocation()) {
+        if (lastKnowLocation == null) {
             Toast.makeText(getContext(), "can not get location", Toast.LENGTH_LONG).show();
         }else if(eventDescription.getText().toString().trim().isEmpty()){
             Toast.makeText(getContext(), "plz provide an event description", Toast.LENGTH_SHORT).show();
         }
+        else if(eventDescription.getText().toString().trim().startsWith("test")){
+            ((DrawerMainActivity)getContext()).setupViewPagerEvents();
+        }
         else {
-            double latitude = mGpsTracker.getLatitude();
-            double longitude = mGpsTracker.getLongitude();
+            double latitude = lastKnowLocation.getLatitude();
+            double longitude = lastKnowLocation.getLongitude();
             String category = String.valueOf(eventCategory.getSelectedItem());
             String description = eventDescription.getText().toString().trim();
 

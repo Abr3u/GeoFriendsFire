@@ -85,8 +85,7 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
         Event e = mValues.get(position);
         holder.mTextView.setText(e.description);
 
-        GeoLocation eventLocation = e.geoLocation;
-        double distance = Utils.distance(mCurrentLocation.latitude, eventLocation.latitude, mCurrentLocation.longitude, eventLocation.longitude);
+        double distance = Utils.distance(mCurrentLocation.latitude, e.latitude, mCurrentLocation.longitude, e.longitude);
         holder.mTextView2.setText(String.format("%.3f", distance / 1000) + " kms away");//to km
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -104,7 +103,7 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
             public boolean onLongClick(View view) {
                 Event event = mValues.get(position);
                 Uri gmmIntentUri = Uri.parse("google.navigation:" +
-                        "q="+event.geoLocation.latitude+","+event.geoLocation.longitude+"&mode=w");
+                        "q="+event.latitude+","+event.longitude+"&mode=w");
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
                 mContext.startActivity(mapIntent);
@@ -177,7 +176,8 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Event v = dataSnapshot.getValue(Event.class);
-                    v.geoLocation = location;
+                    v.latitude = location.latitude;
+                    v.longitude = location.longitude;
                     v.setRef(key);
                     mValues.add(v);
                     mEventsMap.put(key, v);
@@ -211,7 +211,8 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
     public void onKeyMoved(String key, GeoLocation location) {
         Event event = this.mEventsMap.get(key);
         if (event != null) {
-            event.geoLocation = location;
+            event.latitude = location.latitude;
+            event.longitude = location.longitude;
         }
     }
 

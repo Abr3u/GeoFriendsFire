@@ -1,9 +1,9 @@
 package pt.utl.ist.meic.geofriendsfire.fragments;
 
 import android.content.Intent;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,8 +27,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
-import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
@@ -98,19 +98,20 @@ public class EventDetailsMapFragment extends BaseFragment implements GoogleMap.O
                 mapFragment.getMapAsync(this);
             }
         } else {
-            GPSTracker gpsTracker = new GPSTracker(getContext());
-            if (!gpsTracker.canGetLocation()) {
+            Location lastKnownLocation =
+                    MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
+            if (lastKnownLocation == null) {
                 Toast.makeText(getContext(), "cant get current location", Toast.LENGTH_LONG).show();
             } else {
-                mCurrentLocation = new GeoLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude());
+                mCurrentLocation = new GeoLocation(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
                 this.map.addMarker(new MarkerOptions()
                         .position(new LatLng(mCurrentLocation.latitude, mCurrentLocation.longitude))
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));
             }
             this.map.addMarker(new MarkerOptions()
-                    .position(new LatLng(mEvent.geoLocation.latitude, mEvent.geoLocation.longitude))
+                    .position(new LatLng(mEvent.latitude, mEvent.longitude))
                     .icon(BitmapDescriptorFactory.defaultMarker(88)));
-            LatLng latLngCenter = new LatLng(mEvent.geoLocation.latitude, mEvent.geoLocation.longitude);
+            LatLng latLngCenter = new LatLng(mEvent.latitude, mEvent.longitude);
             this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngCenter, INITIAL_ZOOM_LEVEL));
             setupCardView(mEvent);
         }
@@ -124,10 +125,10 @@ public class EventDetailsMapFragment extends BaseFragment implements GoogleMap.O
         description.setText(event.description);
 
         TextView extra = (TextView) cardview.findViewById(R.id.iv_extra);
-        if (mCurrentLocation == null || event.geoLocation == null) {
+        if (mCurrentLocation == null) {
             extra.setText(event.creationDate);
         }else{
-            double distance = Utils.distance(mCurrentLocation.latitude, event.geoLocation.latitude, mCurrentLocation.longitude, event.geoLocation.longitude);
+            double distance = Utils.distance(mCurrentLocation.latitude, event.latitude, mCurrentLocation.longitude, event.longitude);
             extra.setText(String.format("%.3f", distance / 1000) + " kms away");
         }
 
@@ -135,7 +136,7 @@ public class EventDetailsMapFragment extends BaseFragment implements GoogleMap.O
             @Override
             public boolean onLongClick(View view) {
                 Uri gmmIntentUri = Uri.parse("google.navigation:" +
-                        "q="+event.geoLocation.latitude+","+event.geoLocation.longitude+"&mode=w");
+                        "q="+event.latitude+","+event.longitude+"&mode=w");
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
                 startActivity(mapIntent);

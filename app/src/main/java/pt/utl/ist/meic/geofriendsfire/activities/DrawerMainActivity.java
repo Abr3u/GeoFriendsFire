@@ -123,7 +123,8 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
                     setupViewPagerCreateEvent();
                     break;
             }
-        }else{
+        }
+        else{
             setupViewPagerEvents();
         }
     }

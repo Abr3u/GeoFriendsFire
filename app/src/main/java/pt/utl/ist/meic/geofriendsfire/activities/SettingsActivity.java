@@ -1,6 +1,8 @@
 package pt.utl.ist.meic.geofriendsfire.activities;
 
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -9,6 +11,7 @@ import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +36,12 @@ public class SettingsActivity extends AppCompatActivity {
 
     @BindView(R.id.furthestEventTextView)
     TextView furthestText;
+
+    @BindView(R.id.latiET)
+    EditText latiET;
+
+    @BindView(R.id.longiET)
+    EditText longiET;
 
     private Integer newWorkload;
     private Integer newFurthest;
@@ -134,6 +143,22 @@ public class SettingsActivity extends AppCompatActivity {
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+
+    @OnClick(R.id.mockedLocationButton)
+    public void mockedLocationButtonClicked(){
+        double mockedLati = Double.parseDouble(latiET.getText().toString().trim());
+        double mockedLongi = Double.parseDouble(longiET.getText().toString().trim());
+
+        if(mockedLati > 90 || mockedLati < -90 || mockedLongi > 180 || mockedLongi < -180){
+            Toast.makeText(this, "Invalid Mocked Location", Toast.LENGTH_SHORT).show();
+        }else{
+            Location mocked = new Location("mockedProvider");
+            mocked.setLatitude(mockedLati);
+            mocked.setLongitude(mockedLongi);
+            MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);
+        }
     }
 
     /*

@@ -20,23 +20,23 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import io.reactivex.subjects.PublishSubject;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
-import pt.utl.ist.meic.geofriendsfire.utils.Utils;
+import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 
 public class LocationTrackingService extends Service
 {
-    private static final String TAG = "testGPS";
+    private static final String TAG = "trackingService";
     private static final int LOCATION_AGGREGATION_THRESHOLD = 5;
-    private static final int LOCATION_INTERVAL = 10*1000;//30mins
-    private static final float LOCATION_DISTANCE = 0f;//meters
+    private static final int LOCATION_INTERVAL = 30*60*1000;//30mins
+    private static final float LOCATION_DISTANCE = 250f;//meters
 
     private LocationManager mLocationManager;
     private DatabaseReference mDatabase;
     private List<TimeLocation> mLocations;
-    private PublishSubject<Location> mLastKnowLocation;
+    private PublishSubject<Location> mLastKnowLocationObservable;
+    private Location mLastKnowLocation;
 
     // Binder given to clients
     private final IBinder mBinder = new MyBinder();
@@ -70,7 +70,8 @@ public class LocationTrackingService extends Service
             tl.time = new Date();
             tl.location = location;
             mLocations.add(tl);
-            mLastKnowLocation.onNext(location);
+            mLastKnowLocation = location;
+            mLastKnowLocationObservable.onNext(location);
             if(mLocations.size() > LOCATION_AGGREGATION_THRESHOLD){
                 sendLocationsFirebase();
                 mLocations.clear();
@@ -132,7 +133,28 @@ public class LocationTrackingService extends Service
         initializeLocationManager();
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mLocations = new ArrayList<TimeLocation>();
-        mLastKnowLocation = PublishSubject.create();
+
+        //init lastKnownLocation
+        mLastKnowLocationObservable = PublishSubject.create();
+        GPSTracker tracker = new GPSTracker(this);
+        if(tracker.canGetLocation()){
+            Location location = tracker.getLocation();
+            Log.d(TAG,"iniciei LK "+tracker.getLocation());
+            mLastKnowLocation = location;
+            mLastKnowLocationObservable.onNext(location);
+
+            //send first location to Firebase
+            //TODO: uncomment
+            /*TimeLocation first = new TimeLocation();
+            first.location = location;
+            first.time = new Date();
+            Map<String, Object> locationValues = first.toMap();
+
+            String uid = MyApplicationContext.getInstance().getFirebaseUser().getUid();
+            mDatabase.child("/locations/"+uid).push().setValue(locationValues);*/
+        }
+
+        //observe location changes
         try {
             mLocationManager.requestLocationUpdates(
                     LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
@@ -173,8 +195,16 @@ public class LocationTrackingService extends Service
         }
     }
 
-    public PublishSubject<Location> getLastKnownLocation(){
-        return mLastKnowLocation;
+    public PublishSubject<Location> getLastKnownLocationObservable(){
+        Log.d(TAG,"getLK");
+        return mLastKnowLocationObservable;
+    }
+
+    public Location getLastKnownLocation(){return mLastKnowLocation;}
+
+    public void setMockedLocation(Location mocked){
+        this.mLastKnowLocation = mocked;
+        this.mLastKnowLocationObservable.onNext(mocked);
     }
 
 }

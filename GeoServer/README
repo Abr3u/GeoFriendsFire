@@ -28,10 +28,17 @@ medidas - prctFriendsFound per User
 online Detection done!
 location tracking done!
 saveState on screen rotation done!
-started resident domain logic - eventsNearbyService#monitoring;
+resident domain logic done!  - MAYBE 
+mocked location done!
+monitor settings done!
+
+acabei a ver se ja ia buscar mais aumentando o WL e furthest, acho que ja está.
+testar mocked locations e restantes use cases!
+escrever aquela merda!!
 ______________________________________________________________
 Tomorrow:
 
+mapFragemnt tmb fica com nearbyEvents service
 testar logica do resident domain - mock locations
 
 escrever event recommendation - geofire, geohash, bounding boxes

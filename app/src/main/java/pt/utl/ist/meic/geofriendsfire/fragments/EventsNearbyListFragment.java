@@ -1,11 +1,7 @@
 package pt.utl.ist.meic.geofriendsfire.fragments;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
+import android.location.Location;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,9 +17,9 @@ import org.parceler.Parcels;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyAdapter;
-import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 
 public class EventsNearbyListFragment extends BaseFragment {
 
@@ -45,11 +41,12 @@ public class EventsNearbyListFragment extends BaseFragment {
         ButterKnife.bind(this, view);
         super.setNetworkDetectorHolder(networkDetectorHolder);
 
-        GPSTracker gpsTracker = new GPSTracker(getContext());
-        if (!gpsTracker.canGetLocation()) {
+        Location lastKnowLocation =
+                MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
+        if (lastKnowLocation == null) {
             Toast.makeText(getContext(), "cant get current location", Toast.LENGTH_LONG).show();
         } else {
-            GeoLocation currentLocation = new GeoLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude());
+            GeoLocation currentLocation = new GeoLocation(lastKnowLocation.getLatitude(), lastKnowLocation.getLongitude());
             mAdapter = new EventsNearbyAdapter(getContext(), currentLocation);
             setupRecyclerView();
         }
