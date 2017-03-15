@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -29,10 +30,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.parceler.Parcels;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import butterknife.BindView;
@@ -57,6 +61,7 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     TextView networkDetectorHolder;
 
     private GoogleMap map;
+    private Marker myMarker;
     private View rootView;
     private Location mLastKnownLocation;
 
@@ -110,11 +115,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
             EventsNearbyService.MyBinder binder = (EventsNearbyService.MyBinder) service;
             mService = binder.getService();
 
-            mDisposable.add(mService.getEventsNearbyObservable()
-                    .getObservable()
-                    .subscribe(x -> newMarkerFromService(x))
-            );
-
             startMonitoringSettings();
             mService.restartListener();
         }
@@ -145,6 +145,22 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
                 .icon(BitmapDescriptorFactory.defaultMarker(88)));
     }
 
+    public void newRadiusFromService(double radius){
+        Map<String,Double> resiDomain = Utils.getBoundingBox(
+                MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation(),radius);
+
+        PolylineOptions rectOptions = new PolylineOptions()
+                .color(Color.GREEN)
+                .width(2)
+                .add(new LatLng(resiDomain.get("bot"), resiDomain.get("left")))
+                .add(new LatLng(resiDomain.get("bot"), resiDomain.get("right")))
+                .add(new LatLng(resiDomain.get("top"), resiDomain.get("right")))
+                .add(new LatLng(resiDomain.get("top"), resiDomain.get("left")))
+                .add(new LatLng(resiDomain.get("bot"), resiDomain.get("left")));
+
+
+        this.map.addPolyline(rectOptions);
+    }
 
     @Override
     public void onDestroyView() {
@@ -201,11 +217,19 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     protected void setUpMap() {
         if (mLastKnownLocation != null) {
             LatLng latLngCenter = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
-            this.map.addMarker(new MarkerOptions()
+            myMarker = this.map.addMarker(new MarkerOptions()
                     .position(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()))
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));
             this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngCenter, INITIAL_ZOOM_LEVEL));
         }
+        mDisposable.add(mService.getEventsNearbyObservable()
+                .getObservable()
+                .subscribe(x -> newMarkerFromService(x))
+        );
+
+        mDisposable.add(mService.getCurrentRadiusObservable()
+                .subscribe(x -> newRadiusFromService(x))
+        );
         this.map.setOnMarkerClickListener(this);
         this.map.setOnCameraChangeListener(this);
     }
@@ -280,14 +304,20 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     public void onCameraChange(CameraPosition cameraPosition) {
         View detailsHolder = rootView.findViewById(R.id.detailsHolder);
         detailsHolder.setVisibility(View.GONE);
-        /*LatLng center = cameraPosition.target;
-        double radius = zoomLevelToRadius(currentZoom);
-        this.geoQuery.setCenter(new GeoLocation(center.latitude, center.longitude));
-        // radius in km
-        this.geoQuery.setRadius(radius / 1000);
-        myLocationMarker.remove();
-        myLocationMarker = this.map.addMarker(new MarkerOptions()
+        LatLng center = cameraPosition.target;
+
+        myMarker.remove();
+        myMarker = this.map.addMarker(new MarkerOptions()
                 .position(new LatLng(center.latitude, center.longitude))
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));*/
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));
+
+        this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(center, cameraPosition.zoom));
+
+        /*
+        //TODO: change
+        Location mocked = new Location("mocked");
+        mocked.setLatitude(center.latitude);
+        mocked.setLongitude(center.longitude);
+        MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);*/
     }
 }

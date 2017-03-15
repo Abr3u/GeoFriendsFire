@@ -22,12 +22,13 @@ public class Utils {
         double latiRatio = radius / one_lati_in_km;
         double longiRatio = radius / one_longi_in_km;
 
-        return new HashMap<String,Double>(){{
-            this.put("left",location.getLatitude()-latiRatio);
-            this.put("right",location.getLatitude()+latiRatio);
-            this.put("bot",location.getLongitude()-longiRatio);
-            this.put("top",location.getLongitude()+longiRatio);
-        }};
+        HashMap box = new HashMap<String,Double>();
+        box.put("bot",location.getLatitude()-latiRatio);
+        box. put("top",location.getLatitude()+latiRatio);
+        box.put("left",location.getLongitude()-longiRatio);
+        box.put("right",location.getLongitude()+longiRatio);
+
+        return box;
     }
 
     /*

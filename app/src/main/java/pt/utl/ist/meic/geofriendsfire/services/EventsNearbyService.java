@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.subjects.PublishSubject;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
@@ -37,13 +38,14 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
 
     private Map<String, Event> mEventsMap;
     private Utils.ObservableList<Event> mValuesObservable;
+    private PublishSubject<Double> mCurrentRadiusObservable;
+    CompositeDisposable mDisposable = new CompositeDisposable();
 
     private GeoQuery geoQuery;
     private GeoLocation mCurrentLocation;
     private double mCurrentRadius;
 
     private Map<String, Double> residentialDomainLimits;
-    CompositeDisposable mDisposable = new CompositeDisposable();
     private int mFurthest;
     private int mWorkload;
 
@@ -123,28 +125,40 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     private void startMonitoringCurrentLocation() {
         Log.d("ttt", "startMonitoringCurrentLocation");
 
-        mDisposable.add(MyApplicationContext.getLocationsServiceInstance()
+        MyApplicationContext.getLocationsServiceInstance()
                 .getLastKnownLocationObservable()
-                .subscribe(x -> {
-                    Log.d("ttt","monitoring Location "+x);
+                .forEach(x-> {
+                    Log.d("ttt","recebido "+x + " // "+residentialDomainLimits.size());
                     if (isOutside(x)) {
+                        Log.d("ttt","estava outside");
+                        residentialDomainLimits.clear();
                         restartListener();
                     }
-                })
-        );
+                });
     }
 
-    private boolean isOutside(Location location) {
-        Log.d("ttt", "isOutside");
-        return location.getLatitude() < residentialDomainLimits.get("left")
-                || location.getLatitude() > residentialDomainLimits.get("right")
-                || location.getLongitude() < residentialDomainLimits.get("bot")
-                || location.getLongitude() > residentialDomainLimits.get("top");
+    private void debugResiDomain(){
+        for(Map.Entry<String,Double> entry : residentialDomainLimits.entrySet()){
+            Log.d("ttt","entry -> "+entry.getKey()+" // "+entry.getValue());
+        }
+    }
+
+    public boolean isOutside(Location location) {
+        if(residentialDomainLimits.isEmpty()){
+            calculateResidentialDomainLimits();
+        }
+
+        return location.getLongitude() < residentialDomainLimits.get("left")
+                || location.getLongitude() > residentialDomainLimits.get("right")
+                || location.getLatitude() < residentialDomainLimits.get("bot")
+                || location.getLatitude() > residentialDomainLimits.get("top");
     }
 
     private void calculateResidentialDomainLimits() {
         residentialDomainLimits = Utils.getBoundingBox(MyApplicationContext.getLocationsServiceInstance()
                 .getLastKnownLocation(), mCurrentRadius);
+        mCurrentRadiusObservable.onNext(mCurrentRadius);
+        debugResiDomain();
     }
 
     @Override
@@ -196,6 +210,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
         mDisposable = new CompositeDisposable();
         mEventsMap = new HashMap<>();
         mValuesObservable = new Utils.ObservableList<>();
+        mCurrentRadiusObservable = PublishSubject.create();
         residentialDomainLimits = new HashMap<String, Double>();
         this.mCurrentRadius = MIN_RADIUS;
 
@@ -206,10 +221,10 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     public void restartVars(){
         mDisposable.dispose();
         mEventsMap.clear();
-        residentialDomainLimits.clear();
         mValuesObservable.list.clear();
 
         this.mCurrentRadius = MIN_RADIUS;
+        mCurrentRadiusObservable.onNext(mCurrentRadius);
         mFurthest = MyApplicationContext.getInstance().getFurthestEvent();
         mWorkload = MyApplicationContext.getInstance().getMaximumWorkLoad();
     }
@@ -225,6 +240,10 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
         return mBinder;
     }
 
+
+    public PublishSubject<Double> getCurrentRadiusObservable() {
+        return mCurrentRadiusObservable;
+    }
 
     public Utils.ObservableList<Event> getEventsNearbyObservable() {
         return mValuesObservable;

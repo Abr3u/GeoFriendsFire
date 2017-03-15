@@ -136,6 +136,7 @@ public class LocationTrackingService extends Service
 
         //init lastKnownLocation
         mLastKnowLocationObservable = PublishSubject.create();
+
         GPSTracker tracker = new GPSTracker(this);
         if(tracker.canGetLocation()){
             Location location = tracker.getLocation();
@@ -196,15 +197,17 @@ public class LocationTrackingService extends Service
     }
 
     public PublishSubject<Location> getLastKnownLocationObservable(){
-        Log.d(TAG,"getLK");
         return mLastKnowLocationObservable;
     }
 
     public Location getLastKnownLocation(){return mLastKnowLocation;}
 
     public void setMockedLocation(Location mocked){
-        this.mLastKnowLocation = mocked;
-        this.mLastKnowLocationObservable.onNext(mocked);
+        if(mocked.getLatitude() != mLastKnowLocation.getLatitude()
+                || mocked.getLongitude() != mLastKnowLocation.getLongitude()){
+            this.mLastKnowLocation = mocked;
+            this.mLastKnowLocationObservable.onNext(mocked);
+        }
     }
 
 }
