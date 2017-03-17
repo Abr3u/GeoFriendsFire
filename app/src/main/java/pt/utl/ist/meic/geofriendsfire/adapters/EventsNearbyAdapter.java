@@ -1,8 +1,8 @@
 package pt.utl.ist.meic.geofriendsfire.adapters;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -14,19 +14,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.firebase.geofire.GeoFire;
-import com.firebase.geofire.GeoLocation;
-import com.firebase.geofire.GeoQuery;
-import com.firebase.geofire.GeoQueryEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
@@ -35,7 +25,7 @@ import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
 
-public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapter.ViewHolder> implements GeoQueryEventListener {
+public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapter.ViewHolder> {
 
     private static final String EVENTS_LOCATIONS_REF = "/eventsLocations";
     private static final String EVENTS_REF = "/events";
@@ -44,32 +34,26 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
     private final Context mContext;
     private final TypedValue mTypedValue = new TypedValue();
     private int mBackground;
-    private Map<String, Event> mEventsMap;
     private List<Event> mValues;
 
-    private GeoQuery geoQuery;
-    private GeoLocation mCurrentLocation;
-    private double mCurrentRadius;
-
-    public EventsNearbyAdapter(Context context, GeoLocation currentLocation) {
+    public EventsNearbyAdapter(Context context) {
         context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
         mBackground = mTypedValue.resourceId;
-        mEventsMap = new HashMap<>();
+        mContext = context;
         mValues = new ArrayList<>();
-        this.mContext = context;
-        this.mCurrentLocation = currentLocation;
-        this.mCurrentRadius = MIN_RADIUS;
-
-        this.geoQuery = new GeoFire(FirebaseDatabase.getInstance().getReference(EVENTS_LOCATIONS_REF))
-                .queryAtLocation(mCurrentLocation, mCurrentRadius);
-
-        this.geoQuery.addGeoQueryEventListener(this);
     }
 
-    public void cleanupListener() {
-        if (geoQuery != null) {
-            geoQuery.removeAllListeners();
+    public void addItem(Event e) {
+        if (!mValues.contains(e)) {
+            mValues.add(e);
+            notifyDataSetChanged();
         }
+    }
+
+    public void removeItem(Event toDelete){
+        Log.d("yyy","evntsNearbyAdapter remove "+toDelete);
+        mValues.remove(toDelete);
+        notifyDataSetChanged();
     }
 
     @Override
@@ -85,15 +69,20 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
         Event e = mValues.get(position);
         holder.mTextView.setText(e.description);
 
-        double distance = Utils.distance(mCurrentLocation.latitude, e.latitude, mCurrentLocation.longitude, e.longitude);
-        holder.mTextView2.setText(String.format("%.3f", distance / 1000) + " kms away");//to km
+        Location lastKnowLocation =
+                MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
+
+        if(lastKnowLocation != null){
+            double distance = Utils.distance(lastKnowLocation.getLatitude(), e.latitude, lastKnowLocation.getLongitude(), e.longitude);
+            holder.mTextView2.setText(String.format("%.3f", distance / 1000) + " kms away");//to km
+        }
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Event event = mValues.get(position);
-                if(mContext instanceof DrawerMainActivity){
-                    ((DrawerMainActivity)mContext).setupViewPagerEventDetails(event);
+                if (mContext instanceof DrawerMainActivity) {
+                    ((DrawerMainActivity) mContext).setupViewPagerEventDetails(event);
                 }
             }
         });
@@ -103,7 +92,7 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
             public boolean onLongClick(View view) {
                 Event event = mValues.get(position);
                 Uri gmmIntentUri = Uri.parse("google.navigation:" +
-                        "q="+event.latitude+","+event.longitude+"&mode=w");
+                        "q=" + event.latitude + "," + event.longitude + "&mode=w");
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
                 mContext.startActivity(mapIntent);
@@ -140,103 +129,12 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
         return mValues.size();
     }
 
-    public List<Event> getValues(){
+    public List<Event> getValues() {
         return this.mValues;
     }
 
-    public void setValues(List<Event> values){
+    public void setValues(List<Event> values) {
         this.mValues = values;
-    }
-
-    public Map<String,Event> getValuesMap(){
-        return this.mEventsMap;
-    }
-
-    public void setValuesMap(Map<String,Event> map){
-        this.mEventsMap = map;
-    }
-
-    /*
-    *
-    *
-    * GeoFire Listeners
-    *
-    * */
-
-
-    @Override
-    public void onKeyEntered(final String key, final GeoLocation location) {
-        MyApplicationContext appContext = (MyApplicationContext) mContext.getApplicationContext();
-        int maxWorkload = appContext.getMaximumWorkLoad();
-        int furthestEvent = appContext.getFurthestEvent();
-
-        if (this.mValues.size() < maxWorkload && mCurrentRadius < furthestEvent) {
-            // New Event nearby
-            FirebaseDatabase.getInstance().getReference(EVENTS_REF).child(key).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Event v = dataSnapshot.getValue(Event.class);
-                    v.latitude = location.latitude;
-                    v.longitude = location.longitude;
-                    v.setRef(key);
-                    mValues.add(v);
-                    mEventsMap.put(key, v);
-                    notifyItemInserted(mValues.size() - 1);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Log.e("ena", databaseError.toString());
-                }
-            });
-
-        }
-    }
-
-    @Override
-    public void onKeyExited(String key) {
-        // Remove any old event
-        Event event = this.mEventsMap.get(key);
-        if (event != null) {
-            // Remove data from the list
-            int eventIndex = mValues.indexOf(event);
-            mEventsMap.remove(event);
-            mValues.remove(event);
-            // Update the RecyclerView
-            notifyItemRemoved(eventIndex);
-        }
-    }
-
-    @Override
-    public void onKeyMoved(String key, GeoLocation location) {
-        Event event = this.mEventsMap.get(key);
-        if (event != null) {
-            event.latitude = location.latitude;
-            event.longitude = location.longitude;
-        }
-    }
-
-    @Override
-    public void onGeoQueryReady() {
-        MyApplicationContext appContext = (MyApplicationContext) mContext.getApplicationContext();
-        int maxWorkload = appContext.getMaximumWorkLoad();
-        int furthestEvent = appContext.getFurthestEvent();
-        if (this.mValues.size() < maxWorkload && mCurrentRadius < furthestEvent) {
-            Log.d("aaa","NEARBY :: "+this.mValues.size()+" era mais pequeno que o WL "+maxWorkload);
-            mCurrentRadius = mCurrentRadius + 0.2;
-            geoQuery.setRadius(mCurrentRadius);
-        }
-        Log.d("aaa","nearby Current radius -> "+mCurrentRadius);
-    }
-
-    @Override
-    public void onGeoQueryError(DatabaseError error) {
-        new AlertDialog.Builder(mContext)
-                .setTitle("Error")
-                .setMessage("There was an unexpected error querying GeoFire: " + error.getMessage())
-                .setPositiveButton(android.R.string.ok, null)
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
     }
 
 

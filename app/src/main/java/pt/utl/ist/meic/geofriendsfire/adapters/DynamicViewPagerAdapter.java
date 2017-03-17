@@ -1,6 +1,5 @@
 package pt.utl.ist.meic.geofriendsfire.adapters;
 
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
@@ -11,11 +10,9 @@ import java.util.ArrayList;
 import pt.utl.ist.meic.geofriendsfire.fragments.CreateEventFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventDetailsMapFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventsNearbyListFragment;
-import pt.utl.ist.meic.geofriendsfire.fragments.EventsNearbyListFragmentTest;
 import pt.utl.ist.meic.geofriendsfire.fragments.FriendsFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.MapFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.MyEventsListFragment;
-import pt.utl.ist.meic.geofriendsfire.fragments.BaseFragment;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.utils.FragmentKeys;
 
@@ -34,7 +31,7 @@ public class DynamicViewPagerAdapter extends ArrayFragmentStatePagerAdapter<Frag
                 return new MapFragment();
             case EventsNearby:
                 //TODO: in work
-                return new EventsNearbyListFragmentTest();
+                return new EventsNearbyListFragment();
             case MyEvents:
                 return new MyEventsListFragment();
             case EventDetailsMap:
