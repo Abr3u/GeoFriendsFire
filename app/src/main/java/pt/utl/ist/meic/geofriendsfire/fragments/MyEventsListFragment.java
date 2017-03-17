@@ -23,7 +23,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.MyEventsAdapter;
-import pt.utl.ist.meic.geofriendsfire.events.DeletedEvent;
+import pt.utl.ist.meic.geofriendsfire.events.NewDeletedEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 
 public class MyEventsListFragment extends BaseFragment{
@@ -81,7 +81,7 @@ public class MyEventsListFragment extends BaseFragment{
                 if (direction == ItemTouchHelper.LEFT) {    //if swipe left
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext()); //alert for confirm to delete
-                    builder.setMessage("Are you sure you want to delete event "+position+"?");    //set message
+                    builder.setMessage("Are you sure you want to delete this event?");    //set message
 
                     builder.setPositiveButton("REMOVE", new DialogInterface.OnClickListener() { //when click on DELETE
                         @Override
@@ -109,7 +109,7 @@ public class MyEventsListFragment extends BaseFragment{
         adapter.removeValue(position);
         Toast.makeText(getContext(), "Deleting "+toDelete.description, Toast.LENGTH_LONG).show();
 
-        EventBus.getDefault().post(new DeletedEvent(toDelete));
+        EventBus.getDefault().post(new NewDeletedEvent(toDelete));
         mFirebaseEventsRef.child(toDelete.ref).removeValue();
         mFirebaseEventsLocationRef.child(toDelete.ref).removeValue();
     }

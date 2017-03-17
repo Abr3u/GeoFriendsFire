@@ -22,8 +22,8 @@ import butterknife.ButterKnife;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyAdapter;
-import pt.utl.ist.meic.geofriendsfire.events.DeletedEvent;
-import pt.utl.ist.meic.geofriendsfire.events.NearbyEvent;
+import pt.utl.ist.meic.geofriendsfire.events.NewDeletedEvent;
+import pt.utl.ist.meic.geofriendsfire.events.NewNearbyEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
 
@@ -106,7 +106,7 @@ public class EventsNearbyListFragment extends BaseFragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(DeletedEvent event) {
+    public void onEventMainThread(NewDeletedEvent event) {
         mAdapter.removeItem(event.getDeleted());
         if(mAdapter.getItemCount() < MyApplicationContext.getInstance().getMaximumWorkLoad()){
             MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
@@ -115,7 +115,8 @@ public class EventsNearbyListFragment extends BaseFragment {
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(NearbyEvent event) {
+    public void onEventMainThread(NewNearbyEvent event) {
+        Log.d("yyy","list recebi novo "+event);
         mAdapter.addItem(event.getNearby());
     }
 }

@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
-import pt.utl.ist.meic.geofriendsfire.events.NearbyEvent;
+import pt.utl.ist.meic.geofriendsfire.events.NewNearbyEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewLocationEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewResidentDomainEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewSettingsEvent;
@@ -77,7 +77,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
                     Log.d("ttt","add event "+v);
                     mValues.add(v);
                     mEventsMap.put(key, v);
-                    EventBus.getDefault().post(new NearbyEvent(v));
+                    EventBus.getDefault().post(new NewNearbyEvent(v));
                 }
 
                 @Override

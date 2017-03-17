@@ -64,6 +64,7 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
                 // A new Event has been added, add it to the displayed list
                 final Event eventAux = dataSnapshot.getValue(Event.class);
                 final String eventKey = dataSnapshot.getKey();
+
                 FirebaseDatabase.getInstance().getReference(EVENTS_LOCATIONS_REF).child(eventKey+"/l").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -75,10 +76,11 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
                         v.longitude = longitude;
                         v.setRef(eventKey);
 
+                        Log.d("yyy","MY recebi event "+v.description);
                         // Update RecyclerView
                         mEventsMap.put(eventKey,v);
                         mValues.add(v);
-                        notifyItemInserted(mValues.size() - 1);
+                        notifyDataSetChanged();
                     }
 
                     @Override

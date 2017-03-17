@@ -1,17 +1,12 @@
 package pt.utl.ist.meic.geofriendsfire.utils;
 
-/**
- * Created by ricar on 11/02/2017.
- */
 
 public enum FragmentKeys {
     EventsNearbyMap,
     EventsNearby,
     MyEvents,
     EventDetailsMap,
-    CreateEvent,
-    Friends,
-    Test;
+    Friends;
 
 
     public String getPageTitle(){

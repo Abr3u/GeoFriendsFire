@@ -7,7 +7,6 @@ import com.nakama.arraypageradapter.ArrayFragmentStatePagerAdapter;
 
 import java.util.ArrayList;
 
-import pt.utl.ist.meic.geofriendsfire.fragments.CreateEventFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventDetailsMapFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventsNearbyListFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.FriendsFragment;
@@ -30,7 +29,6 @@ public class DynamicViewPagerAdapter extends ArrayFragmentStatePagerAdapter<Frag
             case EventsNearbyMap:
                 return new MapFragment();
             case EventsNearby:
-                //TODO: in work
                 return new EventsNearbyListFragment();
             case MyEvents:
                 return new MyEventsListFragment();
@@ -38,8 +36,6 @@ public class DynamicViewPagerAdapter extends ArrayFragmentStatePagerAdapter<Frag
                 EventDetailsMapFragment frag = new EventDetailsMapFragment();
                 frag.setEvent(mEvent);
                 return frag;
-            case CreateEvent:
-                return new CreateEventFragment();
             case Friends:
                 return new FriendsFragment();
         }

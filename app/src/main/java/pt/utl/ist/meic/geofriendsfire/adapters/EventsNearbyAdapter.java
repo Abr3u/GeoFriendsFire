@@ -44,14 +44,15 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
     }
 
     public void addItem(Event e) {
-        if (!mValues.contains(e)) {
-            mValues.add(e);
-            notifyDataSetChanged();
+        if (mValues.contains(e)) {
+            mValues.remove(e);
         }
+        mValues.add(e);
+        notifyDataSetChanged();
     }
 
-    public void removeItem(Event toDelete){
-        Log.d("yyy","evntsNearbyAdapter remove "+toDelete);
+    public void removeItem(Event toDelete) {
+        Log.d("yyy", "evntsNearbyAdapter remove " + toDelete);
         mValues.remove(toDelete);
         notifyDataSetChanged();
     }
@@ -72,7 +73,7 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
         Location lastKnowLocation =
                 MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
 
-        if(lastKnowLocation != null){
+        if (lastKnowLocation != null) {
             double distance = Utils.distance(lastKnowLocation.getLatitude(), e.latitude, lastKnowLocation.getLongitude(), e.longitude);
             holder.mTextView2.setText(String.format("%.3f", distance / 1000) + " kms away");//to km
         }

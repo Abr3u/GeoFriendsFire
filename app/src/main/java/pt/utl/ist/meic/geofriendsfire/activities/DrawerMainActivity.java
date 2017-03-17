@@ -32,6 +32,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.greenrobot.eventbus.EventBus;
 import org.parceler.Parcels;
 
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
 
     private static final String PARCEL_FRAGMENT = "fragment";
     private static final String PARCEL_EVENT = "event";
+    private static final int CREATE_EVENT_REQ_CODE = 1;
 
     @BindView(R.id.drawer_layout)
     DrawerLayout mDrawerLayout;
@@ -117,9 +119,6 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
                     break;
                 case 3:
                     setupViewPagerEventDetails((Event)Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_EVENT)));
-                    break;
-                case 4:
-                    setupViewPagerCreateEvent();
                     break;
             }
         }
@@ -293,11 +292,14 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mTabLayout.setVisibility(View.GONE);
     }
 
-    public void setupViewPagerCreateEvent() {
-        fragment = 4;
-        mAdapter.clear();
-        mAdapter.add(FragmentKeys.CreateEvent);
-        mTabLayout.setVisibility(View.GONE);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == CREATE_EVENT_REQ_CODE){
+            if(resultCode == RESULT_OK){
+                MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
+                setupViewPagerEvents();
+            }
+        }
     }
 
     private void showAlertDialog() {
@@ -310,7 +312,8 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        setupViewPagerCreateEvent();
+                        Intent intent = new Intent(DrawerMainActivity.this, CreateEventActivity.class);
+                        startActivityForResult(intent,CREATE_EVENT_REQ_CODE);
                     }
                 });
 

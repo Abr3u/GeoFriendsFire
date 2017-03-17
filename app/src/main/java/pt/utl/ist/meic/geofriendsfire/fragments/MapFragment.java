@@ -43,7 +43,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
-import pt.utl.ist.meic.geofriendsfire.events.NearbyEvent;
+import pt.utl.ist.meic.geofriendsfire.events.NewNearbyEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewResidentDomainEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
@@ -298,7 +298,8 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(NearbyEvent event) {
+    public void onEventMainThread(NewNearbyEvent event) {
+        Log.d("yyy","mapa recebi novo "+event);
         newMarkerFromService(event.getNearby());
     }
 
