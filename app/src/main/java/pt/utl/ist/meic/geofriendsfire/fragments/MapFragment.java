@@ -33,6 +33,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.parceler.Parcels;
 
 import java.util.HashSet;
@@ -44,6 +47,8 @@ import butterknife.ButterKnife;
 import io.reactivex.disposables.CompositeDisposable;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
+import pt.utl.ist.meic.geofriendsfire.events.NearbyEvent;
+import pt.utl.ist.meic.geofriendsfire.events.NewSettingsEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
@@ -108,6 +113,19 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         return rootView;
     }
 
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
     private ServiceConnection eventsConnection = new ServiceConnection() {
 
         @Override
@@ -115,8 +133,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
                                        IBinder service) {
             EventsNearbyService.MyBinder binder = (EventsNearbyService.MyBinder) service;
             mService = binder.getService();
-
-            startMonitoringSettings();
             mService.restartListener();
         }
 
@@ -127,18 +143,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         }
     };
 
-    private void startMonitoringSettings() {
-        mDisposable.add(MyApplicationContext.getInstance()
-                .getFurthestEventObservable()
-                .subscribe(x -> mService.restartListener())
-        );
-
-        mDisposable.add(MyApplicationContext.getInstance()
-                .getMaxWorkloadObservable()
-                .subscribe(x -> mService.restartListener())
-        );
-    }
-
     private void newMarkerFromService(Event event) {
         mValues.add(event);
         this.map.addMarker(new MarkerOptions()
@@ -146,9 +150,9 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
                 .icon(BitmapDescriptorFactory.defaultMarker(88)));
     }
 
-    public void newRadiusFromService(double radius){
-        Map<String,Double> resiDomain = Utils.getBoundingBox(
-                MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation(),radius);
+    public void newRadiusFromService(double radius) {
+        Map<String, Double> resiDomain = Utils.getBoundingBox(
+                MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation(), radius);
 
         PolylineOptions rectOptions = new PolylineOptions()
                 .color(Color.GREEN)
@@ -159,7 +163,7 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
                 .add(new LatLng(resiDomain.get("top"), resiDomain.get("left")))
                 .add(new LatLng(resiDomain.get("bot"), resiDomain.get("left")));
 
-        if(mPolyline != null){
+        if (mPolyline != null) {
             mPolyline.remove();
         }
         mPolyline = this.map.addPolyline(rectOptions);
@@ -225,10 +229,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));
             this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngCenter, INITIAL_ZOOM_LEVEL));
         }
-        mDisposable.add(mService.getEventsNearbyObservable()
-                .getObservable()
-                .subscribe(x -> newMarkerFromService(x))
-        );
 
         mDisposable.add(mService.getCurrentRadiusObservable()
                 .subscribe(x -> newRadiusFromService(x))
@@ -309,8 +309,8 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         detailsHolder.setVisibility(View.GONE);
         LatLng center = cameraPosition.target;
 
-        if(myMarker.getPosition().latitude != center.latitude
-            || myMarker.getPosition().longitude != center.longitude){
+        if (myMarker.getPosition().latitude != center.latitude
+                || myMarker.getPosition().longitude != center.longitude) {
             myMarker.remove();
             myMarker = this.map.addMarker(new MarkerOptions()
                     .position(new LatLng(center.latitude, center.longitude))
@@ -325,4 +325,16 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
             MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);
         }
     }
+
+
+    //
+    // EventBus
+    //
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(NearbyEvent event) {
+        newMarkerFromService(event.getNearby());
+    }
+
 }

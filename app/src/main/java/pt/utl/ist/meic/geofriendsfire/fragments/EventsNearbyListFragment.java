@@ -27,6 +27,8 @@ import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyAdapter;
 import pt.utl.ist.meic.geofriendsfire.events.DeletedEvent;
+import pt.utl.ist.meic.geofriendsfire.events.NearbyEvent;
+import pt.utl.ist.meic.geofriendsfire.events.NewSettingsEvent;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
 
 public class EventsNearbyListFragment extends BaseFragment {
@@ -69,16 +71,6 @@ public class EventsNearbyListFragment extends BaseFragment {
                                        IBinder service) {
             EventsNearbyService.MyBinder binder = (EventsNearbyService.MyBinder) service;
             mService = binder.getService();
-
-            mDisposable.add(mService.getEventsNearbyObservable()
-                    .getObservable()
-                    .subscribe(x -> {
-                        Log.d("ttt","received Event "+x);
-                        mAdapter.addItem(x);
-                    })
-            );
-
-            startMonitoringSettings();
             mService.restartListener();
         }
 
@@ -89,33 +81,7 @@ public class EventsNearbyListFragment extends BaseFragment {
         }
     };
 
-    private void startMonitoringSettings() {
-        mDisposable.add(MyApplicationContext.getInstance()
-                .getFurthestEventObservable()
-                .subscribe(x -> mService.restartListener())
-        );
 
-        mDisposable.add(MyApplicationContext.getInstance()
-                .getMaxWorkloadObservable()
-                .subscribe(x -> mService.restartListener())
-        );
-    }
-
-    private void setupRecyclerView() {
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(mAdapter);
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(DeletedEvent event) {
-        Log.d("yyy","event bus received deleted "+event.getDeleted());
-        mAdapter.removeItem(event.getDeleted());
-        if(mAdapter.getItemCount() < MyApplicationContext.getInstance().getMaximumWorkLoad()){
-            Log.d("yyy","restart after delete");
-            mService.restartListener();
-        }
-    }
 
     @Override
     public void onStart() {
@@ -127,6 +93,11 @@ public class EventsNearbyListFragment extends BaseFragment {
     public void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
+    }
+
+    private void setupRecyclerView() {
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(mAdapter);
     }
 
     @Override
@@ -145,5 +116,25 @@ public class EventsNearbyListFragment extends BaseFragment {
         }else{
             Log.d("ttt","onRestore era null");
         }
+    }
+
+
+    //
+    // EventBus
+    //
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(DeletedEvent event) {
+        mAdapter.removeItem(event.getDeleted());
+        if(mAdapter.getItemCount() < MyApplicationContext.getInstance().getMaximumWorkLoad()){
+            mService.restartListener();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(NearbyEvent event) {
+        mAdapter.addItem(event.getNearby());
     }
 }

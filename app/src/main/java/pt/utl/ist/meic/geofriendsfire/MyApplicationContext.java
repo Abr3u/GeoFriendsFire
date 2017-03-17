@@ -11,7 +11,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
 
+import org.greenrobot.eventbus.EventBus;
+
 import io.reactivex.subjects.PublishSubject;
+import pt.utl.ist.meic.geofriendsfire.events.NewSettingsEvent;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
 import pt.utl.ist.meic.geofriendsfire.services.LocationTrackingService;
 
@@ -26,8 +29,6 @@ public class MyApplicationContext extends Application{
 
     private int maximumWorkLoad;
     private int furthestEvent;
-    private PublishSubject<Integer> maxWorkloadObservable;
-    private PublishSubject<Integer> furthestEventObservable;
 
     @Override
     public void onCreate() {
@@ -41,11 +42,6 @@ public class MyApplicationContext extends Application{
         refWatcher = LeakCanary.install(this);
         maximumWorkLoad = 2;
         furthestEvent = 5;
-
-        maxWorkloadObservable = PublishSubject.create();
-        furthestEventObservable = PublishSubject.create();
-        maxWorkloadObservable.onNext(maximumWorkLoad);
-        furthestEventObservable.onNext(furthestEvent);
 
         Intent locations = new Intent(this, LocationTrackingService.class);
         bindService(locations, locationConnection, Context.BIND_AUTO_CREATE);
@@ -91,7 +87,7 @@ public class MyApplicationContext extends Application{
 
     public void setMaximumWorkLoad(int maximumWorkLoad) {
         this.maximumWorkLoad = maximumWorkLoad;
-        this.maxWorkloadObservable.onNext(maximumWorkLoad);
+        EventBus.getDefault().post(new NewSettingsEvent());
     }
 
     public int getFurthestEvent() {
@@ -100,14 +96,6 @@ public class MyApplicationContext extends Application{
 
     public void setFurthestEvent(int furthestEvent) {
         this.furthestEvent = furthestEvent;
-        this.furthestEventObservable.onNext(furthestEvent);
-    }
-
-    public PublishSubject<Integer> getMaxWorkloadObservable() {
-        return maxWorkloadObservable;
-    }
-
-    public PublishSubject<Integer> getFurthestEventObservable() {
-        return furthestEventObservable;
+        EventBus.getDefault().post(new NewSettingsEvent());
     }
 }

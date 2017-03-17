@@ -31,6 +31,7 @@ saveState on screen rotation done!
 mocked location done!
 monitor settings done!
 resident domain done! - I THINK!!
+delete event done!
 
 
 ______________________________________________________________
@@ -42,7 +43,6 @@ mudar NearbyService para uma classe singleton no AppContext;
 se calhar fazia era o mesmo para o outro serviço;
 
 nearbyEventList tem de ter um listener para o currentRadius do Service
-apagar/editar evento;
 reset location no map;
 normalizar score - ver baixo;
 recenter no details;

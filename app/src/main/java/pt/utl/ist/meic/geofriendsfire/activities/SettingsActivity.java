@@ -16,11 +16,14 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
+import pt.utl.ist.meic.geofriendsfire.events.NewSettingsEvent;
 
 
 public class SettingsActivity extends AppCompatActivity {

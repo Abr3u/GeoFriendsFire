@@ -17,12 +17,20 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.PublishSubject;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
+import pt.utl.ist.meic.geofriendsfire.events.NearbyEvent;
+import pt.utl.ist.meic.geofriendsfire.events.NewSettingsEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
@@ -37,7 +45,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     private static final double MIN_RADIUS = 0.1;
 
     private Map<String, Event> mEventsMap;
-    private Utils.ObservableList<Event> mValuesObservable;
+    private List<Event> mValues;
     private PublishSubject<Double> mCurrentRadiusObservable;
     CompositeDisposable mDisposable = new CompositeDisposable();
 
@@ -62,7 +70,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
 
     @Override
     public void onKeyEntered(final String key, final GeoLocation location) {
-        if (this.mValuesObservable.list.size() < mWorkload && mCurrentRadius < mFurthest) {
+        if (this.mValues.size() < mWorkload && mCurrentRadius < mFurthest) {
             // New Event nearby
             FirebaseDatabase.getInstance().getReference(EVENTS_REF).child(key).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -72,8 +80,9 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
                     v.longitude = location.longitude;
                     v.setRef(key);
                     Log.d("ttt","add event "+v);
-                    mValuesObservable.add(v);
+                    mValues.add(v);
                     mEventsMap.put(key, v);
+                    EventBus.getDefault().post(new NearbyEvent(v));
                 }
 
                 @Override
@@ -91,9 +100,8 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
         Event event = this.mEventsMap.get(key);
         if (event != null) {
             // Remove data from the list
-            int eventIndex = mValuesObservable.list.indexOf(event);
             mEventsMap.remove(event);
-            mValuesObservable.list.remove(event);
+            mValues.remove(event);
         }
     }
 
@@ -108,13 +116,13 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
 
     @Override
     public void onGeoQueryReady() {
-        if (this.mValuesObservable.list.size() < mWorkload && mCurrentRadius < mFurthest) {
-            Log.d("ttt", "onReady :: " + this.mValuesObservable.list.size() + " era mais pequeno que o WL " + mWorkload);
+        if (this.mValues.size() < mWorkload && mCurrentRadius < mFurthest) {
+            Log.d("ttt", "onReady :: " + this.mValues.size() + " era mais pequeno que o WL " + mWorkload);
             mCurrentRadius = mCurrentRadius + 0.2;
             geoQuery.setRadius(mCurrentRadius);
         } else {
             Log.d("ttt", "ja pssou algum maximo com Current radius -> " + mCurrentRadius
-                    +" // "+mValuesObservable.list.size()+" tamanho" );
+                    +" // "+mValues.size()+" tamanho" );
             //ja tem os events maximos ou ja passou do furthest limit
             mCurrentRadiusObservable.onNext(mCurrentRadius);
             cleanupListener();
@@ -208,7 +216,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     public void initVars(){
         mDisposable = new CompositeDisposable();
         mEventsMap = new HashMap<>();
-        mValuesObservable = new Utils.ObservableList<>();
+        mValues = new ArrayList<>();
         mCurrentRadiusObservable = PublishSubject.create();
         residentialDomainLimits = new HashMap<String, Double>();
         this.mCurrentRadius = MIN_RADIUS;
@@ -220,7 +228,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     public void restartVars(){
         mDisposable.dispose();
         mEventsMap.clear();
-        mValuesObservable.list.clear();
+        mValues.clear();
 
         this.mCurrentRadius = MIN_RADIUS;
         mFurthest = MyApplicationContext.getInstance().getFurthestEvent();
@@ -231,6 +239,13 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     public void onCreate() {
         super.onCreate();
         initVars();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -239,11 +254,14 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     }
 
 
-    public PublishSubject<Double> getCurrentRadiusObservable() {
-        return mCurrentRadiusObservable;
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(NewSettingsEvent event) {
+        Log.d("yyy","service restarting due to new setts");
+        this.restartListener();
     }
 
-    public Utils.ObservableList<Event> getEventsNearbyObservable() {
-        return mValuesObservable;
+    public PublishSubject<Double> getCurrentRadiusObservable() {
+        return mCurrentRadiusObservable;
     }
 }
