@@ -48,6 +48,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.events.NearbyEvent;
+import pt.utl.ist.meic.geofriendsfire.events.NewResidentDomainEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewSettingsEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
@@ -75,8 +76,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     private Set<Event> mValues;
     EventsNearbyService mService;
 
-    private CompositeDisposable mDisposable;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -99,7 +98,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
 
             Intent events = new Intent(getContext(), EventsNearbyService.class);
             getContext().bindService(events, eventsConnection, Context.BIND_AUTO_CREATE);
-            mDisposable = new CompositeDisposable();
 
             try {
                 rootView = inflater.inflate(R.layout.map_fragment, container, false);
@@ -138,7 +136,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            mDisposable.dispose();
             mService = null;
         }
     };
@@ -148,25 +145,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         this.map.addMarker(new MarkerOptions()
                 .position(new LatLng(event.latitude, event.longitude))
                 .icon(BitmapDescriptorFactory.defaultMarker(88)));
-    }
-
-    public void newRadiusFromService(double radius) {
-        Map<String, Double> resiDomain = Utils.getBoundingBox(
-                MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation(), radius);
-
-        PolylineOptions rectOptions = new PolylineOptions()
-                .color(Color.GREEN)
-                .width(2)
-                .add(new LatLng(resiDomain.get("bot"), resiDomain.get("left")))
-                .add(new LatLng(resiDomain.get("bot"), resiDomain.get("right")))
-                .add(new LatLng(resiDomain.get("top"), resiDomain.get("right")))
-                .add(new LatLng(resiDomain.get("top"), resiDomain.get("left")))
-                .add(new LatLng(resiDomain.get("bot"), resiDomain.get("left")));
-
-        if (mPolyline != null) {
-            mPolyline.remove();
-        }
-        mPolyline = this.map.addPolyline(rectOptions);
     }
 
     @Override
@@ -180,7 +158,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
                 e.printStackTrace();
             }
         }
-        mDisposable.dispose();
         super.onDestroyView();
     }
 
@@ -230,9 +207,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
             this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngCenter, INITIAL_ZOOM_LEVEL));
         }
 
-        mDisposable.add(mService.getCurrentRadiusObservable()
-                .subscribe(x -> newRadiusFromService(x))
-        );
         this.map.setOnMarkerClickListener(this);
         this.map.setOnCameraChangeListener(this);
     }
@@ -335,6 +309,26 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(NearbyEvent event) {
         newMarkerFromService(event.getNearby());
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(NewResidentDomainEvent event) {
+
+        Map<String,Double> resiDomain = event.getResiDomain();
+        PolylineOptions rectOptions = new PolylineOptions()
+                .color(Color.GREEN)
+                .width(2)
+                .add(new LatLng(resiDomain.get("bot"), resiDomain.get("left")))
+                .add(new LatLng(resiDomain.get("bot"), resiDomain.get("right")))
+                .add(new LatLng(resiDomain.get("top"), resiDomain.get("right")))
+                .add(new LatLng(resiDomain.get("top"), resiDomain.get("left")))
+                .add(new LatLng(resiDomain.get("bot"), resiDomain.get("left")));
+
+        if (mPolyline != null) {
+            mPolyline.remove();
+        }
+        mPolyline = this.map.addPolyline(rectOptions);
     }
 
 }

@@ -37,12 +37,8 @@ delete event done!
 ______________________________________________________________
 Tomorrow:
 
-o eventsNearbyList e o mapa têm de partilhar o mesmo observable, para termos sempre os mesmos eventos;
+eventos e serviços refactoring
 
-mudar NearbyService para uma classe singleton no AppContext;
-se calhar fazia era o mesmo para o outro serviço;
-
-nearbyEventList tem de ter um listener para o currentRadius do Service
 reset location no map;
 normalizar score - ver baixo;
 recenter no details;

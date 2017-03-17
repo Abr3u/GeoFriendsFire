@@ -30,6 +30,8 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.PublishSubject;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.events.NearbyEvent;
+import pt.utl.ist.meic.geofriendsfire.events.NewLocationEvent;
+import pt.utl.ist.meic.geofriendsfire.events.NewResidentDomainEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewSettingsEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
@@ -46,8 +48,6 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
 
     private Map<String, Event> mEventsMap;
     private List<Event> mValues;
-    private PublishSubject<Double> mCurrentRadiusObservable;
-    CompositeDisposable mDisposable = new CompositeDisposable();
 
     private GeoQuery geoQuery;
     private GeoLocation mCurrentLocation;
@@ -56,6 +56,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     private Map<String, Double> residentialDomainLimits;
     private int mFurthest;
     private int mWorkload;
+    private boolean monitoring;
 
     // Binder given to clients
     private final IBinder mBinder = new MyBinder();
@@ -124,7 +125,6 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
             Log.d("ttt", "ja pssou algum maximo com Current radius -> " + mCurrentRadius
                     +" // "+mValues.size()+" tamanho" );
             //ja tem os events maximos ou ja passou do furthest limit
-            mCurrentRadiusObservable.onNext(mCurrentRadius);
             cleanupListener();
             calculateResidentialDomainLimits();
             startMonitoringCurrentLocation();
@@ -133,16 +133,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
 
     private void startMonitoringCurrentLocation() {
         Log.d("ttt", "startMonitoringCurrentLocation");
-        MyApplicationContext.getLocationsServiceInstance()
-                .getLastKnownLocationObservable()
-                .forEach(x-> {
-                    Log.d("ttt","recebido "+x + " // "+residentialDomainLimits.size());
-                    if (isOutside(x)) {
-                        Log.d("ttt","estava outside");
-                        residentialDomainLimits.clear();
-                        restartListener();
-                    }
-                });
+        monitoring = true;
     }
 
     private void debugResiDomain(){
@@ -165,6 +156,8 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     private void calculateResidentialDomainLimits() {
         residentialDomainLimits = Utils.getBoundingBox(MyApplicationContext.getLocationsServiceInstance()
                 .getLastKnownLocation(), mCurrentRadius);
+
+        EventBus.getDefault().post(new NewResidentDomainEvent(residentialDomainLimits));
         debugResiDomain();
     }
 
@@ -214,10 +207,9 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     }
 
     public void initVars(){
-        mDisposable = new CompositeDisposable();
+        monitoring = false;
         mEventsMap = new HashMap<>();
         mValues = new ArrayList<>();
-        mCurrentRadiusObservable = PublishSubject.create();
         residentialDomainLimits = new HashMap<String, Double>();
         this.mCurrentRadius = MIN_RADIUS;
 
@@ -226,7 +218,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     }
 
     public void restartVars(){
-        mDisposable.dispose();
+        monitoring = false;
         mEventsMap.clear();
         mValues.clear();
 
@@ -261,7 +253,13 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
         this.restartListener();
     }
 
-    public PublishSubject<Double> getCurrentRadiusObservable() {
-        return mCurrentRadiusObservable;
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(NewLocationEvent event) {
+        Log.d("yyy","service nearbyEvents new Location");
+        if(monitoring && isOutside(event.getLocation())){
+            residentialDomainLimits.clear();
+            this.restartListener();
+        }
     }
 }

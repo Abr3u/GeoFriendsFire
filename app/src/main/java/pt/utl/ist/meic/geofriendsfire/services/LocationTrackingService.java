@@ -13,6 +13,8 @@ import android.util.Log;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import java.util.Map;
 
 import io.reactivex.subjects.PublishSubject;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
+import pt.utl.ist.meic.geofriendsfire.events.NewLocationEvent;
 import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 
 public class LocationTrackingService extends Service
@@ -35,7 +38,6 @@ public class LocationTrackingService extends Service
     private LocationManager mLocationManager;
     private DatabaseReference mDatabase;
     private List<TimeLocation> mLocations;
-    private PublishSubject<Location> mLastKnowLocationObservable;
     private Location mLastKnowLocation;
 
     // Binder given to clients
@@ -71,7 +73,8 @@ public class LocationTrackingService extends Service
             tl.location = location;
             mLocations.add(tl);
             mLastKnowLocation = location;
-            mLastKnowLocationObservable.onNext(location);
+            EventBus.getDefault().post(new NewLocationEvent(location));
+
             if(mLocations.size() > LOCATION_AGGREGATION_THRESHOLD){
                 sendLocationsFirebase();
                 mLocations.clear();
@@ -134,15 +137,11 @@ public class LocationTrackingService extends Service
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mLocations = new ArrayList<TimeLocation>();
 
-        //init lastKnownLocation
-        mLastKnowLocationObservable = PublishSubject.create();
-
         GPSTracker tracker = new GPSTracker(this);
         if(tracker.canGetLocation()){
             Location location = tracker.getLocation();
-            Log.d(TAG,"iniciei LK "+tracker.getLocation());
             mLastKnowLocation = location;
-            mLastKnowLocationObservable.onNext(location);
+            EventBus.getDefault().post(new NewLocationEvent(location));
 
             //send first location to Firebase
             //TODO: uncomment
@@ -196,17 +195,13 @@ public class LocationTrackingService extends Service
         }
     }
 
-    public PublishSubject<Location> getLastKnownLocationObservable(){
-        return mLastKnowLocationObservable;
-    }
-
     public Location getLastKnownLocation(){return mLastKnowLocation;}
 
     public void setMockedLocation(Location mocked){
         if(mocked.getLatitude() != mLastKnowLocation.getLatitude()
                 || mocked.getLongitude() != mLastKnowLocation.getLongitude()){
             this.mLastKnowLocation = mocked;
-            this.mLastKnowLocationObservable.onNext(mocked);
+            EventBus.getDefault().post(new NewLocationEvent(mocked));
         }
     }
 

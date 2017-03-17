@@ -44,8 +44,6 @@ public class EventsNearbyListFragment extends BaseFragment {
     private EventsNearbyAdapter mAdapter;
     private EventsNearbyService mService;
 
-    private CompositeDisposable mDisposable;
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,7 +56,6 @@ public class EventsNearbyListFragment extends BaseFragment {
         Intent events = new Intent(getContext(), EventsNearbyService.class);
         getContext().bindService(events, eventsConnection, Context.BIND_AUTO_CREATE);
 
-        mDisposable = new CompositeDisposable();
         mAdapter = new EventsNearbyAdapter(getContext());
         setupRecyclerView();
         return view;
@@ -76,7 +73,6 @@ public class EventsNearbyListFragment extends BaseFragment {
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            mDisposable.dispose();
             mService = null;
         }
     };
