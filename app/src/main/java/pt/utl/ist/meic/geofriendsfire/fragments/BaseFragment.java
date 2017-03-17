@@ -6,29 +6,16 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.squareup.leakcanary.RefWatcher;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
-import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.processors.PublishProcessor;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
-import pt.utl.ist.meic.geofriendsfire.R;
 
 public class BaseFragment
         extends Fragment {

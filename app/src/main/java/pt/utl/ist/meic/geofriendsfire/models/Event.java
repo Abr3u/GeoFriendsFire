@@ -1,11 +1,9 @@
 package pt.utl.ist.meic.geofriendsfire.models;
 
-import com.firebase.geofire.GeoLocation;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import org.parceler.Parcel;
-import org.parceler.Transient;
 
 import java.util.HashMap;
 import java.util.Map;

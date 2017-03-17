@@ -26,8 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.subjects.PublishSubject;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.events.NearbyEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewLocationEvent;
@@ -35,10 +33,6 @@ import pt.utl.ist.meic.geofriendsfire.events.NewResidentDomainEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewSettingsEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
-
-/**
- * Created by ricar on 12/03/2017.
- */
 
 public class EventsNearbyService extends Service implements GeoQueryEventListener {
 
