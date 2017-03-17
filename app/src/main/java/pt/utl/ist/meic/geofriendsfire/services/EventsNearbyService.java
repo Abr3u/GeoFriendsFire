@@ -116,6 +116,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
             Log.d("ttt", "ja pssou algum maximo com Current radius -> " + mCurrentRadius
                     +" // "+mValuesObservable.list.size()+" tamanho" );
             //ja tem os events maximos ou ja passou do furthest limit
+            mCurrentRadiusObservable.onNext(mCurrentRadius);
             cleanupListener();
             calculateResidentialDomainLimits();
             startMonitoringCurrentLocation();
@@ -124,7 +125,6 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
 
     private void startMonitoringCurrentLocation() {
         Log.d("ttt", "startMonitoringCurrentLocation");
-
         MyApplicationContext.getLocationsServiceInstance()
                 .getLastKnownLocationObservable()
                 .forEach(x-> {
@@ -157,7 +157,6 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     private void calculateResidentialDomainLimits() {
         residentialDomainLimits = Utils.getBoundingBox(MyApplicationContext.getLocationsServiceInstance()
                 .getLastKnownLocation(), mCurrentRadius);
-        mCurrentRadiusObservable.onNext(mCurrentRadius);
         debugResiDomain();
     }
 
@@ -224,7 +223,6 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
         mValuesObservable.list.clear();
 
         this.mCurrentRadius = MIN_RADIUS;
-        mCurrentRadiusObservable.onNext(mCurrentRadius);
         mFurthest = MyApplicationContext.getInstance().getFurthestEvent();
         mWorkload = MyApplicationContext.getInstance().getMaximumWorkLoad();
     }

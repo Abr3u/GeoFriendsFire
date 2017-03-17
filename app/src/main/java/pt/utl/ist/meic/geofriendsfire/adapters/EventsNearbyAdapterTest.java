@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,6 +49,12 @@ public class EventsNearbyAdapterTest extends RecyclerView.Adapter<EventsNearbyAd
             mValues.add(e);
             notifyDataSetChanged();
         }
+    }
+
+    public void removeItem(Event toDelete){
+        Log.d("yyy","evntsNearbyAdapter remove "+toDelete);
+        mValues.remove(toDelete);
+        notifyDataSetChanged();
     }
 
     @Override

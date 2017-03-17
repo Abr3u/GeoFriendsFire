@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +13,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoLocation;
-
 import org.parceler.Parcels;
 
 import butterknife.BindView;
@@ -20,6 +20,7 @@ import butterknife.ButterKnife;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyAdapter;
+import pt.utl.ist.meic.geofriendsfire.events.DeletedEvent;
 
 public class EventsNearbyListFragment extends BaseFragment {
 
@@ -62,6 +63,8 @@ public class EventsNearbyListFragment extends BaseFragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(mAdapter);
     }
+
+
 
     @Override
     public void onStop() {

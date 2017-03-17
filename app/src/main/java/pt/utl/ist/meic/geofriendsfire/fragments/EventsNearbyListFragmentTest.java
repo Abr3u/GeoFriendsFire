@@ -15,6 +15,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.parceler.Parcels;
 
 import butterknife.BindView;
@@ -23,6 +26,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyAdapterTest;
+import pt.utl.ist.meic.geofriendsfire.events.DeletedEvent;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
 
 public class EventsNearbyListFragmentTest extends BaseFragment {
@@ -100,6 +104,29 @@ public class EventsNearbyListFragmentTest extends BaseFragment {
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(mAdapter);
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(DeletedEvent event) {
+        Log.d("yyy","event bus received deleted "+event.getDeleted());
+        mAdapter.removeItem(event.getDeleted());
+        if(mAdapter.getItemCount() < MyApplicationContext.getInstance().getMaximumWorkLoad()){
+            Log.d("yyy","restart after delete");
+            mService.restartListener();
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override

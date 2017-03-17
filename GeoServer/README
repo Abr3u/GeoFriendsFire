@@ -28,40 +28,43 @@ medidas - prctFriendsFound per User
 online Detection done!
 location tracking done!
 saveState on screen rotation done!
-resident domain logic done!  - MAYBE 
 mocked location done!
 monitor settings done!
+resident domain done! - I THINK!!
 
-acabei a ver se ja ia buscar mais aumentando o WL e furthest, acho que ja está.
-testar mocked locations e restantes use cases!
-escrever aquela merda!!
+
 ______________________________________________________________
 Tomorrow:
 
-testar logica do resident domain - mock locations
+o eventsNearbyList e o mapa têm de partilhar o mesmo observable, para termos sempre os mesmos eventos;
+
+mudar NearbyService para uma classe singleton no AppContext;
+se calhar fazia era o mesmo para o outro serviço;
+
+nearbyEventList tem de ter um listener para o currentRadius do Service
+apagar/editar evento;
+reset location no map;
+normalizar score - ver baixo;
+recenter no details;
 
 escrever event recommendation - geofire, geohash, bounding boxes
 		friend recommendation - como filtro o dataset. qual o workflow depois de ter os dados de location
 
 
-SERVER
+____
+normalizar score - sequence passa a ser normalizado para [0;1] para ficar prct tmb. Só é preciso saber o max (min acho que pode ser sempre 0)
+
 aumentar scope - pensar em como criar os novos datasets necessarios!!
 pensar em como normalizar seq score com activity score numa escala. para depois poder mudar as percentagens.
 
 ver medidas de listas ordenadas, discussao proj
 geofire - favoritos
 artigos mail
-
-APP
-ver geofire workflow vs 
-logica de resident domain
-
-testar workload/furthest!!
-
 ??? - adicionar vertente layer/adicionar vertente popularidade - ?? not sure if needed
-??? - porquE K-means??
+
 
 Extra:
+??? - adicionar vertente layer/adicionar vertente popularidade - ?? not sure if needed
 por alert dialog antes de ir para directions
 userDetails
 security rules

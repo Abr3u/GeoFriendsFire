@@ -114,7 +114,7 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 Log.d(TAG, "onChildRemoved:" + dataSnapshot.getKey());
 
-                // A comment has changed, use the key to determine if we are displaying this
+                // An event has changed, use the key to determine if we are displaying this
                 // comment and if so remove it.
                 String eventKey = dataSnapshot.getKey();
 
@@ -122,6 +122,7 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
                 if (e != null) {
                     // Remove data from the list
                     int eventIndex = mValues.indexOf(e);
+                    Log.d("yyy","MyEvtsAdapter removing on index "+eventIndex);
                     mEventsMap.remove(e);
                     mValues.remove(e);
                     // Update the RecyclerView
@@ -161,6 +162,11 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
 
     }
 
+    public void removeValue(int position){
+        mEventsMap.remove(mValues.get(position).ref);
+        mValues.remove(position);
+        notifyItemRemoved(position);
+    }
 
     public List<Event> getValues(){
         return this.mValues;
@@ -191,6 +197,8 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
         holder.mTextView.setText(mValues.get(position).description);
         holder.mTextView2.setText(mValues.get(position).creationDate);
 
+
+        //cardview listeners
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -213,6 +221,8 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
                 return true;
             }
         });
+
+
 
 
         //setup category icon

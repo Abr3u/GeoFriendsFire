@@ -62,6 +62,7 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
 
     private GoogleMap map;
     private Marker myMarker;
+    private Polyline mPolyline;
     private View rootView;
     private Location mLastKnownLocation;
 
@@ -158,8 +159,10 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
                 .add(new LatLng(resiDomain.get("top"), resiDomain.get("left")))
                 .add(new LatLng(resiDomain.get("bot"), resiDomain.get("left")));
 
-
-        this.map.addPolyline(rectOptions);
+        if(mPolyline != null){
+            mPolyline.remove();
+        }
+        mPolyline = this.map.addPolyline(rectOptions);
     }
 
     @Override
@@ -306,18 +309,20 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         detailsHolder.setVisibility(View.GONE);
         LatLng center = cameraPosition.target;
 
-        myMarker.remove();
-        myMarker = this.map.addMarker(new MarkerOptions()
-                .position(new LatLng(center.latitude, center.longitude))
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));
+        if(myMarker.getPosition().latitude != center.latitude
+            || myMarker.getPosition().longitude != center.longitude){
+            myMarker.remove();
+            myMarker = this.map.addMarker(new MarkerOptions()
+                    .position(new LatLng(center.latitude, center.longitude))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));
+            this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(center, cameraPosition.zoom));
 
-        this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(center, cameraPosition.zoom));
 
-        /*
-        //TODO: change
-        Location mocked = new Location("mocked");
-        mocked.setLatitude(center.latitude);
-        mocked.setLongitude(center.longitude);
-        MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);*/
+            //TODO: change
+            Location mocked = new Location("mocked");
+            mocked.setLatitude(center.latitude);
+            mocked.setLongitude(center.longitude);
+            MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);
+        }
     }
 }
