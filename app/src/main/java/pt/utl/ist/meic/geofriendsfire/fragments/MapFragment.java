@@ -39,6 +39,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.parceler.Parcels;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -74,7 +75,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
 
     private double mRadius;
     private Set<Event> mValues;
-    EventsNearbyService mService;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -95,10 +95,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         } else {
             mValues = new HashSet<>();
             mRadius = INITIAL_RADIUS;
-
-            Intent events = new Intent(getContext(), EventsNearbyService.class);
-            getContext().bindService(events, eventsConnection, Context.BIND_AUTO_CREATE);
-
             try {
                 rootView = inflater.inflate(R.layout.map_fragment, container, false);
             } catch (InflateException e) {
@@ -111,6 +107,21 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         return rootView;
     }
 
+    private void populateSavedEvents() {
+        EventsNearbyService service = MyApplicationContext.getEventsNearbyServiceInstance();
+        if(service != null){
+            List<Event> savedEvents = service.getValues();
+            if(savedEvents!= null && !savedEvents.isEmpty()){
+                for(Event e : savedEvents){
+                    newMarkerFromService(e);
+                }
+            }
+            Map<String,Double> resiDomain = service.getResidentialDomainLimits();
+            if(resiDomain != null && !resiDomain.isEmpty()){
+                drawResiDomain(resiDomain);
+            }
+        }
+    }
 
     @Override
     public void onStart() {
@@ -124,21 +135,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         EventBus.getDefault().unregister(this);
     }
 
-    private ServiceConnection eventsConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            EventsNearbyService.MyBinder binder = (EventsNearbyService.MyBinder) service;
-            mService = binder.getService();
-            mService.restartListener();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mService = null;
-        }
-    };
 
     private void newMarkerFromService(Event event) {
         mValues.add(event);
@@ -206,6 +202,7 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));
             this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngCenter, INITIAL_ZOOM_LEVEL));
         }
+        populateSavedEvents();
 
         this.map.setOnMarkerClickListener(this);
         this.map.setOnCameraChangeListener(this);
@@ -314,8 +311,10 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(NewResidentDomainEvent event) {
+        drawResiDomain(event.getResiDomain());
+    }
 
-        Map<String,Double> resiDomain = event.getResiDomain();
+    private void drawResiDomain(Map<String, Double> resiDomain) {
         PolylineOptions rectOptions = new PolylineOptions()
                 .color(Color.GREEN)
                 .width(2)

@@ -227,6 +227,10 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
         mWorkload = MyApplicationContext.getInstance().getMaximumWorkLoad();
     }
 
+    public List<Event> getValues(){ return this.mValues;}
+
+    public Map<String,Double> getResidentialDomainLimits(){return residentialDomainLimits;}
+
     @Override
     public void onCreate() {
         super.onCreate();

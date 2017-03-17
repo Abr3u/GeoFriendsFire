@@ -20,15 +20,16 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.parceler.Parcels;
 
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.reactivex.disposables.CompositeDisposable;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.EventsNearbyAdapter;
 import pt.utl.ist.meic.geofriendsfire.events.DeletedEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NearbyEvent;
-import pt.utl.ist.meic.geofriendsfire.events.NewSettingsEvent;
+import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
 
 public class EventsNearbyListFragment extends BaseFragment {
@@ -42,7 +43,6 @@ public class EventsNearbyListFragment extends BaseFragment {
     RecyclerView recyclerView;
 
     private EventsNearbyAdapter mAdapter;
-    private EventsNearbyService mService;
 
     @Nullable
     @Override
@@ -52,31 +52,21 @@ public class EventsNearbyListFragment extends BaseFragment {
         super.setNetworkDetectorHolder(networkDetectorHolder);
 
         Log.d("ttt", "oncreateview");
-
-        Intent events = new Intent(getContext(), EventsNearbyService.class);
-        getContext().bindService(events, eventsConnection, Context.BIND_AUTO_CREATE);
-
         mAdapter = new EventsNearbyAdapter(getContext());
+        populateSavedEvents();
         setupRecyclerView();
         return view;
     }
 
-    private ServiceConnection eventsConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            EventsNearbyService.MyBinder binder = (EventsNearbyService.MyBinder) service;
-            mService = binder.getService();
-            mService.restartListener();
+    private void populateSavedEvents() {
+        EventsNearbyService service = MyApplicationContext.getEventsNearbyServiceInstance();
+        if(service != null){
+            List<Event> savedEvents = service.getValues();
+            if(savedEvents!= null && !savedEvents.isEmpty()){
+                mAdapter.setValues(savedEvents);
+            }
         }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mService = null;
-        }
-    };
-
+    }
 
 
     @Override
@@ -124,7 +114,7 @@ public class EventsNearbyListFragment extends BaseFragment {
     public void onEventMainThread(DeletedEvent event) {
         mAdapter.removeItem(event.getDeleted());
         if(mAdapter.getItemCount() < MyApplicationContext.getInstance().getMaximumWorkLoad()){
-            mService.restartListener();
+            MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
         }
     }
 

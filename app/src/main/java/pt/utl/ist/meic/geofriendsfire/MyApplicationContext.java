@@ -24,6 +24,7 @@ public class MyApplicationContext extends Application{
     private RefWatcher refWatcher;
     private static MyApplicationContext instance;
     private static LocationTrackingService mLocationTrackingService;
+    private static EventsNearbyService mEventsNearbyService;
 
     private FirebaseUser firebaseUser;
 
@@ -45,6 +46,9 @@ public class MyApplicationContext extends Application{
 
         Intent locations = new Intent(this, LocationTrackingService.class);
         bindService(locations, locationConnection, Context.BIND_AUTO_CREATE);
+
+        Intent events = new Intent(this, EventsNearbyService.class);
+        bindService(events, eventsConnection, Context.BIND_AUTO_CREATE);
     }
 
     private ServiceConnection locationConnection = new ServiceConnection() {
@@ -58,6 +62,23 @@ public class MyApplicationContext extends Application{
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
+            mLocationTrackingService = null;
+        }
+    };
+
+    private ServiceConnection eventsConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            EventsNearbyService.MyBinder binder = (EventsNearbyService.MyBinder) service;
+            mEventsNearbyService = binder.getService();
+            mEventsNearbyService.restartListener();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mEventsNearbyService = null;
         }
     };
 
@@ -67,6 +88,10 @@ public class MyApplicationContext extends Application{
 
     public static LocationTrackingService getLocationsServiceInstance() {
         return mLocationTrackingService;
+    }
+
+    public static EventsNearbyService getEventsNearbyServiceInstance(){
+        return mEventsNearbyService;
     }
 
     public RefWatcher getRefWatcher() {
