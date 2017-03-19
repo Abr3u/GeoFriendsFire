@@ -6,6 +6,7 @@ public enum FragmentKeys {
     EventsNearby,
     MyEvents,
     EventDetailsMap,
+    Test,
     Friends;
 
 

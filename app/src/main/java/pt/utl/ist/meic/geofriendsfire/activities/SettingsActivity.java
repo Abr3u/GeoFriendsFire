@@ -18,6 +18,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
+import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 
 
 public class SettingsActivity extends AppCompatActivity {
@@ -136,6 +137,17 @@ public class SettingsActivity extends AppCompatActivity {
         dialog.show();
     }
 
+
+    @OnClick(R.id.realLocationButton)
+    public void setRealLocation(){
+        GPSTracker tracker = new GPSTracker(this);
+        if(!tracker.canGetLocation()){
+            Toast.makeText(this, "Cant get current Location", Toast.LENGTH_SHORT).show();
+        }else{
+            MyApplicationContext.getLocationsServiceInstance().setMockedLocation(tracker.getLocation());
+        }
+        finish();
+    }
 
     /*
     toolbar stuff

@@ -32,16 +32,12 @@ mocked location done!
 monitor settings done!
 resident domain done! - I THINK!!
 delete event done!
-
+both services as singletons in appContext done!
 
 ______________________________________________________________
 Tomorrow:
 
-eventos e serviços refactoring
-
-reset location no map;
 normalizar score - ver baixo;
-recenter no details;
 
 escrever event recommendation - geofire, geohash, bounding boxes
 		friend recommendation - como filtro o dataset. qual o workflow depois de ter os dados de location
@@ -51,7 +47,6 @@ ____
 normalizar score - sequence passa a ser normalizado para [0;1] para ficar prct tmb. Só é preciso saber o max (min acho que pode ser sempre 0)
 
 aumentar scope - pensar em como criar os novos datasets necessarios!!
-pensar em como normalizar seq score com activity score numa escala. para depois poder mudar as percentagens.
 
 ver medidas de listas ordenadas, discussao proj
 geofire - favoritos

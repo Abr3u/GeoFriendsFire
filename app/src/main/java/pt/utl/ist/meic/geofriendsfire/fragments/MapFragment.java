@@ -43,6 +43,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
+import pt.utl.ist.meic.geofriendsfire.events.NewLocationEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewNearbyEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewResidentDomainEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
@@ -103,15 +104,15 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
 
     private void populateSavedEvents() {
         EventsNearbyService service = MyApplicationContext.getEventsNearbyServiceInstance();
-        if(service != null){
+        if (service != null) {
             List<Event> savedEvents = service.getValues();
-            if(savedEvents!= null && !savedEvents.isEmpty()){
-                for(Event e : savedEvents){
+            if (savedEvents != null && !savedEvents.isEmpty()) {
+                for (Event e : savedEvents) {
                     newMarkerFromService(e);
                 }
             }
-            Map<String,Double> resiDomain = service.getResidentialDomainLimits();
-            if(resiDomain != null && !resiDomain.isEmpty()){
+            Map<String, Double> resiDomain = service.getResidentialDomainLimits();
+            if (resiDomain != null && !resiDomain.isEmpty()) {
                 drawResiDomain(resiDomain);
             }
         }
@@ -189,12 +190,12 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     }
 
     protected void setUpMap() {
-        if (mLastKnownLocation != null) {
-            LatLng latLngCenter = new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude());
-            myMarker = this.map.addMarker(new MarkerOptions()
-                    .position(new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()))
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));
-            this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngCenter, INITIAL_ZOOM_LEVEL));
+        Location lastKnownLocation = MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
+        if (lastKnownLocation != null) {
+            double latitude = lastKnownLocation.getLatitude();
+            double longitude = lastKnownLocation.getLongitude();
+            drawMyLocation(latitude, longitude);
+            this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), INITIAL_ZOOM_LEVEL));
         }
         populateSavedEvents();
 
@@ -274,21 +275,15 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         detailsHolder.setVisibility(View.GONE);
         LatLng center = cameraPosition.target;
 
-        if (myMarker.getPosition().latitude != center.latitude
-                || myMarker.getPosition().longitude != center.longitude) {
-            myMarker.remove();
-            myMarker = this.map.addMarker(new MarkerOptions()
-                    .position(new LatLng(center.latitude, center.longitude))
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));
-            this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(center, cameraPosition.zoom));
-
-
             //TODO: change
+
             Location mocked = new Location("mocked");
             mocked.setLatitude(center.latitude);
             mocked.setLongitude(center.longitude);
             MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);
-        }
+
+        this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(center, cameraPosition.zoom));
+
     }
 
 
@@ -299,8 +294,24 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(NewNearbyEvent event) {
-        Log.d("yyy","mapa recebi novo "+event);
+        Log.d("yyy", "mapa recebi novo event " + event);
         newMarkerFromService(event.getNearby());
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(NewLocationEvent event) {
+        Log.d("yyy", "mapa recebi nova location " + event.getLocation());
+        drawMyLocation(event.getLocation().getLatitude(), event.getLocation().getLongitude());
+    }
+
+    private void drawMyLocation(double latitude, double longitude) {
+        if(myMarker != null){
+            myMarker.remove();
+        }
+        myMarker = this.map.addMarker(new MarkerOptions()
+                .position(new LatLng(latitude, longitude))
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));
     }
 
     @SuppressWarnings("unused")
