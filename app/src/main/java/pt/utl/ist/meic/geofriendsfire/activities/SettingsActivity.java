@@ -37,7 +37,6 @@ public class SettingsActivity extends AppCompatActivity {
 
     private Integer newWorkload;
     private Integer newFurthest;
-    private AlertDialog mDialog;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -135,18 +134,6 @@ public class SettingsActivity extends AppCompatActivity {
 
         AlertDialog dialog = builder.create();
         dialog.show();
-    }
-
-
-    @OnClick(R.id.realLocationButton)
-    public void setRealLocation(){
-        GPSTracker tracker = new GPSTracker(this);
-        if(!tracker.canGetLocation()){
-            Toast.makeText(this, "Cant get current Location", Toast.LENGTH_SHORT).show();
-        }else{
-            MyApplicationContext.getLocationsServiceInstance().setMockedLocation(tracker.getLocation());
-        }
-        finish();
     }
 
     /*
