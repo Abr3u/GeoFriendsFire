@@ -33,6 +33,18 @@ public class UserProfile {
 		}
 	}
 	
+	public double getSimilarityScore(String userId){
+		return this.similarityScores.get(userId);
+	}
+	
+	public double getMaxSimilarityScore(){
+		return this.similarityScores.entrySet().stream()
+				.max(Map.Entry.<String,Double>comparingByValue())
+				.get()
+				.getValue();
+	}
+	
+	
 	public void printSimilarities() {
 		System.out.println("Similarites for user "+userId);
 		similarityScores.entrySet().stream()
@@ -42,6 +54,18 @@ public class UserProfile {
 	
 	public Map<String,Double> getSimilarities(){
 		return this.similarityScores;
+	}
+
+	
+	public void normalizeSimilarityScores() {
+		double min = 0;
+		double max = this.getMaxSimilarityScore();
+		double newmax = 1;
+		double newmin = 0;
+		System.out.println("User "+this.userId+" max SeqScore "+max);
+		for(Double score : similarityScores.values()){
+			score = ((score - min)/(max-min))*(newmax-newmin)+newmin;
+		}
 	}
 
 }

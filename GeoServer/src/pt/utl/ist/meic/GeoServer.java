@@ -151,16 +151,37 @@ public class GeoServer {
 	}
 
 	private static void calculateSimilarities() {
+		// calculate seqScore for each user pair
 		for (int i = 0; i < usersProfiles.size(); i++) {
 			for (int j = 0; j < usersProfiles.size(); j++) {
 				if (i != j && j > i) {
 					UserProfile p1 = usersProfiles.get(i);
 					UserProfile p2 = usersProfiles.get(j);
 					double seqScore = getUserSimilaritySequences(p1, p2, "0");
+					p1.addSimilarityScore(p2.userId, seqScore);
+					p2.addSimilarityScore(p1.userId, seqScore);
+				}
+			}
+		}
+		// tranform seqScore [0-1]
+		for(UserProfile profile : usersProfiles){
+			profile.normalizeSimilarityScores();
+		}
+		// take into account activity Score
+		for (int i = 0; i < usersProfiles.size(); i++) {
+			for (int j = 0; j < usersProfiles.size(); j++) {
+				if (i != j && j > i) {
+					UserProfile p1 = usersProfiles.get(i);
+					UserProfile p2 = usersProfiles.get(j);
 					double actScore = getUserSimilarityClusterActivity(p1, p2, "0");
-					double finalScore = seqScore;
-					p1.addSimilarityScore(p2.userId, finalScore);
-					p2.addSimilarityScore(p1.userId, finalScore);
+					
+					double seqScore1 = p1.getSimilarityScore(p2.userId);					
+					double finalScore1 = 1*seqScore1 + 0*actScore;
+					p1.addSimilarityScore(p2.userId, seqScore1);
+					
+					double seqScore2 = p2.getSimilarityScore(p1.userId);
+					double finalScore2 = seqScore2*0.5 + actScore*0.5;
+					p2.addSimilarityScore(p1.userId, seqScore2);
 				}
 			}
 		}
@@ -170,9 +191,6 @@ public class GeoServer {
 		if (!profileA.userId.equals(profileB.userId)) {
 			Graph graphA = profileA.getGraphByLevel(level);
 			Graph graphB = profileB.getGraphByLevel(level);
-
-			long N1 = graphA.vertexes.size();
-			long N2 = graphB.vertexes.size();
 
 			// transformar seqs em seqs aggregadas e ir buscar as top N
 			Set<Sequence> seqsA = graphA.getTopNSequences(5, graphA.getAggregatedSeqs());
@@ -189,8 +207,7 @@ public class GeoServer {
 					}
 				}
 			}
-			double simmilarity = score * (1.0 / N1 * N2) + N1+N2;
-			return simmilarity;
+			return score;
 		}
 		return 0;
 	}
@@ -201,8 +218,6 @@ public class GeoServer {
 			Graph graphB = profileB.getGraphByLevel(level);
 
 			double score = 0;
-			long N1 = graphA.vertexes.size();
-			long N2 = graphB.vertexes.size();
 
 			Map<Integer, Double> percentageA = graphA.cluster_percentage;
 			Map<Integer, Double> percentageB = graphB.cluster_percentage;
@@ -214,11 +229,11 @@ public class GeoServer {
 					score += Math.abs(aux-entry.getValue());
 				}
 			}
+			//passar de range [0-2] para [0-1]
 			score = transformScoreToDiffPrct(score);
-			score = 1 - score;//igualdade
-			// System.out.println("activity score -> "+score);
-			double simmilarity = score * (1.0 / N1 * N2) + N1 + N2;
-			return simmilarity * 100;
+			//passar para prct de igualdade
+			score = 1 - score;
+			return score;
 		}
 		return 0;
 	}
