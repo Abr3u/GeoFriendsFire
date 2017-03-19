@@ -13,11 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.thegreshams.firebase4j.error.FirebaseException;
-import net.thegreshams.firebase4j.error.JacksonUtilityException;
-import net.thegreshams.firebase4j.model.FirebaseResponse;
-import net.thegreshams.firebase4j.util.JacksonUtility;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -32,6 +27,11 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.log4j.Logger;
+
+import net.thegreshams.firebase4j.error.FirebaseException;
+import net.thegreshams.firebase4j.error.JacksonUtilityException;
+import net.thegreshams.firebase4j.model.FirebaseResponse;
+import net.thegreshams.firebase4j.util.JacksonUtility;
 
 
 public class Firebase {

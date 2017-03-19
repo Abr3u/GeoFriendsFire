@@ -1,15 +1,10 @@
 package pt.utl.ist.meic.firebase;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceCosine;
-import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
-import ca.pfv.spmf.algorithms.clustering.kmeans.AlgoKMeans;
 import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
 import net.thegreshams.firebase4j.error.FirebaseException;
 import net.thegreshams.firebase4j.error.JacksonUtilityException;

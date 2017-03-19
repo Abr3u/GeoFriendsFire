@@ -1,7 +1,6 @@
 package pt.utl.ist.meic.utility;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,20 +14,16 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
-import one.util.streamex.StreamEx;
 import pt.utl.ist.meic.domain.CheckIn;
 import pt.utl.ist.meic.domain.DataPoint;
 import pt.utl.ist.meic.domain.UserProfile;

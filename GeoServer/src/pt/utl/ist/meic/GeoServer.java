@@ -1,26 +1,20 @@
 package pt.utl.ist.meic;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.file.attribute.UserPrincipalLookupService;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.swing.plaf.synth.SynthSpinnerUI;
-
-import net.thegreshams.firebase4j.error.FirebaseException;
-import net.thegreshams.firebase4j.error.JacksonUtilityException;
-import net.thegreshams.firebase4j.model.FirebaseResponse;
-import net.thegreshams.firebase4j.service.Firebase;
+import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceCosine;
+import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
+import ca.pfv.spmf.algorithms.clustering.kmeans.AlgoKMeans;
+import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
+import ca.pfv.spmf.patterns.cluster.DoubleArray;
 import pt.utl.ist.meic.domain.AuxiliarVertex;
 import pt.utl.ist.meic.domain.CheckIn;
 import pt.utl.ist.meic.domain.Graph;
@@ -28,14 +22,7 @@ import pt.utl.ist.meic.domain.Sequence;
 import pt.utl.ist.meic.domain.SequenceAuxiliar;
 import pt.utl.ist.meic.domain.UserProfile;
 import pt.utl.ist.meic.domain.VertexInfo;
-import pt.utl.ist.meic.exceptions.CantExtendSequenceException;
-import pt.utl.ist.meic.firebase.FirebaseHelper;
 import pt.utl.ist.meic.utility.FileManager;
-import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceCosine;
-import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
-import ca.pfv.spmf.algorithms.clustering.kmeans.AlgoKMeans;
-import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
-import ca.pfv.spmf.patterns.cluster.DoubleArray;
 
 public class GeoServer {
 

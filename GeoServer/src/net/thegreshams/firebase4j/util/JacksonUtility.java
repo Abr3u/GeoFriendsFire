@@ -6,10 +6,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import net.thegreshams.firebase4j.error.JacksonUtilityException;
-
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
+
+import net.thegreshams.firebase4j.error.JacksonUtilityException;
 
 public class JacksonUtility {
 

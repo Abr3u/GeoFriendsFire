@@ -1,9 +1,7 @@
 package pt.utl.ist.meic.domain;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class UserProfile {
 

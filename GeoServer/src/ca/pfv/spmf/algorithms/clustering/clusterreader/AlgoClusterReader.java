@@ -23,10 +23,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import ca.pfv.spmf.algorithms.ArraysAlgos;
 import ca.pfv.spmf.algorithms.timeseries.TimeSeries;
 import ca.pfv.spmf.patterns.cluster.Cluster;
 import ca.pfv.spmf.patterns.cluster.DoubleArray;

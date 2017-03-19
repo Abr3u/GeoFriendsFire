@@ -7,7 +7,6 @@ import java.util.List;
 
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceEuclidian;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
-import ca.pfv.spmf.algorithms.clustering.kmeans.AlgoKMeans;
 import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
 import ca.pfv.spmf.patterns.cluster.DoubleArray;
 

@@ -6,7 +6,6 @@ import java.net.URL;
 
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceEuclidian;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
-import ca.pfv.spmf.algorithms.clustering.hierarchical_clustering.AlgoHierarchicalClustering;
 
 /**
  * Example of how to use the hierarchical clustering algorithm

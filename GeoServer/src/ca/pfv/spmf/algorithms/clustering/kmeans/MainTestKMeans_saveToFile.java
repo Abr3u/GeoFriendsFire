@@ -6,7 +6,6 @@ import java.net.URL;
 
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceEuclidian;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
-import ca.pfv.spmf.algorithms.clustering.kmeans.AlgoKMeans;
 
 /**
  *  Example of how to use the KMEans algorithm, in source code.

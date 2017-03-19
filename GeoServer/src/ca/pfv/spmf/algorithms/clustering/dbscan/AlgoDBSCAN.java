@@ -26,7 +26,6 @@ import java.util.List;
 
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceEuclidian;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
-import ca.pfv.spmf.algorithms.clustering.instancereader.AlgoInstanceFileReader;
 import ca.pfv.spmf.datastructures.kdtree.KDTree;
 import ca.pfv.spmf.patterns.cluster.Cluster;
 import ca.pfv.spmf.patterns.cluster.ClustersEvaluation;

@@ -1,9 +1,6 @@
 package ca.pfv.spmf.algorithms.clustering.dbscan;
 
-import java.io.Serializable;
-
 import ca.pfv.spmf.patterns.cluster.Cluster;
-import ca.pfv.spmf.patterns.cluster.DoubleArray;
 import ca.pfv.spmf.patterns.cluster.DoubleArrayInstance;
 
 /* This file is copyright (c) 2008-2015 Philippe Fournier-Viger

@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.pfv.spmf.datastructures.kdtree.KNNPoint;
-import ca.pfv.spmf.patterns.cluster.DoubleArray;
 import ca.pfv.spmf.patterns.cluster.DoubleArrayInstance;
 
 /* This file is copyright (c) 2008-2015 Philippe Fournier-Viger

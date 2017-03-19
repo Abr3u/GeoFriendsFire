@@ -5,7 +5,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.List;
 
-import ca.pfv.spmf.algorithms.clustering.dbscan.AlgoDBSCAN;
 import ca.pfv.spmf.patterns.cluster.Cluster;
 import ca.pfv.spmf.patterns.cluster.DoubleArray;
 
