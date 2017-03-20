@@ -32,6 +32,7 @@ import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.fragments.BaseFragment;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
+import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
 
 public class CreateEventActivity extends AppCompatActivity {
 
@@ -111,7 +112,6 @@ public class CreateEventActivity extends AppCompatActivity {
             geoFire.setLocation(eventID, new GeoLocation(latitude, longitude));
 
             Intent i = new Intent();
-            i.putExtra("createdEvent",Parcels.wrap(newEvent));
             setResult(Activity.RESULT_OK,i);
             finish();
         }

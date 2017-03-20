@@ -38,10 +38,9 @@ scores normalizados!! seqScore e actScore prct [0-1]
 ______________________________________________________________
 Tomorrow:
 
-normalizar score - ver baixo;
-
 escrever event recommendation - geofire, geohash, bounding boxes
 		friend recommendation - como filtro o dataset. qual o workflow depois de ter os dados de location
+
 
 
 aumentar scope - pensar em como criar os novos datasets necessarios!!
@@ -53,7 +52,6 @@ artigos mail
 
 
 Extra:
-??? - adicionar vertente layer/adicionar vertente popularidade - ?? not sure if needed
 por alert dialog antes de ir para directions
 userDetails
 security rules

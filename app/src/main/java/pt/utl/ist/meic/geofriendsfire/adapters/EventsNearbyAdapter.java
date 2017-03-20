@@ -93,7 +93,7 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
             public boolean onLongClick(View view) {
                 Event event = mValues.get(position);
                 Uri gmmIntentUri = Uri.parse("google.navigation:" +
-                        "q=" + event.latitude + "," + event.longitude + "&mode=w");
+                        "q=" + event.latitude + "," + event.longitude + "&mode=d");
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
                 mContext.startActivity(mapIntent);

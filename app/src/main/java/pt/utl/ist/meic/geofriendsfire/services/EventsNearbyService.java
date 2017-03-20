@@ -212,6 +212,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     }
 
     public void restartVars(){
+        cleanupListener();
         monitoring = false;
         mEventsMap.clear();
         mValues.clear();

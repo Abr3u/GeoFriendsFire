@@ -6,5 +6,6 @@ package pt.utl.ist.meic.geofriendsfire.utils;
 
 public enum IntentKeys {
     initialCenterLati,
-    initialCenterLongi;
+    initialCenterLongi,
+    createdEvent;
 }

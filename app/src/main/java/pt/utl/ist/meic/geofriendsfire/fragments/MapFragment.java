@@ -305,6 +305,12 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         drawMyLocation(event.getLocation().getLatitude(), event.getLocation().getLongitude());
     }
 
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEventMainThread(NewResidentDomainEvent event) {
+        drawResiDomain(event.getResiDomain());
+    }
+
     private void drawMyLocation(double latitude, double longitude) {
         if(myMarker != null){
             myMarker.remove();
@@ -312,12 +318,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         myMarker = this.map.addMarker(new MarkerOptions()
                 .position(new LatLng(latitude, longitude))
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));
-    }
-
-    @SuppressWarnings("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(NewResidentDomainEvent event) {
-        drawResiDomain(event.getResiDomain());
     }
 
     private void drawResiDomain(Map<String, Double> resiDomain) {
