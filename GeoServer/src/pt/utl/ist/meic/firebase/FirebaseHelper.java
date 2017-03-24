@@ -51,7 +51,7 @@ public class FirebaseHelper {
 		Firebase firebase = new Firebase(FIREBASE_URL + "/friends");
 		for (UserProfile profile : profiles) {
 			if (limitProfiles > 0) {
-				// "POST cluster to /clusters
+				// "POST firends to /friends
 				Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
 				profile.getSimilarities().entrySet().stream()
 						.sorted(Map.Entry.<String, Double>comparingByValue().reversed())

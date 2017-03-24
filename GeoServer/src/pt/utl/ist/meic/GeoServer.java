@@ -15,6 +15,8 @@ import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
 import ca.pfv.spmf.algorithms.clustering.kmeans.AlgoKMeans;
 import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
 import ca.pfv.spmf.patterns.cluster.DoubleArray;
+import net.thegreshams.firebase4j.error.FirebaseException;
+import net.thegreshams.firebase4j.error.JacksonUtilityException;
 import pt.utl.ist.meic.domain.AuxiliarVertex;
 import pt.utl.ist.meic.domain.CheckIn;
 import pt.utl.ist.meic.domain.Graph;
@@ -22,6 +24,7 @@ import pt.utl.ist.meic.domain.Sequence;
 import pt.utl.ist.meic.domain.SequenceAuxiliar;
 import pt.utl.ist.meic.domain.UserProfile;
 import pt.utl.ist.meic.domain.VertexInfo;
+import pt.utl.ist.meic.firebase.FirebaseHelper;
 import pt.utl.ist.meic.utility.FileManager;
 
 public class GeoServer {
@@ -43,78 +46,48 @@ public class GeoServer {
 
 	private static List<UserProfile> usersProfiles;
 
-	private static long mTotalCheckIns = 130425;//newYork
-	
-	private static int totalSuggested = 170;
+	private static long mTotalCheckIns = 130425;// newYork
 
 	public static void main(String[] args) throws ParseException, IOException {
 
-		 FileManager mFileManager = new FileManager();
-		 List<String> idList = mFileManager.getIdListFromFileNy();
-		 int totalUsers = idList.size();
-		
-		 String friendsPath = "friends"+totalSuggested+"of"+totalUsers+".csv";
-		 String foundPath = "found"+totalSuggested+"of"+totalUsers+".csv";
-		 String foundPrctPath = "foundPRCT"+totalSuggested+"of"+totalUsers+".csv";
-		 
-		 initGlobalClustersList();
-//		 initGlobalPercentages();
-//		 initGlobalCheckIns();
-		 initUserProfiles(idList);
-		
-		 calculateGraphs(mFileManager,"0");
-		 calculateSimilarities();
-		 
-		 mFileManager.createCsvSimilarities(usersProfiles, friendsPath,totalSuggested);
-		 mFileManager.createFoundCSV(friendsPath,foundPath);
-		 mFileManager.createFoundPrctCSV(foundPath,foundPrctPath);
-		 
-		 System.out.println("precision "+mFileManager.calculatePrecision(foundPath,totalSuggested));
-		 System.out.println("recall "+mFileManager.calculateRecall(foundPath,totalUsers));
-//		 
-//		try {
-//			FirebaseHelper.writeNewFriendsFirebase(usersProfiles,5,10);
-//		} catch (FirebaseException | JacksonUtilityException e) {
-//			e.printStackTrace();
-//		}
+		FileManager mFileManager = new FileManager();
+		List<String> idList = mFileManager.getIdListFromFileNy();
+		int totalUsers = idList.size();
+		double threshold = 0.2;
+
+		String friendsPath = "friendsOf" + totalUsers + "Users.csv";
+		String foundPath = "foundOf" + totalUsers + "Users.csv";
+		String foundPrctPath = "foundPRCTOf" + totalUsers + "Users.csv";
+
+		initGlobalClustersList();
+		// initGlobalPercentages();
+		// initGlobalCheckIns();
+		initUserProfiles(idList);
+
+		calculateGraphs(mFileManager, "0");
+		calculateSimilarities();
+
+		mFileManager.createCsvSimilarities(usersProfiles, friendsPath, threshold);
+		mFileManager.createFoundCSV(friendsPath, foundPath);
+		mFileManager.createFoundPrctCSV(foundPath, foundPrctPath);
+
+		System.out.println("precision " + mFileManager.calculatePrecision(foundPath));
+		System.out.println("recall " + mFileManager.calculateRecall(foundPath));
+
+		 try {
+		 FirebaseHelper.writeNewFriendsFirebase(usersProfiles, 5, 10);
+		 } catch (FirebaseException | JacksonUtilityException e) {
+		 e.printStackTrace();
+		 }
 
 		// applyKmeans(pathKmeansNewYorkCSV);
 
-//		try {
-//			FirebaseHelper.writeNewClustersFirebase(globalClusters, 0, mTotalCheckIns);
-//		} catch (FirebaseException | JacksonUtilityException e) {
-//			e.printStackTrace();
-//		}
-
-		// mFileManager.createCsvSimilarities(usersProfiles,
-		// "similarities10Plus.csv");
-
-		// testUserSimilarity(mFileManager);
-		// mFileManager.createCsvSimilarities(usersProfiles,
-		// "similarities.csv");
-
-		// testSequenceMatching();
-
-		/*
-		 * applyKmeans("clusters1"); try { writeNewClustersFirebase(2); } catch
-		 * (FirebaseException | JacksonUtilityException e) {
-		 * e.printStackTrace(); }
-		 */
-
-		/*
-		 * try { writeDistancesFirebase(); } catch (FirebaseException |
-		 * JacksonUtilityException e) { e.printStackTrace(); }
-		 */
-
-		/*
-		 * applyKmeansUser("2"); try { writeUserClustersFirebase("2"); } catch
-		 * (FirebaseException | JacksonUtilityException e) {
-		 * e.printStackTrace(); }
-		 */
-
-		// applyDBSCAN();
-		// readClustersFromDisk();
-		// System.out.println("clusters -> "+clusters.size());
+		// try {
+		// FirebaseHelper.writeNewClustersFirebase(globalClusters, 0,
+		// mTotalCheckIns);
+		// } catch (FirebaseException | JacksonUtilityException e) {
+		// e.printStackTrace();
+		// }
 
 	}
 
@@ -151,7 +124,7 @@ public class GeoServer {
 			}
 		}
 		// tranform seqScore [0-1]
-		for(UserProfile profile : usersProfiles){
+		for (UserProfile profile : usersProfiles) {
 			profile.normalizeSimilarityScores();
 		}
 		// take into account activity Score
@@ -160,15 +133,16 @@ public class GeoServer {
 				if (i != j && j > i) {
 					UserProfile p1 = usersProfiles.get(i);
 					UserProfile p2 = usersProfiles.get(j);
+					double finalScore;
 					double actScore = getUserSimilarityClusterActivity(p1, p2, "0");
-					
-					double seqScore1 = p1.getSimilarityScore(p2.userId);					
-					double finalScore1 = 1*seqScore1 + 0*actScore;
-					p1.addSimilarityScore(p2.userId, seqScore1);
-					
+
+					double seqScore1 = p1.getSimilarityScore(p2.userId);
+					finalScore = 0.7 * seqScore1 + 0.3 * actScore;
+					p1.addSimilarityScore(p2.userId, finalScore);
+
 					double seqScore2 = p2.getSimilarityScore(p1.userId);
-					double finalScore2 = seqScore2*0.5 + actScore*0.5;
-					p2.addSimilarityScore(p1.userId, seqScore2);
+					finalScore = seqScore2 * 0.7 + actScore * 0.3;
+					p2.addSimilarityScore(p1.userId, finalScore);
 				}
 			}
 		}
@@ -209,16 +183,16 @@ public class GeoServer {
 			Map<Integer, Double> percentageA = graphA.cluster_percentage;
 			Map<Integer, Double> percentageB = graphB.cluster_percentage;
 
-			//somar diferencas
+			// somar diferencas
 			for (Map.Entry<Integer, Double> entry : percentageA.entrySet()) {
 				if (percentageB.containsKey(entry.getKey())) {
 					double aux = percentageB.get(entry.getKey());
-					score += Math.abs(aux-entry.getValue());
+					score += Math.abs(aux - entry.getValue());
 				}
 			}
-			//passar de range [0-2] para [0-1]
+			// passar de range [0-2] para [0-1]
 			score = transformScoreToDiffPrct(score);
-			//passar para prct de igualdade
+			// passar para prct de igualdade
 			score = 1 - score;
 			return score;
 		}
@@ -227,10 +201,14 @@ public class GeoServer {
 
 	private static double transformScoreToDiffPrct(double score) {
 		double min = 0;
-		double max = NUM_CLUSTERS-1;
+		double max = NUM_CLUSTERS - 1;
 		double newmax = 1;
 		double newmin = 0;
-		return ((score - min)/(max-min))*(newmax-newmin)+newmin;
+		if (score > 0) {
+			return ((score - min) / (max - min)) * (newmax - newmin) + newmin;
+		} else {
+			return 0;
+		}
 	}
 
 	// returns set of maximum length similar sequences
@@ -444,7 +422,7 @@ public class GeoServer {
 		globalClusters.add(cluster);
 
 		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 40.77761934847919,-73.92851136376517 }));
+		cluster.setMean(new DoubleArray(new double[] { 40.77761934847919, -73.92851136376517 }));
 		cluster.mId = 1;
 		globalClusters.add(cluster);
 

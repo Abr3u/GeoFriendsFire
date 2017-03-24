@@ -35,28 +35,64 @@ ___________________________________________________________________
 Statistics
 
 usando users de NY que têm pelo menos um amigo em NY - 340 users
-sugerindo 50% - 170 users;
+3178 amigos entre os 340 users
 comparando top5 seqs de cada
 seq - somatorio [tamanho (m) da seq(i) * 2^(m-1)] - normalizado para [0-1]
 act - percentagem [0-1] de parecença entre U1 e U2
 ___________________________________________________________________
+a)sugerindo 50% - 170 users;
+variar pesos no finalScore;
+
 Result:
 finalScore = 0.5seqScore + 0.5actScore
 
 precision 0.03110726643598616
 recall 0.565764631843927
-___________________________________________________________________
+____________________________
 Result2: 
 finalScore = seqScore
 
 >>>>>precision 0.033339100346020764
 >>>>>recall 0.606356198867212
-___________________________________________________________________
+____________________________
 Result3:
 finalScore = actScore
 
 precision 0.026972318339100347
 recall 0.4905601006922593
+____________________________
+b)usar threshold de similarity
+finalScore = 0.7seq + 0.3act
+variar threshold
+____________________________
+Result 4:
+threshold = 0.25%
+
+precision 0.02825227056769717
+recall 0.8045940843297672
+____________________________
+Result 5:
+threshold = 0.5%
+
+precision 0.04422939068100359
+recall 0.19414726242920075
+____________________________
+Result 6:
+threshold = 0.75%
+
+precision 0.048038783605112385
+recall 0.03429830081812461
+____________________________
+Result 7:
+threshold = 0.2%
+
+precision 0.02754902387060307
+recall 0.9968533668974198
+____________________________
+
+
+
+
 
 
 

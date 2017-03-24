@@ -1,11 +1,4 @@
-______________________________
-Stuff:
-
-But you can write a generic class ValueHolder<T> and mark the variable of it final! 
-And then just instead of "a = val" you write "aHolder.setValue(val)"! It's so easy!
-
-__________________________________________
-
+_________________________________________________
 Today:
 eventsNearby e MyEvents done!
 problema do workload done! - resolvido incrementando o raio ate ter o numero de eventos - pode exceder o workload pela distancia minima (default)
@@ -34,26 +27,31 @@ resident domain done! - I THINK!!
 delete event done!
 both services as singletons in appContext done!
 scores normalizados!! seqScore e actScore prct [0-1]
+adicionado threshold para sugerir amigo
 
 ______________________________________________________________
 Tomorrow:
 
+testar precision and recall num dataSet maior ~1000 users??
+Mean avg pecision 
+
+factores extra - popularidade, hierarquia;
+ver medidas de listas ordenadas, discussao proj;
+
 escrever event recommendation - geofire, geohash, bounding boxes
 		friend recommendation - como filtro o dataset. qual o workflow depois de ter os dados de location
-
-
-
 aumentar scope - pensar em como criar os novos datasets necessarios!!
 
-ver medidas de listas ordenadas, discussao proj
-geofire - favoritos
+After:
+quando nao sao suficientemente parecidos com location data usar eventos criados
+ir buscar amigos de amigos - dos top 10 mais parecidos comigo ir buscar o top 10
+
 artigos mail
-??? - adicionar vertente layer/adicionar vertente popularidade - ?? not sure if needed
 
 
 Extra:
-por alert dialog antes de ir para directions
 userDetails
+user messaging
 security rules
 clustering de markers, mapa style
 mvvm, mvp
@@ -62,6 +60,9 @@ api google maps, directions, places, roads;
 _________________________________________________
 
 Brainstorm
+
+Se activity score for mais baixo que threshold, comparar via eventos criados;
+
 
 \item Precision is the ratio of the number of relevant friends suggested relative to the total number of friends suggested -
 \item Recall is the ratio of the number of relevant friends suggested relative to the total number of relevant friends - found! - encontrados/real

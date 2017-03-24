@@ -34,9 +34,10 @@ public class FileManager {
 	private static final String NEW_LINE_SEPARATOR = "\n";
 
 	private static final String pathGlobalCSV = "C:/Users/ricar/Desktop/dataset/Gowalla_totalCheckins.csv";
-	private static final String pathNewYorkCSV = "C:/Users/ricar/Desktop/dataset/newYork.csv";// users
-																								// e
-																								// datas
+	private static final String pathNewYorkCSV = "C:/Users/ricar/Desktop/dataset/newYork.csv";// user e datas
+	
+	
+	private static final String pathFriends = "C:/Android/GeoFriendsFire/GeoServer/friendsOf340Users.csv";
 	private static final String pathUserCheckInsCSV = "C:/Android/GeoFriendsFire/GeoServer/dataset/usersCI/";
 	private static final String pathUserIdsNY = "C:/Android/GeoFriendsFire/GeoServer/dataset/userIdsNyNy.txt";
 	private static final String pathGowallaFriends = "C:/Android/GeoFriendsFire/GeoServer/dataset/Gowalla_edges.csv";
@@ -50,7 +51,7 @@ public class FileManager {
 	private static final Double HIGH_LONGI = -73.726044;
 
 	private List<CheckIn> userCheckIns;
-	
+
 	public void createNyUserNyFriendsCount() throws IOException, ParseException {
 		// gets the number of friends
 		Reader in = new FileReader(pathGowallaFriends);
@@ -61,10 +62,10 @@ public class FileManager {
 		for (CSVRecord record : records) {
 			String key = record.get(0);
 			String value = record.get(1);
-			if(nyIds.contains(key) && nyIds.contains(value)){
-				if(user_friends.containsKey(key)){
-					user_friends.put(key, user_friends.get(key)+1);
-				}else{
+			if (nyIds.contains(key) && nyIds.contains(value)) {
+				if (user_friends.containsKey(key)) {
+					user_friends.put(key, user_friends.get(key) + 1);
+				} else {
 					user_friends.put(key, 1);
 				}
 			}
@@ -104,7 +105,7 @@ public class FileManager {
 		System.out.println("createCSVFriendCount --- END");
 
 	}
-	
+
 	public void createFriendCountNYUsers() throws IOException {
 		HashMap<String, Integer> user_friendCount = new HashMap<String, Integer>();
 		Reader in = new FileReader(pathGowallaFriendCount);
@@ -266,7 +267,6 @@ public class FileManager {
 		}
 	}
 
-
 	public void createTXTFileUserIdsNewYork() throws IOException {
 		System.out.println("createuserIdsFiltered");
 		FileWriter fileWriter = null;
@@ -335,7 +335,7 @@ public class FileManager {
 		}
 	}
 
-	public void createCsvSimilarities(List<UserProfile> profiles, String fileName, int limit) {
+	public void createCsvSimilarities(List<UserProfile> profiles, String fileName, double limit) {
 		System.out.println("createCsvSimilarities");
 
 		try {
@@ -344,7 +344,8 @@ public class FileManager {
 			// Write a new point object to the CSV file
 			for (UserProfile profile : profiles) {
 				profile.getSimilarities().entrySet().stream()
-						.sorted(Map.Entry.<String, Double>comparingByValue().reversed()).limit(limit).forEach(x -> {
+						.sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+						.filter(x -> x.getValue() > limit).forEach(x -> {
 
 							try {
 								fileWriter.append(String.valueOf(profile.userId));
@@ -369,7 +370,6 @@ public class FileManager {
 			e.printStackTrace();
 		}
 	}
-
 
 	public List<String> getIdListFromFileNy() {
 		List<String> toReturn = new ArrayList<String>();
@@ -663,25 +663,28 @@ public class FileManager {
 
 	}
 
-	public double calculatePrecision(String foundCSV, int totalSuggestedPerUser) throws IOException {
+	public double calculatePrecision(String foundCSV) throws IOException {
 		Reader in = new FileReader(foundCSV);
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 		double totalFound = 0;
 		for (CSVRecord record : records) {
 			totalFound += Double.parseDouble(record.get(1));
 		}
-		in = new FileReader(pathGowallaNyNyFriendCount);
+		in = new FileReader(pathFriends);
 		records = CSVFormat.EXCEL.parse(in);
-		int N = 0;
+		int totalSuggested = 0;
 		// so considera friends dos users de NY
 		for (CSVRecord record : records) {
-				N++;
+			totalSuggested++;
 		}
-		double recall = totalFound / (totalSuggestedPerUser*N);
+//		System.out.println("PRECISION");
+//		System.out.println("total found "+totalFound);
+//		System.out.println("total suggested "+totalSuggested);
+		double recall = totalFound / totalSuggested;
 		return recall;
 	}
 
-	public double calculateRecall(String foundCSV, int totalUsers) throws IOException {
+	public double calculateRecall(String foundCSV) throws IOException {
 		Reader in = new FileReader(foundCSV);
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 		double totalFound = 0;
@@ -694,15 +697,15 @@ public class FileManager {
 		int totalGoawallFriendsNY = 0;
 		// so considera friends dos users de NY
 		for (CSVRecord record : records) {
-				totalGoawallFriendsNY += Integer.parseInt(record.get(1));
+			totalGoawallFriendsNY += Integer.parseInt(record.get(1));
 		}
-
+//		System.out.println("RECALL");
+//		System.out.println("total found "+totalFound);
+//		System.out.println("total gowalla friends "+totalGoawallFriendsNY);
 		double recall = totalFound / totalGoawallFriendsNY;
 		return recall;
 	}
 
-	
-	
 	public void createNyUserFriendsCSV() throws IOException {
 		Map<String, List<String>> gowalla_friends = new HashMap<String, List<String>>();
 
@@ -726,7 +729,7 @@ public class FileManager {
 				}
 			}
 		}
-		
+
 		FileWriter fileWriter = null;
 
 		try {
@@ -734,7 +737,7 @@ public class FileManager {
 
 			// Write a new point object to the CSV file
 			for (Map.Entry<String, List<String>> entry : gowalla_friends.entrySet()) {
-				for(String friend : entry.getValue()){
+				for (String friend : entry.getValue()) {
 					fileWriter.append(String.valueOf(entry.getKey()));
 					fileWriter.append(DELIMITER);
 					fileWriter.append(friend);

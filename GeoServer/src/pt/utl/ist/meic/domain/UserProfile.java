@@ -2,6 +2,8 @@ package pt.utl.ist.meic.domain;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 
 public class UserProfile {
 
@@ -36,10 +38,14 @@ public class UserProfile {
 	}
 	
 	public double getMaxSimilarityScore(){
-		return this.similarityScores.entrySet().stream()
-				.max(Map.Entry.<String,Double>comparingByValue())
-				.get()
-				.getValue();
+		Optional<Entry<String, Double>> opt =  this.similarityScores.entrySet().stream()
+				.max(Map.Entry.<String,Double>comparingByValue());
+		if(opt.isPresent()){
+			return opt.get().getValue();
+		}else{
+			return 0d;
+		}
+		
 	}
 	
 	
@@ -60,9 +66,11 @@ public class UserProfile {
 		double max = this.getMaxSimilarityScore();
 		double newmax = 1;
 		double newmin = 0;
-		System.out.println("User "+this.userId+" max SeqScore "+max);
-		for(Double score : similarityScores.values()){
-			score = ((score - min)/(max-min))*(newmax-newmin)+newmin;
+		if(max > 0){
+			for(Map.Entry<String, Double> entry : similarityScores.entrySet()){
+				double aux = ((entry.getValue() - min)/(max-min))*(newmax-newmin)+newmin;
+				similarityScores.put(entry.getKey(), aux);
+			}
 		}
 	}
 
