@@ -1,6 +1,7 @@
 package pt.utl.ist.meic.utility;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -43,6 +44,7 @@ public class FileManager {
 	private static final String pathGowallaFriends = "C:/Android/GeoFriendsFire/GeoServer/dataset/Gowalla_edges.csv";
 	private static final String pathGowallaFriendCount = "C:/Android/GeoFriendsFire/GeoServer/dataset/friendCount.csv";
 	private static final String pathGowallaNyNyFriendCount = "C:/Android/GeoFriendsFire/GeoServer/dataset/NyUserNyFriendCount.csv";
+	private static final String pathGowallaNyNyFriends = "C:/Android/GeoFriendsFire/GeoServer/dataset/nyUserFriends.csv";
 
 	// New York
 	private static final Double LOW_LATI = 40.543155;
@@ -706,6 +708,47 @@ public class FileManager {
 		return recall;
 	}
 
+	public void calculateAveragePrecision(UserProfile profile) throws IOException{
+		Reader in = new FileReader(pathGowallaNyNyFriends);
+		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
+		List<String> relevantFriends = new ArrayList<>();
+		boolean flag = false;
+		for (CSVRecord record : records) {
+			if(record.get(0).equals(profile.userId)){
+				flag = true;
+				relevantFriends.add(record.get(1));
+			}
+			else if(flag){
+				break;
+			}
+		}
+		flag = false;
+		double found = 0;
+		double count = 1;
+		List<Double> precisions = new ArrayList<Double>();
+		in = new FileReader(pathFriends);
+		records = CSVFormat.EXCEL.parse(in);
+		for (CSVRecord record : records) {
+			if(record.get(0).equals(profile.userId)){
+				if(relevantFriends.contains(record.get(1))){
+					flag = true;
+					found++;
+					double precision = found/count;
+					precisions.add(precision);
+				}
+				count++;
+			}else if(flag){
+				break;
+			}
+		}
+		if(found == 0){
+			profile.setAveragePrecision(0);
+		}else{
+			double avgPrecision = precisions.stream().reduce(0.0, Double::sum)/precisions.size();
+			profile.setAveragePrecision(avgPrecision);
+		}
+	}
+	
 	public void createNyUserFriendsCSV() throws IOException {
 		Map<String, List<String>> gowalla_friends = new HashMap<String, List<String>>();
 

@@ -22,10 +22,14 @@ public class Graph {
 
 	public Map<Integer, Double> cluster_percentage;
 
-	public Graph() {
+	public Graph(int numClusters) {
 		vertexes = new ArrayList<VertexInfo>();
 		mSequences = new HashSet<Sequence>();
-		cluster_percentage = new HashMap<Integer, Double>();
+		cluster_percentage = new HashMap<Integer, Double>(){{
+			for(int i=0;i<numClusters;i++){
+				this.put(i, 0d);
+			}
+			}};
 	}
 
 	public void addVertex(VertexInfo vertex) {

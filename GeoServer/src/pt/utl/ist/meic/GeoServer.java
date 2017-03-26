@@ -37,8 +37,11 @@ public class GeoServer {
 	private static final int MATCHING_MAX_SEQ_LENGTH = 20;// analisar seqs no
 															// maximo de 50
 															// clusters
-	private static final long TRANSITION_TIME_THRESHOLD = 2 * 60 * 60 * 1000;// 2
-																				// horas
+	private static final long TRANSITION_TIME_THRESHOLD = 2 * 60 * 60 * 1000;// 2 horaas
+
+	private static final double ACT_SCORE_WEIGHT = 1;
+	private static final double SEQ_SCORE_WEIGHT = 0;
+	private static final double THRESHOLD = 0.2;
 
 	private static List<ClusterWithMean> globalClusters;
 	private static Map<Integer, Double> globalPercentages;
@@ -51,9 +54,9 @@ public class GeoServer {
 	public static void main(String[] args) throws ParseException, IOException {
 
 		FileManager mFileManager = new FileManager();
+		
 		List<String> idList = mFileManager.getIdListFromFileNy();
 		int totalUsers = idList.size();
-		double threshold = 0.2;
 
 		String friendsPath = "friendsOf" + totalUsers + "Users.csv";
 		String foundPath = "foundOf" + totalUsers + "Users.csv";
@@ -67,18 +70,28 @@ public class GeoServer {
 		calculateGraphs(mFileManager, "0");
 		calculateSimilarities();
 
-		mFileManager.createCsvSimilarities(usersProfiles, friendsPath, threshold);
+		mFileManager.createCsvSimilarities(usersProfiles, friendsPath, THRESHOLD);
 		mFileManager.createFoundCSV(friendsPath, foundPath);
 		mFileManager.createFoundPrctCSV(foundPath, foundPrctPath);
 
-		System.out.println("precision " + mFileManager.calculatePrecision(foundPath));
-		System.out.println("recall " + mFileManager.calculateRecall(foundPath));
+		System.out.println("Precision " + mFileManager.calculatePrecision(foundPath));
+		System.out.println("Recall " + mFileManager.calculateRecall(foundPath));
+		
+		usersProfiles.stream().forEach(x -> {
+			try {
+				mFileManager.calculateAveragePrecision(x);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+		System.out.println("MAP "+
+		usersProfiles.stream().mapToDouble(UserProfile::getAveragePrecision).sum()/usersProfiles.size());
 
-		 try {
-		 FirebaseHelper.writeNewFriendsFirebase(usersProfiles, 5, 10);
-		 } catch (FirebaseException | JacksonUtilityException e) {
-		 e.printStackTrace();
-		 }
+		// try {
+		// FirebaseHelper.writeNewFriendsFirebase(usersProfiles, 5, 10);
+		// } catch (FirebaseException | JacksonUtilityException e) {
+		// e.printStackTrace();
+		// }
 
 		// applyKmeans(pathKmeansNewYorkCSV);
 
@@ -135,17 +148,22 @@ public class GeoServer {
 					UserProfile p2 = usersProfiles.get(j);
 					double finalScore;
 					double actScore = getUserSimilarityClusterActivity(p1, p2, "0");
+					// System.out.println("actScore "+actScore);
 
 					double seqScore1 = p1.getSimilarityScore(p2.userId);
-					finalScore = 0.7 * seqScore1 + 0.3 * actScore;
+					finalScore = calculateFinalScore(seqScore1, actScore);
 					p1.addSimilarityScore(p2.userId, finalScore);
 
 					double seqScore2 = p2.getSimilarityScore(p1.userId);
-					finalScore = seqScore2 * 0.7 + actScore * 0.3;
+					finalScore = calculateFinalScore(seqScore2, actScore);
 					p2.addSimilarityScore(p1.userId, finalScore);
 				}
 			}
 		}
+	}
+
+	private static double calculateFinalScore(double seqScore, double actScore) {
+		return SEQ_SCORE_WEIGHT * seqScore + ACT_SCORE_WEIGHT * actScore;
 	}
 
 	private static double getUserSimilaritySequences(UserProfile profileA, UserProfile profileB, String level) {
@@ -201,7 +219,7 @@ public class GeoServer {
 
 	private static double transformScoreToDiffPrct(double score) {
 		double min = 0;
-		double max = NUM_CLUSTERS - 1;
+		double max = 2;
 		double newmax = 1;
 		double newmin = 0;
 		if (score > 0) {
@@ -375,7 +393,7 @@ public class GeoServer {
 	}
 
 	private static Graph getUserGraphFromCheckIns(List<CheckIn> userCheckIns) {
-		Graph graph = new Graph();
+		Graph graph = new Graph(NUM_CLUSTERS);
 		// inserir cada checkIn no seu cluster => criar um vertice no graph
 		for (CheckIn ci : userCheckIns) {
 			// values are init only

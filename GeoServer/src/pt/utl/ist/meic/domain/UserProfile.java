@@ -9,11 +9,13 @@ public class UserProfile {
 
 	private Map<String, Graph> mGraphs;
 	public String userId;
+	public double avgPrecision;
 
 	private Map<String, Double> similarityScores;
 
 	public UserProfile(String userId) {
 		this.userId = userId;
+		this.avgPrecision = 0;
 		mGraphs = new HashMap<String, Graph>();
 		similarityScores = new HashMap<String, Double>();
 	}
@@ -34,7 +36,10 @@ public class UserProfile {
 	}
 	
 	public double getSimilarityScore(String userId){
-		return this.similarityScores.get(userId);
+		if(this.similarityScores.containsKey(userId)){
+			return this.similarityScores.get(userId);
+		}
+		return 0d;
 	}
 	
 	public double getMaxSimilarityScore(){
@@ -74,4 +79,12 @@ public class UserProfile {
 		}
 	}
 
+	public void setAveragePrecision(double avgPrecision){
+		this.avgPrecision = avgPrecision;
+	}
+	
+	public double getAveragePrecision(){
+		return this.avgPrecision;
+	}
+	
 }
