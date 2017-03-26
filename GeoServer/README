@@ -39,6 +39,7 @@ escrever event recommendation - geofire, geohash, bounding boxes
 		friend recommendation - como filtro o dataset. qual o workflow depois de ter os dados de location
 
 After:
+ATC simulate shitty internet
 nao comparar todos com todos; ter um maximo ate onde calcular similarities
 quando nao sao suficientemente parecidos com location data usar eventos criados
 factores extra - popularidade, hierarquia;

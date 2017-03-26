@@ -581,7 +581,7 @@ public class FileManager {
 	public void createFoundCSV(String friendsPath, String foundPath) throws IOException {
 		Map<String, List<String>> gowalla_friends = new HashMap<String, List<String>>();
 
-		Reader in = new FileReader(pathGowallaFriends);
+		Reader in = new FileReader(pathGowallaNyNyFriends);
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 		for (CSVRecord record : records) {
 			String key = record.get(0);
@@ -625,7 +625,7 @@ public class FileManager {
 	public void createFoundPrctCSV(String geofriends, String prctPath) throws IOException {
 		Map<String, Integer> user_friendCount = new HashMap<String, Integer>();
 
-		Reader in = new FileReader(pathGowallaFriendCount);
+		Reader in = new FileReader(pathGowallaNyNyFriendCount);
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 		for (CSVRecord record : records) {
 			String key = record.get(0);
