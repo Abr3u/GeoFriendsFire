@@ -39,9 +39,9 @@ public class GeoServer {
 															// clusters
 	private static final long TRANSITION_TIME_THRESHOLD = 2 * 60 * 60 * 1000;// 2 horaas
 
-	private static final double ACT_SCORE_WEIGHT = 1;
-	private static final double SEQ_SCORE_WEIGHT = 0;
-	private static final double THRESHOLD = 0.2;
+	private static final double ACT_SCORE_WEIGHT = 0.75;
+	private static final double SEQ_SCORE_WEIGHT = 0.25;
+	private static final double THRESHOLD = 0.5;
 
 	private static List<ClusterWithMean> globalClusters;
 	private static Map<Integer, Double> globalPercentages;
