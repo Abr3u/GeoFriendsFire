@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventDetailsMapFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventsNearbyListFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.FriendsFragment;
+import pt.utl.ist.meic.geofriendsfire.fragments.FriendsSuggestionsFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.MapFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.MyEventsListFragment;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
@@ -38,6 +39,8 @@ public class DynamicViewPagerAdapter extends ArrayFragmentStatePagerAdapter<Frag
                 return frag;
             case Friends:
                 return new FriendsFragment();
+            case FriendsSuggestions:
+                return new FriendsSuggestionsFragment();
         }
         //shouldn't happen so it's not in switch. just fail-safe
         return new MapFragment();

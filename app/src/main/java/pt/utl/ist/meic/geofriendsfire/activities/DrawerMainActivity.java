@@ -105,24 +105,28 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mTabLayout.setVisibility(View.GONE);
 
         if(savedInstanceState != null){
-            int savedFrag = Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_FRAGMENT));
-            switch(savedFrag){
-                case 0:
-                    setupViewPagerMap();
-                    break;
-                case 1:
-                    setupViewPagerEvents();
-                    break;
-                case 2:
-                    setupViewPagerFriends();
-                    break;
-                case 3:
-                    setupViewPagerEventDetails((Event)Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_EVENT)));
-                    break;
-            }
+            recoverSavedState(savedInstanceState);
         }
         else{
             setupViewPagerEvents();
+        }
+    }
+
+    private void recoverSavedState(Bundle savedInstanceState) {
+        int savedFrag = Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_FRAGMENT));
+        switch(savedFrag){
+            case 0:
+                setupViewPagerMap();
+                break;
+            case 1:
+                setupViewPagerEvents();
+                break;
+            case 2:
+                setupViewPagerFriends();
+                break;
+            case 3:
+                setupViewPagerEventDetails((Event)Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_EVENT)));
+                break;
         }
     }
 
@@ -164,6 +168,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
             return;
         } else {
             Log.d("yyy", "nome : " + mFirebaseUser.getDisplayName());
+            MyApplicationContext.getInstance().startServices();
             mContext.setFirebaseUser(mFirebaseUser);
             writeUserIfNeeded(mFirebaseUser);
         }
@@ -216,8 +221,10 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
     private void setupDrawerContent(NavigationView navigationView) {
 
         View header = navigationView.getHeaderView(0);
-        String myName = ((MyApplicationContext) getApplicationContext()).getFirebaseUser().getDisplayName();
-        ((TextView) header.findViewById(R.id.navTextView)).setText(myName);
+        FirebaseUser user = MyApplicationContext.getInstance().getFirebaseUser();
+        if(user != null){
+            ((TextView) header.findViewById(R.id.navTextView)).setText(user.getDisplayName());
+        }
 
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
@@ -264,7 +271,8 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         fragment = 2;
         mAdapter.clear();
         mAdapter.add(FragmentKeys.Friends);
-        mTabLayout.setVisibility(View.GONE);
+        mAdapter.add(FragmentKeys.FriendsSuggestions);
+        mTabLayout.setVisibility(View.VISIBLE);
     }
 
     public void setupViewPagerEvents() {

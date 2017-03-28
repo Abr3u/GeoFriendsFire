@@ -15,6 +15,7 @@ import org.parceler.Parcels;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.FriendsAdapter;
 
@@ -28,7 +29,7 @@ public class FriendsFragment extends BaseFragment{
     @BindView(R.id.recyclerview)
     RecyclerView recyclerView;
 
-    private static final String FRIENDS_REF = "/friends";
+    private static final String FRIENDS_REF = "/friends/";
     FriendsAdapter adapter;
 
     @Nullable
@@ -37,7 +38,8 @@ public class FriendsFragment extends BaseFragment{
         View view = inflater.inflate(R.layout.fragment_event_list, container, false);
         ButterKnife.bind(this,view);
         super.setNetworkDetectorHolder(networkDetectorHolder);
-        adapter = new FriendsAdapter(getContext(),FirebaseDatabase.getInstance().getReference(FRIENDS_REF+"/user1582"));
+        String myId = MyApplicationContext.getInstance().getFirebaseUser().getUid();
+        adapter = new FriendsAdapter(getContext(),FirebaseDatabase.getInstance().getReference(FRIENDS_REF+myId));
         setupRecyclerView();
 
         if(savedInstanceState != null){

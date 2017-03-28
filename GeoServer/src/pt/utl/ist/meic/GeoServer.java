@@ -74,12 +74,12 @@ public class GeoServer {
 		mFileManager.createFoundCSV(friendsPath, foundPath);
 		mFileManager.createFoundPrctCSV(foundPath, foundPrctPath);
 
-		System.out.println("Precision " + mFileManager.calculatePrecision(foundPath));
+		System.out.println("Precision " + mFileManager.calculatePrecision(friendsPath,foundPath));
 		System.out.println("Recall " + mFileManager.calculateRecall(foundPath));
 		
 		usersProfiles.stream().forEach(x -> {
 			try {
-				mFileManager.calculateAveragePrecision(x);
+				mFileManager.calculateAveragePrecision(x,friendsPath);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

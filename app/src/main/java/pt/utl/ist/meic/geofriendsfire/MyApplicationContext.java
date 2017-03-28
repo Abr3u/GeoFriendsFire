@@ -42,7 +42,9 @@ public class MyApplicationContext extends Application{
         refWatcher = LeakCanary.install(this);
         maximumWorkLoad = 2;
         furthestEvent = 5;
+    }
 
+    public void startServices(){
         Intent locations = new Intent(this, LocationTrackingService.class);
         bindService(locations, locationConnection, Context.BIND_AUTO_CREATE);
 

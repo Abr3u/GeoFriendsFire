@@ -28,15 +28,24 @@ delete event done!
 both services as singletons in appContext done!
 scores normalizados!! seqScore e actScore prct [0-1]
 adicionado threshold para sugerir amigo
-
+adicionada mean average precision
+adicionar/remover amigos done!
 ______________________________________________________________
 Tomorrow:
+
+APP
+ver perfil de utilizador;
+pesquisar pessoa;
+
+SERVER
+re escrever o createUserIdsNyNy;
+re escrever o createNyNyFriendCount;
 
 testar metricas num dataSet maior ~1000 users??
 ver ndcg
 
 escrever event recommendation - geofire, geohash, bounding boxes
-		friend recommendation - como filtro o dataset. qual o workflow depois de ter os dados de location
+		friend recommendation - como filtro o dataset - folha. qual o workflow depois de ter os dados de location
 
 After:
 ATC simulate shitty internet
@@ -49,7 +58,7 @@ Extra:
 userDetails
 user messaging
 security rules
-clustering de markers, mapa style
+clustering de markers,
 mvvm, mvp
 mostrar ao user os seus clusters?
 api google maps, directions, places, roads;
@@ -61,6 +70,12 @@ Se activity score for mais baixo que threshold, comparar via eventos criados;
 precision, mean avg precision podem nao ser os melhores indicadores. uma pessoa pode so ter um amigo mas ser muito parecida com outros!!
 por um lado parece que estamos a dar mt "lixo" ou user, mas este "lixo" podem ser novos amigos que sao pessoas mt semelhantes!!!
 
+discounted comulative gain - pode nao ser muito util pois considera ordem de sugestao
+
+
+Normalized Discounted Comulative Gain
+DCG = SUM(reli/log2(i+1)) para cada i em (found.csv)
+IDCG = COUNT em (nynyFriendCount.csv)
 
 
 \item Precision is the ratio of the number of relevant friends suggested relative to the total number of friends suggested -

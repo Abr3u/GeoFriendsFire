@@ -38,13 +38,11 @@ public class FileManager {
 	private static final String pathNewYorkCSV = "C:/Users/ricar/Desktop/dataset/newYork.csv";// user e datas
 	
 	
-	private static final String pathFriends = "C:/Android/GeoFriendsFire/GeoServer/friendsOf340Users.csv";
 	private static final String pathUserCheckInsCSV = "C:/Android/GeoFriendsFire/GeoServer/dataset/usersCI/";
-	private static final String pathUserIdsNY = "C:/Android/GeoFriendsFire/GeoServer/dataset/userIdsNyNy.txt";
+	private static final String pathUserIdsNYNY = "C:/Android/GeoFriendsFire/GeoServer/dataset/userIdsNyNy.txt";
 	private static final String pathGowallaFriends = "C:/Android/GeoFriendsFire/GeoServer/dataset/Gowalla_edges.csv";
-	private static final String pathGowallaFriendCount = "C:/Android/GeoFriendsFire/GeoServer/dataset/friendCount.csv";
-	private static final String pathGowallaNyNyFriendCount = "C:/Android/GeoFriendsFire/GeoServer/dataset/NyUserNyFriendCount.csv";
-	private static final String pathGowallaNyNyFriends = "C:/Android/GeoFriendsFire/GeoServer/dataset/nyUserFriends.csv";
+	private static final String pathNyNyFriendCount = "C:/Android/GeoFriendsFire/GeoServer/dataset/NyUserNyFriendCount.csv";
+	private static final String pathNyNyRelevantFriends = "C:/Android/GeoFriendsFire/GeoServer/dataset/NyNyRelevantFriends.csv";
 
 	// New York
 	private static final Double LOW_LATI = 40.543155;
@@ -108,54 +106,9 @@ public class FileManager {
 
 	}
 
-	public void createFriendCountNYUsers() throws IOException {
-		HashMap<String, Integer> user_friendCount = new HashMap<String, Integer>();
-		Reader in = new FileReader(pathGowallaFriendCount);
-		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
-		List<String> newYorkIds = getIdListFromFileNy();
-		// so considera friends dos users de NY
-		for (CSVRecord record : records) {
-			String userId = record.get(0);
-			if (newYorkIds.contains(userId)) {
-				user_friendCount.put(userId, Integer.parseInt(record.get(1)));
-			}
-		}
-
-		System.out.println("createCsvFriendCountNY");
-		FileWriter fileWriter = null;
-
-		try {
-			fileWriter = new FileWriter("friendCountNY.csv");
-
-			// Write a new point object to the CSV file
-			for (Map.Entry<String, Integer> entry : user_friendCount.entrySet()) {
-				fileWriter.append(String.valueOf(entry.getKey()));
-				fileWriter.append(DELIMITER);
-				fileWriter.append(String.valueOf(entry.getValue()));
-				fileWriter.append(NEW_LINE_SEPARATOR);
-			}
-
-			System.out.println("CSV file was created successfully !!!");
-
-		} catch (Exception e) {
-			System.out.println("Error in CsvFileWriter !!!");
-			e.printStackTrace();
-		} finally {
-
-			try {
-				fileWriter.flush();
-				fileWriter.close();
-			} catch (IOException e) {
-				System.out.println("Error while flushing/closing fileWriter !!!");
-				e.printStackTrace();
-			}
-
-		}
-	}
-
-	public void stuff() throws IOException, ParseException {
+	public void createNyCheckins() throws IOException, ParseException {
 		// creating newYork.csv from global
-		System.out.println("stuff");
+		System.out.println("createNyCheckins");
 		int checkIncounter = 0;
 		Reader in = new FileReader(pathGlobalCSV);
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
@@ -188,7 +141,7 @@ public class FileManager {
 		FileWriter fileWriter = null;
 
 		try {
-			fileWriter = new FileWriter("newnewYork.csv");
+			fileWriter = new FileWriter(pathNewYorkCSV);
 
 			// Write a new point object to the CSV file
 			for (Auxiliar point : list) {
@@ -218,7 +171,7 @@ public class FileManager {
 			}
 
 		}
-		System.out.println("createCSVStayPoints --- END");
+		System.out.println("createCSVnewYork --- END");
 
 	}
 
@@ -273,7 +226,7 @@ public class FileManager {
 		System.out.println("createuserIdsFiltered");
 		FileWriter fileWriter = null;
 
-		Reader in = new FileReader(pathGowallaNyNyFriendCount);
+		Reader in = new FileReader(pathNyNyFriendCount);
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 		try {
 			fileWriter = new FileWriter("userIdsNyNy.txt");
@@ -376,7 +329,7 @@ public class FileManager {
 	public List<String> getIdListFromFileNy() {
 		List<String> toReturn = new ArrayList<String>();
 
-		Path path = Paths.get(pathUserIdsNY);
+		Path path = Paths.get(pathUserIdsNYNY);
 		try (Stream<String> lines = Files.lines(path)) {
 			lines.forEach(s -> {
 				if (!s.isEmpty()) {
@@ -523,65 +476,14 @@ public class FileManager {
 
 	}
 
-	public void getNumberCheckIns() throws IOException, ParseException {
-		// gets the number of checkIns per user
-		Reader in = new FileReader(pathNewYorkCSV);
-
-		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
-		Map<String, Integer> user_checkIns = new HashMap<String, Integer>();
-		String lastId = records.iterator().next().get(0);
-		int count = 0;
-		for (CSVRecord record : records) {
-			String userId = String.valueOf(record.get(0));
-			if (!userId.equals(lastId)) {
-				user_checkIns.put(lastId, count);
-				lastId = userId;
-				count = 1;
-			} else {
-				count++;
-			}
-		}
-		user_checkIns.put(lastId, count);
-
-		FileWriter fileWriter = null;
-
-		try {
-			fileWriter = new FileWriter("checkInsCountNY.csv");
-
-			// Write a new point object to the CSV file
-			for (Map.Entry<String, Integer> entry : user_checkIns.entrySet()) {
-				fileWriter.append(String.valueOf(entry.getKey()));
-				fileWriter.append(DELIMITER);
-				fileWriter.append(String.valueOf(entry.getValue()));
-				fileWriter.append(NEW_LINE_SEPARATOR);
-			}
-			int totalFound = user_checkIns.entrySet().stream().mapToInt(x -> x.getValue()).sum();
-			// fileWriter.append(String.valueOf(totalFound));
-
-			System.out.println("CSV file was created successfully !!!");
-
-		} catch (Exception e) {
-			System.out.println("Error in CsvFileWriter !!!");
-			e.printStackTrace();
-		} finally {
-
-			try {
-				fileWriter.flush();
-				fileWriter.close();
-			} catch (IOException e) {
-				System.out.println("Error while flushing/closing fileWriter !!!");
-				e.printStackTrace();
-			}
-
-		}
-		System.out.println("createCSVCheckInCountNY --- END");
-
-	}
+	
+	
+	//METRICS
 
 	public void createFoundCSV(String friendsPath, String foundPath) throws IOException {
 		Map<String, List<String>> gowalla_friends = new HashMap<String, List<String>>();
 
-		Reader in = new FileReader(pathGowallaNyNyFriends);
+		Reader in = new FileReader(pathNyNyRelevantFriends);
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 		for (CSVRecord record : records) {
 			String key = record.get(0);
@@ -625,7 +527,7 @@ public class FileManager {
 	public void createFoundPrctCSV(String geofriends, String prctPath) throws IOException {
 		Map<String, Integer> user_friendCount = new HashMap<String, Integer>();
 
-		Reader in = new FileReader(pathGowallaNyNyFriendCount);
+		Reader in = new FileReader(pathNyNyFriendCount);
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 		for (CSVRecord record : records) {
 			String key = record.get(0);
@@ -665,14 +567,14 @@ public class FileManager {
 
 	}
 
-	public double calculatePrecision(String foundCSV) throws IOException {
+	public double calculatePrecision(String friendsCSV,String foundCSV) throws IOException {
 		Reader in = new FileReader(foundCSV);
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 		double totalFound = 0;
 		for (CSVRecord record : records) {
 			totalFound += Double.parseDouble(record.get(1));
 		}
-		in = new FileReader(pathFriends);
+		in = new FileReader(friendsCSV);
 		records = CSVFormat.EXCEL.parse(in);
 		int totalSuggested = 0;
 		// so considera friends dos users de NY
@@ -694,7 +596,7 @@ public class FileManager {
 			totalFound += Double.parseDouble(record.get(1));
 		}
 
-		in = new FileReader(pathGowallaNyNyFriendCount);
+		in = new FileReader(pathNyNyFriendCount);
 		records = CSVFormat.EXCEL.parse(in);
 		int totalGoawallFriendsNY = 0;
 		// so considera friends dos users de NY
@@ -708,8 +610,8 @@ public class FileManager {
 		return recall;
 	}
 
-	public void calculateAveragePrecision(UserProfile profile) throws IOException{
-		Reader in = new FileReader(pathGowallaNyNyFriends);
+	public void calculateAveragePrecision(UserProfile profile,String friendsCSV) throws IOException{
+		Reader in = new FileReader(pathNyNyRelevantFriends);
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 		List<String> relevantFriends = new ArrayList<>();
 		boolean flag = false;
@@ -726,7 +628,7 @@ public class FileManager {
 		double found = 0;
 		double count = 1;
 		List<Double> precisions = new ArrayList<Double>();
-		in = new FileReader(pathFriends);
+		in = new FileReader(friendsCSV);
 		records = CSVFormat.EXCEL.parse(in);
 		for (CSVRecord record : records) {
 			if(record.get(0).equals(profile.userId)){
@@ -776,7 +678,7 @@ public class FileManager {
 		FileWriter fileWriter = null;
 
 		try {
-			fileWriter = new FileWriter("nyUserFriends.csv");
+			fileWriter = new FileWriter("NyNyRelevantFriends.csv");
 
 			// Write a new point object to the CSV file
 			for (Map.Entry<String, List<String>> entry : gowalla_friends.entrySet()) {
