@@ -2,7 +2,6 @@ package pt.utl.ist.meic.geofriendsfire.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,15 +16,12 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
-import pt.utl.ist.meic.geofriendsfire.models.Friend;
 
 
 public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHolder> {
@@ -101,7 +97,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.card_item_friends, parent, false);
+                .inflate(R.layout.card_item_friend, parent, false);
         view.setBackgroundResource(mBackground);
         return new ViewHolder(view);
     }
