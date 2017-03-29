@@ -7,8 +7,10 @@
         <item>Shop</item>
     </string-array>
 
-    <string name="dialog_title">"Create New Event"</string>
-    <string name="dialog_message">"Do you want to create an event at your current location?"</string>
+    <string name="dialog_title_create_event">"Create New Event"</string>
+    <string name="dialog_message_create_event">"Do you want to create an event at your current location?"</string>
+    <string name="dialog_title_remove_friend">"Remove Friend "</string>
+    <string name="dialog_message_remove_friend">"Are you sure you want to remove this friend?"</string>
     <string name="sign_in_button">Sign In</string>
 
     <string name="menu_night_mode">Night mode</string>

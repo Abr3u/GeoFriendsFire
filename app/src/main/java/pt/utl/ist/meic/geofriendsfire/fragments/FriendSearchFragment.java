@@ -24,6 +24,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.FriendSearchAdapter;
 import pt.utl.ist.meic.geofriendsfire.models.Friend;
@@ -80,7 +81,10 @@ public class FriendSearchFragment extends BaseFragment{
                     User user = snap.getValue(User.class);
                     if(user.username.toLowerCase().startsWith(prefix) ||
                             user.username.toUpperCase().startsWith(prefix) ){
-                        adapter.addValue(user.username);
+                        //skip self
+                        if(!user.email.equals(MyApplicationContext.getInstance().getFirebaseUser().getEmail())){
+                            adapter.addValue(user.username);
+                        }
                     }
                 }
             }

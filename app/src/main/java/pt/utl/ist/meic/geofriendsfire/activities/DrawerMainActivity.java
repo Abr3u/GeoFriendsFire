@@ -317,8 +317,8 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
 
     private void showAlertDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(DrawerMainActivity.this);
-        builder.setTitle(getString(R.string.dialog_title));
-        builder.setMessage(getString(R.string.dialog_message));
+        builder.setTitle(getString(R.string.dialog_title_create_event));
+        builder.setMessage(getString(R.string.dialog_message_create_event));
 
         String positiveText = getString(android.R.string.ok);
         builder.setPositiveButton(positiveText,

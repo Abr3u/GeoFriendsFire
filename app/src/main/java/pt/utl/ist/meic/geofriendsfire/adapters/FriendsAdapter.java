@@ -1,6 +1,8 @@
 package pt.utl.ist.meic.geofriendsfire.adapters;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -50,7 +52,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 String friend = dataSnapshot.getKey();
-                if(!mValues.contains(friend)){
+                if (!mValues.contains(friend)) {
                     mValues.add(friend);
                     notifyDataSetChanged();
                 }
@@ -118,7 +120,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                 .into(holder.mImageView2);
 
         View.OnClickListener profileListerner = view ->
-                Toast.makeText(mContext, "Go to User "+username+" profile", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mContext, "Go to User " + username + " profile", Toast.LENGTH_SHORT).show();
 
         holder.mImageView.setOnClickListener(profileListerner);
         holder.mTextView.setOnClickListener(profileListerner);
@@ -126,16 +128,48 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         holder.mImageView2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(mContext, "Removing Friend", Toast.LENGTH_SHORT).show();
-                String username = mValues.get(position);
-                String myId = MyApplicationContext.getInstance().getFirebaseUser().getUid();
-                DatabaseReference ref = FirebaseDatabase.getInstance().getReference(FRIENDS_REF+myId);
-                ref.child(username).removeValue();
-                mValues.remove(position);
-                notifyDataSetChanged();
+                showAlertDialogDelete(position);
             }
         });
 
+    }
+
+    private void showAlertDialogDelete(int position) {
+        String username = mValues.get(position);
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle(mContext.getString(R.string.dialog_title_remove_friend)+username);
+        builder.setMessage(mContext.getString(R.string.dialog_message_remove_friend));
+
+        String positiveText = mContext.getString(android.R.string.ok);
+        builder.setPositiveButton(positiveText,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteFriendFirebase(position);
+                    }
+                });
+
+        String negativeText = mContext.getString(android.R.string.cancel);
+        builder.setNegativeButton(negativeText,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void deleteFriendFirebase(int position) {
+        Toast.makeText(mContext, "Removing Friend", Toast.LENGTH_SHORT).show();
+        String username = mValues.get(position);
+        String myId = MyApplicationContext.getInstance().getFirebaseUser().getUid();
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference(FRIENDS_REF + myId);
+        ref.child(username).removeValue();
+        mValues.remove(position);
+        notifyDataSetChanged();
     }
 
     @Override
