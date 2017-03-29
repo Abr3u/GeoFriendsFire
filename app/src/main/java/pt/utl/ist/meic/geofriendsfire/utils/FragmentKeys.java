@@ -8,7 +8,8 @@ public enum FragmentKeys {
     EventDetailsMap,
     Test,
     Friends,
-    FriendsSuggestions;
+    FriendsSuggestions,
+    FriendSearch;
 
 
     public String getPageTitle(){
@@ -20,7 +21,9 @@ public enum FragmentKeys {
             case 5:
                 return "Friends";
             case 6:
-                return "You May Know";
+                return "Suggestions";
+            case 7:
+                return "Search";
         }
         return "";
     }

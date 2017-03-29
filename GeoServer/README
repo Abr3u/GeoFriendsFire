@@ -30,12 +30,12 @@ scores normalizados!! seqScore e actScore prct [0-1]
 adicionado threshold para sugerir amigo
 adicionada mean average precision
 adicionar/remover amigos done!
+search people done!
 ______________________________________________________________
 Tomorrow:
 
 APP
 ver perfil de utilizador;
-pesquisar pessoa;
 
 SERVER
 re escrever o createUserIdsNyNy;
@@ -52,10 +52,8 @@ ATC simulate shitty internet
 nao comparar todos com todos; ter um maximo ate onde calcular similarities
 quando nao sao suficientemente parecidos com location data usar eventos criados
 factores extra - popularidade, hierarquia;
-aumentar scope - pensar em como criar os novos datasets necessarios!!
 
 Extra:
-userDetails
 user messaging
 security rules
 clustering de markers,
@@ -70,7 +68,9 @@ Se activity score for mais baixo que threshold, comparar via eventos criados;
 precision, mean avg precision podem nao ser os melhores indicadores. uma pessoa pode so ter um amigo mas ser muito parecida com outros!!
 por um lado parece que estamos a dar mt "lixo" ou user, mas este "lixo" podem ser novos amigos que sao pessoas mt semelhantes!!!
 
-discounted comulative gain - pode nao ser muito util pois considera ordem de sugestao
+discounted comulative gain - pode nao ser muito util pois considera ordem de sugestao;
+							- usar o score de semelhança como decaying factor em vez de log2(blabla);??? pode nao ser o melhor porque
+								decaying factor é para dizer que os melhores estão primeiro;
 
 
 Normalized Discounted Comulative Gain

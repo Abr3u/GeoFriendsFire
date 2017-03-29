@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
@@ -65,6 +66,9 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
 
     @BindView(R.id.tabs)
     TabLayout mTabLayout;
+
+    @BindView(R.id.fab)
+    FloatingActionButton fab;
 
     @OnClick(R.id.fab)
     public void onFABClick(View view) {
@@ -272,7 +276,9 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.clear();
         mAdapter.add(FragmentKeys.Friends);
         mAdapter.add(FragmentKeys.FriendsSuggestions);
+        mAdapter.add(FragmentKeys.FriendSearch);
         mTabLayout.setVisibility(View.VISIBLE);
+        fab.setVisibility(View.INVISIBLE);
     }
 
     public void setupViewPagerEvents() {
