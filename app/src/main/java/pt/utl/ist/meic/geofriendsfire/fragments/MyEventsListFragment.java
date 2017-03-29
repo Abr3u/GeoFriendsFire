@@ -1,8 +1,10 @@
 package pt.utl.ist.meic.geofriendsfire.fragments;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,15 +23,22 @@ import org.parceler.Parcels;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
+import pt.utl.ist.meic.geofriendsfire.activities.CreateEventActivity;
+import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
 import pt.utl.ist.meic.geofriendsfire.adapters.MyEventsAdapter;
 import pt.utl.ist.meic.geofriendsfire.events.NewDeletedEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
+
+import static android.app.Activity.RESULT_OK;
 
 public class MyEventsListFragment extends BaseFragment{
 
     private static final String PARCEL_VALUES = "values";
     private static final String PARCEL_VALUES_MAP = "valuesMap";
+    private static final int CREATE_EVENT_REQ_CODE = 1;
 
     @BindView(R.id.networkDetectorHolder)
     TextView networkDetectorHolder;
@@ -37,17 +46,65 @@ public class MyEventsListFragment extends BaseFragment{
     @BindView(R.id.recyclerview)
     RecyclerView recyclerView;
 
+    @BindView(R.id.fab)
+    FloatingActionButton fab;
+
     private static final String EVENTS_REF = "/events";
     private static final String EVENTS_LOCATIONS_REF = "/eventsLocations";
     private MyEventsAdapter adapter;
     private DatabaseReference mFirebaseEventsRef;
     private DatabaseReference mFirebaseEventsLocationRef;
 
+
+    @OnClick(R.id.fab)
+    public void onFABClick(View view) {
+        showAlertDialog();
+    }
+
+    private void showAlertDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(getString(R.string.dialog_title_create_event));
+        builder.setMessage(getString(R.string.dialog_message_create_event));
+
+        String positiveText = getString(android.R.string.ok);
+        builder.setPositiveButton(positiveText,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(getContext(), CreateEventActivity.class);
+                        startActivityForResult(intent,CREATE_EVENT_REQ_CODE);
+                    }
+                });
+
+        String negativeText = getString(android.R.string.cancel);
+        builder.setNegativeButton(negativeText,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == CREATE_EVENT_REQ_CODE){
+            if(resultCode == RESULT_OK){
+                MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
+                ((DrawerMainActivity) getContext()).setupViewPagerEvents();
+            }
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_event_list, container, false);
         ButterKnife.bind(this,view);
+        fab.setVisibility(View.VISIBLE);
         super.setNetworkDetectorHolder(networkDetectorHolder);
         mFirebaseEventsRef = FirebaseDatabase.getInstance().getReference(EVENTS_REF);
         mFirebaseEventsLocationRef = FirebaseDatabase.getInstance().getReference(EVENTS_LOCATIONS_REF);

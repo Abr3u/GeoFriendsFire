@@ -1,11 +1,13 @@
 package pt.utl.ist.meic.geofriendsfire.fragments;
 
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.InflateException;
 import android.view.LayoutInflater;
@@ -41,14 +43,19 @@ import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
+import pt.utl.ist.meic.geofriendsfire.activities.CreateEventActivity;
+import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
 import pt.utl.ist.meic.geofriendsfire.events.NewLocationEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewNearbyEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewResidentDomainEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
+
+import static android.app.Activity.RESULT_OK;
 
 public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChangeListener,
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
@@ -58,6 +65,7 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
 
     private static final int INITIAL_ZOOM_LEVEL = 15;
     private static final double INITIAL_RADIUS = 0.1;
+    private static final int CREATE_EVENT_REQ_CODE = 1;
 
     @BindView(R.id.networkDetectorHolder)
     TextView networkDetectorHolder;
@@ -70,6 +78,51 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
 
     private double mRadius;
     private Set<Event> mValues;
+
+    @OnClick(R.id.fab)
+    public void onFABClick(View view) {
+        showAlertDialog();
+    }
+
+    private void showAlertDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(getString(R.string.dialog_title_create_event));
+        builder.setMessage(getString(R.string.dialog_message_create_event));
+
+        String positiveText = getString(android.R.string.ok);
+        builder.setPositiveButton(positiveText,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(getContext(), CreateEventActivity.class);
+                        startActivityForResult(intent,CREATE_EVENT_REQ_CODE);
+                    }
+                });
+
+        String negativeText = getString(android.R.string.cancel);
+        builder.setNegativeButton(negativeText,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == CREATE_EVENT_REQ_CODE){
+            if(resultCode == RESULT_OK){
+                MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
+                ((DrawerMainActivity) getContext()).setupViewPagerEvents();
+            }
+        }
+    }
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

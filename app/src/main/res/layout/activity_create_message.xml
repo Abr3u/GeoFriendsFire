@@ -25,43 +25,52 @@
 
         </android.support.design.widget.AppBarLayout>
 
-        <LinearLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            android:orientation="vertical"
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            >
+            android:orientation="vertical"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
             <TextView
-                android:visibility="gone"
                 android:id="@+id/networkDetectorHolder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@android:color/holo_red_light"
                 android:gravity="center"
                 android:padding="10dp"
-                android:background="@android:color/holo_red_light" />
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/create_msg_to_holder"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+                <Spinner
+                    android:id="@+id/friendsSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:prompt="@string/friends_prompt" />
+            </LinearLayout>
 
             <EditText
+                android:id="@+id/message_content"
+                android:hint="@string/write_new_message_here_hint"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="what is the event about"
-                android:inputType="text"
-                android:id="@+id/eventDescription" />
-
-            <Spinner
-                android:id="@+id/categorySpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:entries="@array/categories_array"
-                android:prompt="@string/categories_prompt" />
+                android:maxEms="360"/>
 
             <Button
+                android:id="@+id/createMessageButton"
                 style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/create_event_button"
-                android:id="@+id/createEventButton"
-                android:layout_gravity="center_horizontal" />
+                android:layout_gravity="center_horizontal"
+                android:text="@string/send_msg_button" />
 
         </LinearLayout>
 

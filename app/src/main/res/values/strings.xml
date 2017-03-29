@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">GeoFriendsFire</string>
     <string name="categories_prompt">Choose a category</string>
+    <string name="friends_prompt">Choose a friend</string>
     <string-array name="categories_array">
         <item>Food</item>
         <item>Sports</item>
@@ -20,4 +21,8 @@
     <string name="menu_night_mode_auto">Auto</string>
     <string name="preferredWorkloadHolder">Preferred workload: </string>
     <string name="furthestRangeHolder">Furthest Event: </string>
+    <string name="create_msg_to_holder">To:</string>
+    <string name="send_msg_button">Send Message</string>
+    <string name="create_event_button">Create Event</string>
+    <string name="write_new_message_here_hint">Write new message here</string>
 </resources>

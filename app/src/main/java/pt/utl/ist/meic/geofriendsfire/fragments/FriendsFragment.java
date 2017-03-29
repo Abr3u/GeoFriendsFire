@@ -2,6 +2,7 @@ package pt.utl.ist.meic.geofriendsfire.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -29,6 +30,9 @@ public class FriendsFragment extends BaseFragment{
     @BindView(R.id.recyclerview)
     RecyclerView recyclerView;
 
+    @BindView(R.id.fab)
+    FloatingActionButton fab;
+
     private static final String FRIENDS_REF = "/friends/";
     FriendsAdapter adapter;
 
@@ -37,6 +41,7 @@ public class FriendsFragment extends BaseFragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_event_list, container, false);
         ButterKnife.bind(this,view);
+        fab.setVisibility(View.INVISIBLE);
         super.setNetworkDetectorHolder(networkDetectorHolder);
         String myId = MyApplicationContext.getInstance().getFirebaseUser().getUid();
         adapter = new FriendsAdapter(getContext(),FirebaseDatabase.getInstance().getReference(FRIENDS_REF+myId));

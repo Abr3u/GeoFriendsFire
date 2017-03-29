@@ -29,9 +29,9 @@
         <activity android:name=".activities.SignInActivity" />
         <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.CreateEventActivity" />
-
-        <service android:name=".services.LocationTrackingService"/>
-        <service android:name=".services.EventsNearbyService"/>
+        <activity android:name=".activities.CreateMessageActivity"/>
+        <service android:name=".services.LocationTrackingService" />
+        <service android:name=".services.EventsNearbyService" />
     </application>
 
 </manifest>
