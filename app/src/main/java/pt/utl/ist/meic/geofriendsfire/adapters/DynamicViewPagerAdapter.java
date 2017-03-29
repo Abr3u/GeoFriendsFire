@@ -13,6 +13,8 @@ import pt.utl.ist.meic.geofriendsfire.fragments.FriendSearchFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.FriendsFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.FriendsSuggestionsFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.MapFragment;
+import pt.utl.ist.meic.geofriendsfire.fragments.MessagesReceivedFragment;
+import pt.utl.ist.meic.geofriendsfire.fragments.MessagesSentFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.MyEventsListFragment;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.utils.FragmentKeys;
@@ -44,6 +46,10 @@ public class DynamicViewPagerAdapter extends ArrayFragmentStatePagerAdapter<Frag
                 return new FriendsSuggestionsFragment();
             case FriendSearch:
                 return new FriendSearchFragment();
+            case MessagesReceived:
+                return new MessagesReceivedFragment();
+            case MessagesSent:
+                return new MessagesSentFragment();
         }
         //shouldn't happen so it's not in switch. just fail-safe
         return new MapFragment();

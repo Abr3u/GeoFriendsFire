@@ -251,8 +251,8 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
                                 mDrawerLayout.closeDrawers();
                                 startActivity(new Intent(DrawerMainActivity.this, SettingsActivity.class));
                                 return false;
-                            case R.id.nav_test:
-                                setupViewPagerTest();
+                            case R.id.nav_messages:
+                                setupViewPagerMessages();
                                 mDrawerLayout.closeDrawers();
                                 return true;
                             default:
@@ -265,10 +265,12 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         );
     }
 
-    public void setupViewPagerTest() {
+    public void setupViewPagerMessages() {
         mAdapter.clear();
-        mAdapter.add(FragmentKeys.Test);
-        mTabLayout.setVisibility(View.GONE);
+        mAdapter.add(FragmentKeys.MessagesReceived);
+        mAdapter.add(FragmentKeys.MessagesSent);
+        fab.setVisibility(View.INVISIBLE);
+        mTabLayout.setVisibility(View.VISIBLE);
     }
 
     public void setupViewPagerFriends() {
@@ -286,6 +288,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.clear();
         mAdapter.add(FragmentKeys.EventsNearby);
         mAdapter.add(FragmentKeys.MyEvents);
+        fab.setVisibility(View.VISIBLE);
         mTabLayout.setVisibility(View.VISIBLE);
     }
 
@@ -293,6 +296,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         fragment = 0;
         mAdapter.clear();
         mAdapter.add(FragmentKeys.EventsNearbyMap);
+        fab.setVisibility(View.VISIBLE);
         mTabLayout.setVisibility(View.GONE);
     }
 
@@ -302,6 +306,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.clear();
         mAdapter.setEventForDetails(event);
         mAdapter.add(FragmentKeys.EventDetailsMap);
+        fab.setVisibility(View.VISIBLE);
         mTabLayout.setVisibility(View.GONE);
     }
 

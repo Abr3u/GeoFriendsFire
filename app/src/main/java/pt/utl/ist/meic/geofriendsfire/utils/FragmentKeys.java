@@ -9,7 +9,9 @@ public enum FragmentKeys {
     Test,
     Friends,
     FriendsSuggestions,
-    FriendSearch;
+    FriendSearch,
+    MessagesReceived,
+    MessagesSent;
 
 
     public String getPageTitle(){
@@ -24,6 +26,10 @@ public enum FragmentKeys {
                 return "Suggestions";
             case 7:
                 return "Search";
+            case 8:
+                return "Inbox";
+            case 9:
+                return "Sent";
         }
         return "";
     }

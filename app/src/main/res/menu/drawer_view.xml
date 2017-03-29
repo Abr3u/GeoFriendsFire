@@ -12,11 +12,11 @@
             android:id="@+id/nav_friends"
             android:title="Friends" />
         <item
+            android:id="@+id/nav_messages"
+            android:title="Messages" />
+        <item
             android:id="@+id/nav_settings"
             android:title="Settings" />
-        <item
-            android:id="@+id/nav_test"
-            android:title="Test" />
     </group>
 
 </menu>

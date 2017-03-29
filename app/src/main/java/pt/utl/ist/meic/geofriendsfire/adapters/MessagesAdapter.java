@@ -1,0 +1,160 @@
+package pt.utl.ist.meic.geofriendsfire.adapters;
+
+import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
+import pt.utl.ist.meic.geofriendsfire.R;
+import pt.utl.ist.meic.geofriendsfire.models.Message;
+
+
+public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHolder> {
+
+    private final Context mContext;
+    private DatabaseReference mDatabaseReference;
+    private ChildEventListener mChildEventListener;
+
+    private final TypedValue mTypedValue = new TypedValue();
+    private int mBackground;
+    private boolean isInbox;
+
+    private List<Message> mValues;
+
+    public MessagesAdapter(Context context, DatabaseReference ref,boolean isInbox) {
+        mContext = context;
+        mDatabaseReference = ref;
+        this.isInbox = isInbox;
+        context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
+        mBackground = mTypedValue.resourceId;
+        mValues = new ArrayList<Message>();
+
+
+        ChildEventListener childEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Message message = dataSnapshot.getValue(Message.class);
+                if (!mValues.contains(message)) {
+                    mValues.add(message);
+                    notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+
+        ref.addChildEventListener(childEventListener);
+        // [END child_event_listener_recycler]
+
+        // Store reference to listener so it can be removed on app stop
+        mChildEventListener = childEventListener;
+
+    }
+
+    public List<Message> getValues() {
+        return mValues;
+    }
+
+    public void setValues(List<Message> values) {
+        this.mValues = values;
+    }
+
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.card_item, parent, false);
+        view.setBackgroundResource(mBackground);
+        return new ViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
+        Message msg = mValues.get(position);
+        if(isInbox){
+            holder.mTextView.setText(msg.from);
+        }else{
+            holder.mTextView.setText(msg.to);
+        }
+        holder.mTextView2.setText(msg.sentDate);
+
+        Glide.with(holder.mImageView.getContext())
+                .load(R.drawable.ic_message)
+                .fitCenter()
+                .into(holder.mImageView);
+
+        View.OnClickListener messageDetailsListerner = view ->
+                Toast.makeText(mContext, "Go to Message " + position, Toast.LENGTH_SHORT).show();
+
+        holder.mView.setOnClickListener(messageDetailsListerner);
+
+    }
+
+    @Override
+    public int getItemCount() {
+        return mValues.size();
+    }
+
+    public void cleanupListener() {
+        if (mChildEventListener != null) {
+            mDatabaseReference.removeEventListener(mChildEventListener);
+        }
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        public final View mView;
+        public final ImageView mImageView;
+        public final TextView mTextView;
+        public final TextView mTextView2;
+
+        public ViewHolder(View view) {
+            super(view);
+            mView = view;
+            mImageView = (ImageView) view.findViewById(R.id.iv_image);
+            mTextView = (TextView) view.findViewById(R.id.iv_text);
+            mTextView2 = (TextView) view.findViewById(R.id.iv_extra);
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + " '" + mTextView.getText();
+        }
+    }
+}
+
