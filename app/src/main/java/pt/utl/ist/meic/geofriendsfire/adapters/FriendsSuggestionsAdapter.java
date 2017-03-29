@@ -25,6 +25,7 @@ import java.util.List;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.models.Friend;
+import pt.utl.ist.meic.geofriendsfire.models.User;
 
 
 public class FriendsSuggestionsAdapter extends RecyclerView.Adapter<FriendsSuggestionsAdapter.ViewHolder> {
@@ -32,6 +33,7 @@ public class FriendsSuggestionsAdapter extends RecyclerView.Adapter<FriendsSugge
     private static final String TAG = "yyy";
     private static final String FRIENDS_REF = "/friends/";
     private static final String FRIENDS_SUG_REF = "/friendsSuggestions/";
+    private static final String USERS_REF = "/users/";
 
     private final Context mContext;
     private DatabaseReference mDatabaseReference;
@@ -53,20 +55,35 @@ public class FriendsSuggestionsAdapter extends RecyclerView.Adapter<FriendsSugge
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snap : dataSnapshot.getChildren()) {
-                    Friend friend = new Friend();
-                    friend.username = snap.getKey();
-                    friend.score = snap.getValue(Double.class);
-                    if(!mValues.contains(friend)){
-                        mValues.add(friend);
-                    }
+                    String friendKey = snap.getKey();
+                    Double score = snap.getValue(Double.class);
+
+                    FirebaseDatabase.getInstance().getReference(USERS_REF+friendKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            Friend friend = new Friend();
+                            friend.ref = friendKey;
+                            friend.score = score;
+                            User aux = dataSnapshot.getValue(User.class);
+                            friend.username = aux.username;
+                            if(!mValues.contains(friend)){
+                                mValues.add(friend);
+                                orderFriendsByValue();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
                 }
-                orderFriendsByValue();
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.w(TAG, "friends:onCancelled", databaseError.toException());
-                Toast.makeText(mContext, "Failed to load friends.",
+                Toast.makeText(mContext, "Failed to load suggestions.",
                         Toast.LENGTH_SHORT).show();
             }
         };
@@ -87,7 +104,10 @@ public class FriendsSuggestionsAdapter extends RecyclerView.Adapter<FriendsSugge
     }
 
     private void orderFriendsByValue() {
-        Collections.sort(mValues,Friend.getComparatorScore());
+        Log.d("ggg","order");
+        if(mValues.size()>1){
+            Collections.sort(mValues,Friend.getComparatorScore());
+        }
         notifyDataSetChanged();
     }
 
@@ -129,11 +149,11 @@ public class FriendsSuggestionsAdapter extends RecyclerView.Adapter<FriendsSugge
 
                 //add new friend
                 DatabaseReference ref = FirebaseDatabase.getInstance().getReference(FRIENDS_REF+myId);
-                ref.child(friend.username).setValue(true);
+                ref.child(friend.ref).setValue(friend.username);
 
                 //remove sugestion for this friend
-                ref = FirebaseDatabase.getInstance().getReference(FRIENDS_SUG_REF+"user590");
-                ref.child(friend.username).removeValue();
+                ref = FirebaseDatabase.getInstance().getReference(FRIENDS_SUG_REF+myId);
+                ref.child(friend.ref).removeValue();
                 mValues.remove(position);
                 notifyDataSetChanged();
             }

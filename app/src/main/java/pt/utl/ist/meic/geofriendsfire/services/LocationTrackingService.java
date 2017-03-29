@@ -30,6 +30,7 @@ import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
 public class LocationTrackingService extends Service
 {
     private static final String TAG = "trackingService";
+    private static final String LOCATIONS_REF = "/locations/";
     private static final int LOCATION_AGGREGATION_THRESHOLD = 5;
     private static final int LOCATION_INTERVAL = 30*60*1000;//30mins
     private static final float LOCATION_DISTANCE = 250f;//meters
@@ -150,7 +151,7 @@ public class LocationTrackingService extends Service
             Map<String, Object> locationValues = first.toMap();
 
             String uid = MyApplicationContext.getInstance().getFirebaseUser().getUid();
-            mDatabase.child("/locations/"+uid).push().setValue(locationValues);*/
+            mDatabase.child(LOCATIONS_REF+uid).push().setValue(locationValues);*/
         }
 
         //observe location changes

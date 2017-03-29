@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,9 +53,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Message message = dataSnapshot.getValue(Message.class);
+                Log.d("ggg","new msg INBOX:"+isInbox+" -> "+message.content);
                 if (!mValues.contains(message)) {
                     mValues.add(message);
                     notifyDataSetChanged();
+                    Log.d("ggg","adicionei");
                 }
             }
 
@@ -108,9 +111,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         Message msg = mValues.get(position);
         if(isInbox){
-            holder.mTextView.setText(msg.from);
+            holder.mTextView.setText(msg.fromUsername);
         }else{
-            holder.mTextView.setText(msg.to);
+            holder.mTextView.setText(msg.toUsername);
         }
         holder.mTextView2.setText(msg.sentDate);
 

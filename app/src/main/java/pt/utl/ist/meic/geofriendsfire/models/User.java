@@ -9,6 +9,8 @@ import java.util.Map;
 @IgnoreExtraProperties
 public class User {
 
+    @Exclude
+    public String ref;
     public String username;
     public String email;
 

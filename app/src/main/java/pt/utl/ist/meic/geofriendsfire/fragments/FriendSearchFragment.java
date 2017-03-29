@@ -80,11 +80,12 @@ public class FriendSearchFragment extends BaseFragment{
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snap : dataSnapshot.getChildren()) {
                     User user = snap.getValue(User.class);
+                    user.ref = snap.getKey();
                     if(user.username.toLowerCase().startsWith(prefix) ||
                             user.username.toUpperCase().startsWith(prefix) ){
                         //skip self
                         if(!user.email.equals(MyApplicationContext.getInstance().getFirebaseUser().getEmail())){
-                            adapter.addValue(user.username);
+                            adapter.addValue(user);
                         }
                     }
                 }

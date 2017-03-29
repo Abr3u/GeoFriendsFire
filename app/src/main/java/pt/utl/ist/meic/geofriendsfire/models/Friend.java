@@ -13,6 +13,8 @@ import java.util.Map;
 @Parcel
 public class Friend {
 
+    @Exclude
+    public String ref;
     public String username;
     public Double score;
 

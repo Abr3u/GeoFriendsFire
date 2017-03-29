@@ -25,6 +25,7 @@ import java.util.List;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.models.Friend;
+import pt.utl.ist.meic.geofriendsfire.models.User;
 
 
 public class FriendSearchAdapter extends RecyclerView.Adapter<FriendSearchAdapter.ViewHolder> {
@@ -34,20 +35,20 @@ public class FriendSearchAdapter extends RecyclerView.Adapter<FriendSearchAdapte
     private final Context mContext;
     private final TypedValue mTypedValue = new TypedValue();
     private int mBackground;
-    private List<String> mValues;
+    private List<User> mValues;
 
     public FriendSearchAdapter(Context context) {
         mContext = context;
         context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
         mBackground = mTypedValue.resourceId;
-        mValues = new ArrayList<String>();
+        mValues = new ArrayList<User>();
     }
 
     public void clearValues(){
         this.mValues.clear();
         notifyDataSetChanged();
     }
-    public void addValue(String value){
+    public void addValue(User value){
         if(!this.mValues.contains(value)){
             this.mValues.add(value);
             notifyDataSetChanged();
@@ -64,7 +65,7 @@ public class FriendSearchAdapter extends RecyclerView.Adapter<FriendSearchAdapte
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        String username = mValues.get(position);
+        String username = mValues.get(position).username;
         holder.mTextView.setText(username);
 
         Glide.with(holder.mImageView.getContext())
@@ -86,13 +87,14 @@ public class FriendSearchAdapter extends RecyclerView.Adapter<FriendSearchAdapte
         holder.mImageView2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String username = mValues.get(position);
+                User u = mValues.get(position);
+                String username = u.username;
                 Toast.makeText(mContext, "Adding Friend "+username, Toast.LENGTH_SHORT).show();
                 String myId = MyApplicationContext.getInstance().getFirebaseUser().getUid();
 
                 //add new friend
                 DatabaseReference ref = FirebaseDatabase.getInstance().getReference(FRIENDS_REF+myId);
-                ref.child(username).setValue(true);
+                ref.child(u.ref).setValue(username);
                 mValues.remove(position);
                 notifyDataSetChanged();
             }

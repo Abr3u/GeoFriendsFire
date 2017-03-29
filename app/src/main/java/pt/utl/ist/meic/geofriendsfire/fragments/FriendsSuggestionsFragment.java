@@ -16,6 +16,7 @@ import org.parceler.Parcels;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.FriendsAdapter;
 import pt.utl.ist.meic.geofriendsfire.adapters.FriendsSuggestionsAdapter;
@@ -43,7 +44,8 @@ public class FriendsSuggestionsFragment extends BaseFragment{
         ButterKnife.bind(this,view);
         fab.setVisibility(View.INVISIBLE);
         super.setNetworkDetectorHolder(networkDetectorHolder);
-        adapter = new FriendsSuggestionsAdapter(getContext(),FirebaseDatabase.getInstance().getReference(FRIENDS_SUG_REF+"user590"));
+        String myId = MyApplicationContext.getInstance().getFirebaseUser().getUid();
+        adapter = new FriendsSuggestionsAdapter(getContext(),FirebaseDatabase.getInstance().getReference(FRIENDS_SUG_REF+myId));
         setupRecyclerView();
 
         if(savedInstanceState != null){

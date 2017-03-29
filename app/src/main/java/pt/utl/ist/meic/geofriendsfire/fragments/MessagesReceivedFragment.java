@@ -67,12 +67,6 @@ public class MessagesReceivedFragment extends BaseFragment{
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        adapter.cleanupListener();
-    }
-
-    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(PARCEL_VALUES, Parcels.wrap(adapter.getValues()));

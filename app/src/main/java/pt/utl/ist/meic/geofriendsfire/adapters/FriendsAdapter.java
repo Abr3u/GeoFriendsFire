@@ -24,6 +24,7 @@ import java.util.List;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
+import pt.utl.ist.meic.geofriendsfire.models.Friend;
 
 
 public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHolder> {
@@ -38,22 +39,24 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     private final TypedValue mTypedValue = new TypedValue();
     private int mBackground;
 
-    private List<String> mValues;
+    private List<Friend> mValues;
 
     public FriendsAdapter(Context context, DatabaseReference ref) {
         mContext = context;
         mDatabaseReference = ref;
         context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
         mBackground = mTypedValue.resourceId;
-        mValues = new ArrayList<String>();
+        mValues = new ArrayList<Friend>();
 
 
         ChildEventListener childEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                String friend = dataSnapshot.getKey();
-                if (!mValues.contains(friend)) {
-                    mValues.add(friend);
+                Friend f = new Friend();
+                f.ref = dataSnapshot.getKey();
+                f.username = dataSnapshot.getValue(String.class);
+                if (!mValues.contains(f)) {
+                    mValues.add(f);
                     notifyDataSetChanged();
                 }
             }
@@ -81,18 +84,15 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
 
         ref.addChildEventListener(childEventListener);
-        // [END child_event_listener_recycler]
-
-        // Store reference to listener so it can be removed on app stop
         mChildEventListener = childEventListener;
 
     }
 
-    public List<String> getValues() {
+    public List<Friend> getValues() {
         return mValues;
     }
 
-    public void setValues(List<String> values) {
+    public void setValues(List<Friend> values) {
         this.mValues = values;
     }
 
@@ -106,7 +106,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        String username = mValues.get(position);
+        String username = mValues.get(position).username;
         holder.mTextView.setText(username);
 
         Glide.with(holder.mImageView.getContext())
@@ -135,7 +135,7 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     }
 
     private void showAlertDialogDelete(int position) {
-        String username = mValues.get(position);
+        String username = mValues.get(position).username;
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(mContext.getString(R.string.dialog_title_remove_friend)+username);
         builder.setMessage(mContext.getString(R.string.dialog_message_remove_friend));
@@ -164,10 +164,11 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     private void deleteFriendFirebase(int position) {
         Toast.makeText(mContext, "Removing Friend", Toast.LENGTH_SHORT).show();
-        String username = mValues.get(position);
         String myId = MyApplicationContext.getInstance().getFirebaseUser().getUid();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference(FRIENDS_REF + myId);
-        ref.child(username).removeValue();
+
+        String key = mValues.get(position).ref;
+        ref.child(key).removeValue();
         mValues.remove(position);
         notifyDataSetChanged();
     }

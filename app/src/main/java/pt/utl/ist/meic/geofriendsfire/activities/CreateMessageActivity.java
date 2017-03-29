@@ -37,7 +37,7 @@ public class CreateMessageActivity extends AppCompatActivity {
     private DatabaseReference mDatabase;
     private ArrayAdapter<String> adapter;
     private ValueEventListener mListener;
-    private List<String> mValues;
+    private List<Friend> mValues;
 
     @BindView(R.id.friendsSpinner)
     Spinner spinner;
@@ -51,17 +51,25 @@ public class CreateMessageActivity extends AppCompatActivity {
         if(content.isEmpty()){
             Toast.makeText(this, "Can't send empty messages", Toast.LENGTH_SHORT).show();
         }else{
-            String receiver = spinner.getSelectedItem().toString();
+            String receiverUsername = spinner.getSelectedItem().toString();
+            Friend receiver = new Friend();
+            for(Friend f : mValues){
+                if(f.username.equals(receiverUsername)){
+                    receiver = f;
+                }
+            }
+
             String myId = MyApplicationContext.getInstance().getFirebaseUser().getUid();
+            String myUsername = MyApplicationContext.getInstance().getFirebaseUser().getDisplayName();
             DatabaseReference sentRef = FirebaseDatabase.getInstance().getReference(MSG_REF+myId+"/sent");
-            //DatabaseReference receiverRef = FirebaseDatabase.getInstance().getReference(MSG_REF+receiver+"/received");
+            DatabaseReference receiverRef = FirebaseDatabase.getInstance().getReference(MSG_REF+receiver.ref+"/received");
 
             SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
             String creationDate = df.format(new Date());
 
-            Message newMsg = new Message(myId,receiver,creationDate,content);
+            Message newMsg = new Message(myId,myUsername,receiver.ref,receiver.username,creationDate,content);
             sentRef.push().setValue(newMsg.toMap());
-            //receiverRef.push().setValue(newMsg.toMap());
+            receiverRef.push().setValue(newMsg.toMap());
             finish();
         }
     }
@@ -82,9 +90,11 @@ public class CreateMessageActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snap : dataSnapshot.getChildren()) {
-                    String friend = snap.getKey();
-                    if(!mValues.contains(friend)){
-                        mValues.add(friend);
+                    Friend f = new Friend();
+                    f.ref = snap.getKey();
+                    f.username = snap.getValue(String.class);
+                    if(!mValues.contains(f)){
+                        mValues.add(f);
                     }
                 }
                 populateSpinner(mValues);
@@ -100,9 +110,15 @@ public class CreateMessageActivity extends AppCompatActivity {
 
     }
 
-    private void populateSpinner(List<String> friends) {
+    private void populateSpinner(List<Friend> friends) {
+        List<String> friendsUsername = new ArrayList<>();
+
+        for(Friend f : friends){
+            friendsUsername.add(f.username);
+        }
+
         adapter = new ArrayAdapter<String>(
-                this, android.R.layout.simple_spinner_item, friends);
+                this, android.R.layout.simple_spinner_item, friendsUsername);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
     }
