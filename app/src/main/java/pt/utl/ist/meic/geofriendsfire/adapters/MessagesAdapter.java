@@ -53,11 +53,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Message message = dataSnapshot.getValue(Message.class);
-                Log.d("ggg","new msg INBOX:"+isInbox+" -> "+message.content);
                 if (!mValues.contains(message)) {
                     mValues.add(message);
                     notifyDataSetChanged();
-                    Log.d("ggg","adicionei");
                 }
             }
 
@@ -68,7 +66,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-
+                Message message = dataSnapshot.getValue(Message.class);
+                if (mValues.contains(message)) {
+                    mValues.remove(message);
+                    notifyDataSetChanged();
+                }
             }
 
             @Override

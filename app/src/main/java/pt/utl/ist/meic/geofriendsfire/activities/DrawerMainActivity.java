@@ -66,8 +66,6 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
     @BindView(R.id.tabs)
     TabLayout mTabLayout;
 
-    private MyApplicationContext mContext;
-
     // Firebase
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
@@ -83,8 +81,6 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drawer_main);
         ButterKnife.bind(this);
-
-        mContext = (MyApplicationContext) getApplicationContext();
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
         setupGoogle();
@@ -163,14 +159,15 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
             return;
         } else {
             Log.d("yyy", "nome : " + mFirebaseUser.getDisplayName());
+            MyApplicationContext.getInstance().setFirebaseUser(mFirebaseUser);
             MyApplicationContext.getInstance().startServices();
-            mContext.setFirebaseUser(mFirebaseUser);
+            MyApplicationContext.getInstance().populateFriendsList();
             writeUserIfNeeded(mFirebaseUser);
         }
     }
 
     private void writeUserIfNeeded(final FirebaseUser firebaseUser) {
-        final String userId = mContext.getFirebaseUser().getUid();
+        final String userId = MyApplicationContext.getInstance().getFirebaseUser().getUid();
         mDatabase.child("users").child(userId).addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
@@ -198,7 +195,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         Map<String, Object> userValues = user.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();
-        String uid = mContext.getFirebaseUser().getUid();
+        String uid = MyApplicationContext.getInstance().getFirebaseUser().getUid();
         childUpdates.put("/users/" + uid, userValues);
 
         mDatabase.updateChildren(childUpdates);

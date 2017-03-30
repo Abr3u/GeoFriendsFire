@@ -43,6 +43,7 @@ public class FriendsSuggestionsAdapter extends RecyclerView.Adapter<FriendsSugge
     private int mBackground;
 
     private List<Friend> mValues;
+    private List<String> myFriendsRefs;
 
     public FriendsSuggestionsAdapter(Context context, DatabaseReference ref) {
         mContext = context;
@@ -50,6 +51,11 @@ public class FriendsSuggestionsAdapter extends RecyclerView.Adapter<FriendsSugge
         context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
         mBackground = mTypedValue.resourceId;
         mValues = new ArrayList<Friend>();
+
+        myFriendsRefs = new ArrayList<String>();
+        for(Friend f : MyApplicationContext.getInstance().getMyFriends()){
+            myFriendsRefs.add(f.ref);
+        }
 
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
@@ -66,7 +72,8 @@ public class FriendsSuggestionsAdapter extends RecyclerView.Adapter<FriendsSugge
                             friend.score = score;
                             User aux = dataSnapshot.getValue(User.class);
                             friend.username = aux.username;
-                            if(!mValues.contains(friend)){
+                            //skip already friends
+                            if(!myFriendsRefs.contains(friend.ref) && !mValues.contains(friend)){
                                 mValues.add(friend);
                                 orderFriendsByValue();
                             }
@@ -145,6 +152,7 @@ public class FriendsSuggestionsAdapter extends RecyclerView.Adapter<FriendsSugge
             public void onClick(View view) {
                 Toast.makeText(mContext, "Adding Friend", Toast.LENGTH_SHORT).show();
                 Friend friend = mValues.get(position);
+                MyApplicationContext.getInstance().addFriend(friend);
                 String myId = MyApplicationContext.getInstance().getFirebaseUser().getUid();
 
                 //add new friend

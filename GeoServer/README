@@ -31,12 +31,13 @@ adicionado threshold para sugerir amigo
 adicionada mean average precision
 adicionar/remover amigos done!
 search people done!
+send messages done!
+amigos nao aparecem nas sugestoes nem no search! - resolvido com list<friend> no appContext (actualizada nos friendAdapters)
 ______________________________________________________________
 Tomorrow:
 
-amigos nao aparecer para adicionar quem ja é meu amigo
-
-messages - lidar com os outros child Events (onRemove etc)
+delete Msg; - swipe action
+read/unread msg;
 
 APP
 ver perfil de utilizador;
@@ -52,13 +53,14 @@ escrever event recommendation - geofire, geohash, bounding boxes
 		friend recommendation - como filtro o dataset - folha. qual o workflow depois de ter os dados de location
 
 After:
+testar todos os screens à grande!!
+repensar estrutura de msgs - neste momento escrevo sempre em dois lados a mesma msg (redundancia de dados vs mais uma query)
 ATC simulate shitty internet
 nao comparar todos com todos; ter um maximo ate onde calcular similarities
 quando nao sao suficientemente parecidos com location data usar eventos criados
 factores extra - popularidade, hierarquia;
 
 Extra:
-user messaging
 security rules
 clustering de markers,
 mvvm, mvp

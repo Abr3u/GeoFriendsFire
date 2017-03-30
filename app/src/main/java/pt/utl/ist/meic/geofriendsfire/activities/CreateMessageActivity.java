@@ -3,6 +3,7 @@ package pt.utl.ist.meic.geofriendsfire.activities;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -83,31 +84,11 @@ public class CreateMessageActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         mValues = new ArrayList<>();
-        String myId = MyApplicationContext.getInstance().getFirebaseUser().getUid();
-        mDatabase = FirebaseDatabase.getInstance().getReference(FRIENDS_REF+myId);
-
-        mListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot snap : dataSnapshot.getChildren()) {
-                    Friend f = new Friend();
-                    f.ref = snap.getKey();
-                    f.username = snap.getValue(String.class);
-                    if(!mValues.contains(f)){
-                        mValues.add(f);
-                    }
-                }
-                populateSpinner(mValues);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-
-        mDatabase.addValueEventListener(mListener);
-
+        List<Friend> myFriends = MyApplicationContext.getInstance().getMyFriends();
+        if(!myFriends.isEmpty()) {
+            mValues.addAll(myFriends);
+            populateSpinner(myFriends);
+        }
     }
 
     private void populateSpinner(List<Friend> friends) {
@@ -126,6 +107,8 @@ public class CreateMessageActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        mDatabase.removeEventListener(mListener);
+        if(mListener != null){
+            mDatabase.removeEventListener(mListener);
+        }
     }
 }

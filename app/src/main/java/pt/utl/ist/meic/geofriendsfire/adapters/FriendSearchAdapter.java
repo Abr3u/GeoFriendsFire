@@ -89,6 +89,11 @@ public class FriendSearchAdapter extends RecyclerView.Adapter<FriendSearchAdapte
             public void onClick(View view) {
                 User u = mValues.get(position);
                 String username = u.username;
+
+                Friend aux = new Friend();
+                aux.ref = u.ref;
+                aux.username = username;
+                MyApplicationContext.getInstance().addFriend(aux);
                 Toast.makeText(mContext, "Adding Friend "+username, Toast.LENGTH_SHORT).show();
                 String myId = MyApplicationContext.getInstance().getFirebaseUser().getUid();
 

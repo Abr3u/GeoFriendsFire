@@ -8,17 +8,28 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import pt.utl.ist.meic.geofriendsfire.events.NewSettingsEvent;
+import pt.utl.ist.meic.geofriendsfire.models.Friend;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
 import pt.utl.ist.meic.geofriendsfire.services.LocationTrackingService;
 
 
 public class MyApplicationContext extends Application{
+
+    private static final String FRIENDS_REF = "/friends/";
 
     private RefWatcher refWatcher;
     private static MyApplicationContext instance;
@@ -26,6 +37,7 @@ public class MyApplicationContext extends Application{
     private static EventsNearbyService mEventsNearbyService;
 
     private FirebaseUser firebaseUser;
+    private List<Friend> myFriends;
 
     private int maximumWorkLoad;
     private int furthestEvent;
@@ -42,6 +54,33 @@ public class MyApplicationContext extends Application{
         refWatcher = LeakCanary.install(this);
         maximumWorkLoad = 2;
         furthestEvent = 5;
+        myFriends = new ArrayList<>();
+    }
+
+    public void populateFriendsList() {
+        String myId = this.firebaseUser.getUid();
+        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference(FRIENDS_REF + myId);
+
+        ValueEventListener mListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snap : dataSnapshot.getChildren()) {
+                    Friend f = new Friend();
+                    f.ref = snap.getKey();
+                    f.username = snap.getValue(String.class);
+                    if (!myFriends.contains(f)) {
+                        myFriends.add(f);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+
+        mDatabase.addListenerForSingleValueEvent(mListener);
     }
 
     public void startServices(){
@@ -82,6 +121,20 @@ public class MyApplicationContext extends Application{
             mEventsNearbyService = null;
         }
     };
+
+    public List<Friend> getMyFriends(){return this.myFriends;}
+
+    public void addFriend(Friend f){
+        if(!this.myFriends.contains(f)) {
+            this.myFriends.add(f);
+        }
+    }
+
+    public void removeFriend(Friend f){
+        if(this.myFriends.contains(f)){
+            this.myFriends.remove(f);
+        }
+    }
 
     public static MyApplicationContext getInstance() {
         return instance;

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,6 +49,11 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         mBackground = mTypedValue.resourceId;
         mValues = new ArrayList<Friend>();
 
+        List<Friend> friendList = MyApplicationContext.getInstance().getMyFriends();
+        if(!friendList.isEmpty()){
+            mValues.addAll(friendList);
+            notifyDataSetChanged();
+        }
 
         ChildEventListener childEventListener = new ChildEventListener() {
             @Override
@@ -57,18 +63,25 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                 f.username = dataSnapshot.getValue(String.class);
                 if (!mValues.contains(f)) {
                     mValues.add(f);
+                    MyApplicationContext.getInstance().addFriend(f);
                     notifyDataSetChanged();
                 }
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-
+                Friend f = new Friend();
+                f.ref = dataSnapshot.getKey();
+                f.username = dataSnapshot.getValue(String.class);
+                if (mValues.contains(f)) {
+                    mValues.remove(f);
+                    MyApplicationContext.getInstance().removeFriend(f);
+                    notifyDataSetChanged();
+                }
             }
 
             @Override
@@ -164,10 +177,12 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     private void deleteFriendFirebase(int position) {
         Toast.makeText(mContext, "Removing Friend", Toast.LENGTH_SHORT).show();
+        Friend f = mValues.get(position);
         String myId = MyApplicationContext.getInstance().getFirebaseUser().getUid();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference(FRIENDS_REF + myId);
 
-        String key = mValues.get(position).ref;
+        MyApplicationContext.getInstance().removeFriend(f);
+        String key = f.ref;
         ref.child(key).removeValue();
         mValues.remove(position);
         notifyDataSetChanged();

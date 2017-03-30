@@ -55,11 +55,17 @@ public class Friend {
         if (!(obj instanceof Friend))
             return false;
         Friend other = (Friend) obj;
+        if(this.ref != null && other.ref != null){
+            return this.ref.equals(other.ref);
+        }
         return username.equals(other.username);
     }
 
     @Override
     public int hashCode() {
+        if(this.ref != null){
+            return this.ref.hashCode();
+        }
         return username.hashCode();
     }
 }

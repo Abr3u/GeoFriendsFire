@@ -39,4 +39,22 @@ public class Message {
         result.put("content", this.content);
         return result;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (!(obj instanceof Message))
+            return false;
+        Message other = (Message) obj;
+        return this.to.equals(other.to) &&
+                this.from.equals(other.from) &&
+                this.sentDate.equals(other.sentDate) &&
+                this.content.equals(other.content);
+    }
+
+    @Override
+    public int hashCode() {
+        return to.hashCode()+from.hashCode()+sentDate.hashCode()+content.hashCode();
+    }
 }

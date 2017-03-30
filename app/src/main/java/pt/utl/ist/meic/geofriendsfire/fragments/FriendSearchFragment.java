@@ -19,7 +19,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.jakewharton.rxbinding2.support.v7.widget.RxSearchView;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -45,6 +48,7 @@ public class FriendSearchFragment extends BaseFragment{
     private static final String USERS_REF = "/users/";
     FriendSearchAdapter adapter;
     DatabaseReference mDatabase;
+    List<String> myFriendsRefs;
 
     @Nullable
     @Override
@@ -56,6 +60,11 @@ public class FriendSearchFragment extends BaseFragment{
         adapter = new FriendSearchAdapter(getContext());
         setupRecyclerView();
         setupSearchViewListener();
+
+        myFriendsRefs = new ArrayList<String>();
+        for(Friend f : MyApplicationContext.getInstance().getMyFriends()){
+            myFriendsRefs.add(f.ref);
+        }
         return view;
     }
 
@@ -83,8 +92,9 @@ public class FriendSearchFragment extends BaseFragment{
                     user.ref = snap.getKey();
                     if(user.username.toLowerCase().startsWith(prefix) ||
                             user.username.toUpperCase().startsWith(prefix) ){
-                        //skip self
-                        if(!user.email.equals(MyApplicationContext.getInstance().getFirebaseUser().getEmail())){
+                        //skip self and already friends
+                        if(!myFriendsRefs.contains(user.ref) &&
+                        !user.ref.equals(MyApplicationContext.getInstance().getFirebaseUser().getUid())){
                             adapter.addValue(user);
                         }
                     }
