@@ -53,6 +53,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Message message = dataSnapshot.getValue(Message.class);
+                message.ref = dataSnapshot.getKey();
                 if (!mValues.contains(message)) {
                     mValues.add(message);
                     notifyDataSetChanged();
@@ -91,6 +92,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
         // Store reference to listener so it can be removed on app stop
         mChildEventListener = childEventListener;
 
+    }
+
+    public void removeValue(int position){
+        this.mValues.remove(position);
+        notifyItemRemoved(position);
     }
 
     public List<Message> getValues() {

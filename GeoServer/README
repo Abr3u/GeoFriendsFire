@@ -36,7 +36,6 @@ amigos nao aparecem nas sugestoes nem no search! - resolvido com list<friend> no
 ______________________________________________________________
 Tomorrow:
 
-delete Msg; - swipe action
 read/unread msg;
 
 APP
@@ -53,6 +52,7 @@ escrever event recommendation - geofire, geohash, bounding boxes
 		friend recommendation - como filtro o dataset - folha. qual o workflow depois de ter os dados de location
 
 After:
+ver os cleanupListeners e memory leaks
 testar todos os screens à grande!!
 repensar estrutura de msgs - neste momento escrevo sempre em dois lados a mesma msg (redundancia de dados vs mais uma query)
 ATC simulate shitty internet

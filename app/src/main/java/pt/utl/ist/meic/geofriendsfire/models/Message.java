@@ -10,6 +10,8 @@ import java.util.Map;
 
 @Parcel
 public class Message {
+    @Exclude
+    public String ref;
     public String from;
     public String to;
     public String toUsername;
