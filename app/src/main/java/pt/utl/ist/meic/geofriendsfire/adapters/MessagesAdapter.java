@@ -23,7 +23,9 @@ import java.util.List;
 
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
+import pt.utl.ist.meic.geofriendsfire.activities.MessageDetailsActivity;
 import pt.utl.ist.meic.geofriendsfire.models.Message;
+import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
 
 
 public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHolder> {
@@ -129,7 +131,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
                 .into(holder.mImageView);
 
         View.OnClickListener messageDetailsListerner = view -> {
-            ((DrawerMainActivity)mContext).setupViewPagerMessageDetails(msg,isInbox);
+            Intent i = new Intent(mContext, MessageDetailsActivity.class);
+            i.putExtra(IntentKeys.messageDetails.toString(),Parcels.wrap(msg));
+            i.putExtra(IntentKeys.isMsgReceived.toString(),isInbox);
+            mContext.startActivity(i);
         };
 
         holder.mView.setOnClickListener(messageDetailsListerner);

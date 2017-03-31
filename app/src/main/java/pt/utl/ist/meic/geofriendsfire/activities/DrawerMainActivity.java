@@ -77,7 +77,6 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
 
     private int fragment;
     private Event detailedEvent;
-    private Message detailedMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -293,15 +292,6 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.clear();
         mAdapter.setEventForDetails(event);
         mAdapter.add(FragmentKeys.EventDetailsMap);
-        mTabLayout.setVisibility(View.GONE);
-    }
-
-    public void setupViewPagerMessageDetails(Message msg,boolean isInbox){
-        fragment = 4;
-        detailedMessage = msg;
-        mAdapter.clear();
-        mAdapter.setMessageForDetails(msg,isInbox);
-        mAdapter.add(FragmentKeys.MessageDetails);
         mTabLayout.setVisibility(View.GONE);
     }
 

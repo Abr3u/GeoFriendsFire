@@ -30,6 +30,8 @@
         <activity android:name=".activities.SettingsActivity" />
         <activity android:name=".activities.CreateEventActivity" />
         <activity android:name=".activities.CreateMessageActivity" />
+        <activity android:name=".activities.MessageDetailsActivity" />
+        <activity android:name=".activities.EventDetailsMapActivity" />
 
         <service android:name=".services.LocationTrackingService" />
         <service android:name=".services.EventsNearbyService" />

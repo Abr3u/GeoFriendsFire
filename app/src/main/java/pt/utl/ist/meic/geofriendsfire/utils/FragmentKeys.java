@@ -6,13 +6,11 @@ public enum FragmentKeys {
     EventsNearby,
     MyEvents,
     EventDetailsMap,
-    Test,
     Friends,
     FriendsSuggestions,
     FriendSearch,
     MessagesReceived,
-    MessagesSent,
-    MessageDetails;
+    MessagesSent;
 
 
     public String getPageTitle(){
@@ -21,15 +19,15 @@ public enum FragmentKeys {
                 return "Events Nearby";
             case 2:
                 return "My Events";
-            case 5:
+            case 4:
                 return "Friends";
-            case 6:
+            case 5:
                 return "Suggestions";
-            case 7:
+            case 6:
                 return "Search";
-            case 8:
+            case 7:
                 return "Inbox";
-            case 9:
+            case 8:
                 return "Sent";
         }
         return "";

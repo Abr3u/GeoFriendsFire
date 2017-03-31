@@ -15,13 +15,17 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import org.parceler.Parcels;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
+import pt.utl.ist.meic.geofriendsfire.activities.EventDetailsMapActivity;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
+import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
 
@@ -82,9 +86,9 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
             @Override
             public void onClick(View v) {
                 Event event = mValues.get(position);
-                if (mContext instanceof DrawerMainActivity) {
-                    ((DrawerMainActivity) mContext).setupViewPagerEventDetails(event);
-                }
+                Intent i = new Intent(mContext, EventDetailsMapActivity.class);
+                i.putExtra(IntentKeys.eventDetails.toString(), Parcels.wrap(event));
+                mContext.startActivity(i);
             }
         });
 

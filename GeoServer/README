@@ -33,14 +33,12 @@ adicionar/remover amigos done!
 search people done!
 send messages done!
 amigos nao aparecem nas sugestoes nem no search! - resolvido com list<friend> no appContext (actualizada nos friendAdapters)
+message details done!
 ______________________________________________________________
 Tomorrow:
 
-read/unread msg;
-
 APP
-ver msg details
-ver perfil de utilizador;
+perfil de utilizador;
 
 SERVER
 re escrever o createUserIdsNyNy;
@@ -62,6 +60,8 @@ quando nao sao suficientemente parecidos com location data usar eventos criados
 factores extra - popularidade, hierarquia;
 
 Extra:
+read/unread msg;
+mudar aspecto dos pins no mapa para icon de categoria
 security rules
 clustering de markers,
 mvvm, mvp

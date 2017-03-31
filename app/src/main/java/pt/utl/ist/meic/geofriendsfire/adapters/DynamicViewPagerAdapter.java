@@ -7,8 +7,6 @@ import com.nakama.arraypageradapter.ArrayFragmentStatePagerAdapter;
 
 import java.util.ArrayList;
 
-import pt.utl.ist.meic.geofriendsfire.fragments.MessageDetailsFragment;
-import pt.utl.ist.meic.geofriendsfire.fragments.EventDetailsMapFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.EventsNearbyListFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.FriendSearchFragment;
 import pt.utl.ist.meic.geofriendsfire.fragments.FriendsFragment;
@@ -40,10 +38,6 @@ public class DynamicViewPagerAdapter extends ArrayFragmentStatePagerAdapter<Frag
                 return new EventsNearbyListFragment();
             case MyEvents:
                 return new MyEventsListFragment();
-            case EventDetailsMap:
-                EventDetailsMapFragment frag = new EventDetailsMapFragment();
-                frag.setEvent(mEvent);
-                return frag;
             case Friends:
                 return new FriendsFragment();
             case FriendsSuggestions:
@@ -54,10 +48,6 @@ public class DynamicViewPagerAdapter extends ArrayFragmentStatePagerAdapter<Frag
                 return new MessagesReceivedFragment();
             case MessagesSent:
                 return new MessagesSentFragment();
-            case MessageDetails:
-                MessageDetailsFragment frag2 = new MessageDetailsFragment();
-                frag2.setMessage(mMessage,isInbox);
-                return frag2;
         }
         //shouldn't happen so it's not in switch. just fail-safe
         return new MapFragment();
@@ -70,11 +60,6 @@ public class DynamicViewPagerAdapter extends ArrayFragmentStatePagerAdapter<Frag
 
     public void setEventForDetails(Event event){
         this.mEvent = event;
-    }
-
-    public void setMessageForDetails(Message msg, boolean isInbox){
-        this.mMessage = msg;
-        this.isInbox = isInbox;
     }
 
 }

@@ -21,6 +21,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.parceler.Parcels;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +31,9 @@ import java.util.Map;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
+import pt.utl.ist.meic.geofriendsfire.activities.EventDetailsMapActivity;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
+import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
 
 
 public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHolder> {
@@ -204,9 +208,9 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
             @Override
             public void onClick(View v) {
                 Event event = mValues.get(position);
-                if(mContext instanceof DrawerMainActivity){
-                    ((DrawerMainActivity)mContext).setupViewPagerEventDetails(event);
-                }
+                Intent i = new Intent(mContext, EventDetailsMapActivity.class);
+                i.putExtra(IntentKeys.eventDetails.toString(), Parcels.wrap(event));
+                mContext.startActivity(i);
             }
         });
 

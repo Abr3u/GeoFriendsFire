@@ -1,9 +1,11 @@
-package pt.utl.ist.meic.geofriendsfire.fragments;
+package pt.utl.ist.meic.geofriendsfire.activities;
 
 import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,83 +27,58 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.parceler.Parcels;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
+import pt.utl.ist.meic.geofriendsfire.fragments.BaseFragment;
+import pt.utl.ist.meic.geofriendsfire.fragments.MapFragment;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
+import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
-/**
- * Created by ricar on 11/02/2017.
- */
-
-public class EventDetailsMapFragment extends BaseFragment implements GoogleMap.OnCameraChangeListener,
+public class EventDetailsMapActivity extends AppCompatActivity implements GoogleMap.OnCameraChangeListener,
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
-    @BindView(R.id.networkDetectorHolder)
-    TextView networkDetectorHolder;
+    SupportMapFragment mapFragment;
 
     private static final int INITIAL_ZOOM_LEVEL = 15;
 
     private Event mEvent;
     private GoogleMap map;
-    private View rootView;
     private GeoLocation mCurrentLocation;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        if (rootView != null) {
-            ViewGroup parent = (ViewGroup) rootView.getParent();
-            if (parent != null) {
-                parent.removeView(rootView);
-            }
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_event_details);
+        ButterKnife.bind(this);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        Intent i = getIntent();
+        if(!i.hasExtra(IntentKeys.eventDetails.toString())){
+            Toast.makeText(this, "Can not display event", Toast.LENGTH_SHORT).show();
+            finish();
         }
-        try {
-            rootView = inflater.inflate(R.layout.event_details_map_fragment, container, false);
-        } catch (InflateException e) {
-            ButterKnife.bind(this,rootView);
-            super.setNetworkDetectorHolder(networkDetectorHolder);
-            setUpMap();
-            return rootView;
-        }
-        ButterKnife.bind(this,rootView);
-        super.setNetworkDetectorHolder(networkDetectorHolder);
+
+        mEvent = Parcels.unwrap(i.getParcelableExtra(IntentKeys.eventDetails.toString()));
         setUpMap();
         setupCardView(mEvent);
-        return rootView;
-    }
-
-    @Override
-    public void onDestroyView() {
-        SupportMapFragment f = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-
-        if (f != null) {
-            try {
-                getFragmentManager().beginTransaction().remove(f).commit();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        super.onDestroyView();
-    }
-
-    public void setEvent(Event event) {
-        this.mEvent = event;
     }
 
     protected void setUpMap() {
         if (this.map == null) {
-            SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-            if (mapFragment != null) {
+            mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
                 mapFragment.getMapAsync(this);
-            }
         } else {
             Location lastKnownLocation =
                     MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
             if (lastKnownLocation == null) {
-                Toast.makeText(getContext(), "cant get current location", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "cant get current location", Toast.LENGTH_LONG).show();
             } else {
                 mCurrentLocation = new GeoLocation(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
                 this.map.addMarker(new MarkerOptions()
@@ -118,7 +95,7 @@ public class EventDetailsMapFragment extends BaseFragment implements GoogleMap.O
     }
 
     protected void setupCardView(final Event event) {
-        View detailsHolder = rootView.findViewById(R.id.detailsHolder);
+        View detailsHolder = findViewById(R.id.detailsHolder);
         View cardview = detailsHolder.findViewById(R.id.card_view);
 
         TextView description = (TextView) cardview.findViewById(R.id.iv_text);
@@ -171,7 +148,7 @@ public class EventDetailsMapFragment extends BaseFragment implements GoogleMap.O
 
     @Override
     public void onCameraChange(CameraPosition cameraPosition) {
-        View detailsHolder = rootView.findViewById(R.id.detailsHolder);
+        View detailsHolder = findViewById(R.id.detailsHolder);
         detailsHolder.setVisibility(View.GONE);
     }
 
@@ -184,7 +161,7 @@ public class EventDetailsMapFragment extends BaseFragment implements GoogleMap.O
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.map = googleMap;
-        MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.retro_map_style);
+        MapStyleOptions style = MapStyleOptions.loadRawResourceStyle(this, R.raw.retro_map_style);
         map.setMapStyle(style);
         setUpMap();
     }

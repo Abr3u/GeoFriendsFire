@@ -5,9 +5,7 @@ package pt.utl.ist.meic.geofriendsfire.utils;
  */
 
 public enum IntentKeys {
-    initialCenterLati,
-    initialCenterLongi,
-    createdEvent,
+    eventDetails,
     messageDetails,
     isMsgReceived;
 }
