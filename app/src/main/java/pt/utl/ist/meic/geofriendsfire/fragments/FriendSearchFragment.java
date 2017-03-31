@@ -82,7 +82,7 @@ public class FriendSearchFragment extends BaseFragment{
     }
 
     private void getUsersFromFirebase(CharSequence x) {
-        String prefix = x.toString().trim();
+        String prefix = x.toString().trim().toLowerCase();
         adapter.clearValues();
         ValueEventListener listener = new ValueEventListener() {
             @Override
@@ -90,8 +90,7 @@ public class FriendSearchFragment extends BaseFragment{
                 for(DataSnapshot snap : dataSnapshot.getChildren()) {
                     User user = snap.getValue(User.class);
                     user.ref = snap.getKey();
-                    if(user.username.toLowerCase().startsWith(prefix) ||
-                            user.username.toUpperCase().startsWith(prefix) ){
+                    if(user.username.toLowerCase().contains(prefix)){
                         //skip self and already friends
                         if(!myFriendsRefs.contains(user.ref) &&
                         !user.ref.equals(MyApplicationContext.getInstance().getFirebaseUser().getUid())){

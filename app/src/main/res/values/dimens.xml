@@ -6,4 +6,5 @@
     <dimen name="card_margin">16dp</dimen>
     <dimen name="fab_margin">22dp</dimen>
     <dimen name="list_item_avatar_size">40dp</dimen>
+    <dimen name="message_details_gap">40dp</dimen>
 </resources>

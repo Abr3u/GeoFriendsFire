@@ -11,7 +11,8 @@ public enum FragmentKeys {
     FriendsSuggestions,
     FriendSearch,
     MessagesReceived,
-    MessagesSent;
+    MessagesSent,
+    MessageDetails;
 
 
     public String getPageTitle(){

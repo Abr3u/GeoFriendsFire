@@ -1,30 +1,28 @@
 package pt.utl.ist.meic.geofriendsfire.adapters;
 
 import android.content.Context;
-import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+
+import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
+import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
 import pt.utl.ist.meic.geofriendsfire.models.Message;
 
 
@@ -40,7 +38,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
 
     private List<Message> mValues;
 
-    public MessagesAdapter(Context context, DatabaseReference ref,boolean isInbox) {
+    public MessagesAdapter(Context context, DatabaseReference ref, boolean isInbox) {
         mContext = context;
         mDatabaseReference = ref;
         this.isInbox = isInbox;
@@ -94,7 +92,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
 
     }
 
-    public void removeValue(int position){
+    public void removeValue(int position) {
         this.mValues.remove(position);
         notifyItemRemoved(position);
     }
@@ -118,9 +116,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         Message msg = mValues.get(position);
-        if(isInbox){
+        if (isInbox) {
             holder.mTextView.setText(msg.fromUsername);
-        }else{
+        } else {
             holder.mTextView.setText(msg.toUsername);
         }
         holder.mTextView2.setText(msg.sentDate);
@@ -130,8 +128,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.ViewHo
                 .fitCenter()
                 .into(holder.mImageView);
 
-        View.OnClickListener messageDetailsListerner = view ->
-                Toast.makeText(mContext, "Go to Message " + position, Toast.LENGTH_SHORT).show();
+        View.OnClickListener messageDetailsListerner = view -> {
+            ((DrawerMainActivity)mContext).setupViewPagerMessageDetails(msg,isInbox);
+        };
 
         holder.mView.setOnClickListener(messageDetailsListerner);
 

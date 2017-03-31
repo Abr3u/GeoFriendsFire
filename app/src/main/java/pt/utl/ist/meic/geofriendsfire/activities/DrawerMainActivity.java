@@ -46,8 +46,10 @@ import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.DynamicViewPagerAdapter;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
+import pt.utl.ist.meic.geofriendsfire.models.Message;
 import pt.utl.ist.meic.geofriendsfire.models.User;
 import pt.utl.ist.meic.geofriendsfire.utils.FragmentKeys;
+import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
 
 public class DrawerMainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -75,6 +77,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
 
     private int fragment;
     private Event detailedEvent;
+    private Message detailedMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -290,6 +293,15 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.clear();
         mAdapter.setEventForDetails(event);
         mAdapter.add(FragmentKeys.EventDetailsMap);
+        mTabLayout.setVisibility(View.GONE);
+    }
+
+    public void setupViewPagerMessageDetails(Message msg,boolean isInbox){
+        fragment = 4;
+        detailedMessage = msg;
+        mAdapter.clear();
+        mAdapter.setMessageForDetails(msg,isInbox);
+        mAdapter.add(FragmentKeys.MessageDetails);
         mTabLayout.setVisibility(View.GONE);
     }
 

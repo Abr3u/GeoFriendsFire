@@ -24,7 +24,7 @@ public class BaseFragment
         this.networkDetectorHolder = networkDetectorHolder;
     }
 
-    TextView networkDetectorHolder;
+    private TextView networkDetectorHolder;
 
     private BroadcastReceiver broadcastReceiver;
     private Disposable disposable;
