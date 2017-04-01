@@ -35,13 +35,13 @@ public class GeoServer {
 	private static final String DELIMITER = ",";
 
 	private static final int MATCHING_MAX_SEQ_LENGTH = 20;// analisar seqs no
-															// maximo de 50
+															// maximo de 20
 															// clusters
-	private static final long TRANSITION_TIME_THRESHOLD = 2 * 60 * 60 * 1000;// 2 horaas
+	private static final long TRANSITION_TIME_THRESHOLD = 2 * 60 * 60 * 1000;// 2 horas
 
 	private static final double ACT_SCORE_WEIGHT = 0.75;
 	private static final double SEQ_SCORE_WEIGHT = 0.25;
-	private static final double THRESHOLD = 0.5;
+	private static final double THRESHOLD = 0.8;
 
 	private static List<ClusterWithMean> globalClusters;
 	private static Map<Integer, Double> globalPercentages;
@@ -54,8 +54,8 @@ public class GeoServer {
 	public static void main(String[] args) throws ParseException, IOException {
 
 		FileManager mFileManager = new FileManager();
-		
-		List<String> idList = mFileManager.getIdListFromFileNy();
+		Set<String> idList = mFileManager.getNyNyIdListFromFile();
+//		
 		int totalUsers = idList.size();
 
 		String friendsPath = "friendsOf" + totalUsers + "Users.csv";
@@ -115,7 +115,7 @@ public class GeoServer {
 		}
 	}
 
-	private static void initUserProfiles(List<String> ids) {
+	private static void initUserProfiles(Set<String> ids) {
 		usersProfiles = new ArrayList<UserProfile>();
 		for (String id : ids) {
 			UserProfile profile = new UserProfile(id);

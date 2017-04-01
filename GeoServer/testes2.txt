@@ -1,0 +1,9 @@
+Testes
+
+new dataSet - 4508 ids
+
+finalScore > 0.8
+
+Precision 0.00647878198898607
+Recall 0.010944661057527874
+MAP 0.017380344823352333
