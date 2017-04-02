@@ -1,5 +1,6 @@
 package pt.utl.ist.meic.geofriendsfire.activities;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -10,6 +11,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.firebase.auth.api.model.StringList;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -30,6 +32,7 @@ import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.models.Friend;
 import pt.utl.ist.meic.geofriendsfire.models.Message;
+import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
 
 public class CreateMessageActivity extends AppCompatActivity {
 
@@ -82,12 +85,22 @@ public class CreateMessageActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);
-
         mValues = new ArrayList<>();
-        List<Friend> myFriends = MyApplicationContext.getInstance().getMyFriends();
-        if(!myFriends.isEmpty()) {
-            mValues.addAll(myFriends);
-            populateSpinner(myFriends);
+
+        Intent i = getIntent();
+        if(i.hasExtra(IntentKeys.messageReceiverUsername.toString())
+                && i.hasExtra(IntentKeys.messageReceiverRef.toString())){
+            Friend receiver = new Friend();
+            receiver.username = i.getStringExtra(IntentKeys.messageReceiverUsername.toString());
+            receiver.ref = i.getStringExtra(IntentKeys.messageReceiverRef.toString());
+            mValues.add(receiver);
+            populateSpinner(new ArrayList<Friend>(){{add(receiver);}});
+        }else{
+            List<Friend> myFriends = MyApplicationContext.getInstance().getMyFriends();
+            if(!myFriends.isEmpty()) {
+                mValues.addAll(myFriends);
+                populateSpinner(myFriends);
+            }
         }
     }
 

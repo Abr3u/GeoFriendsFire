@@ -121,7 +121,7 @@ public class FriendsSuggestionsAdapter extends RecyclerView.Adapter<FriendsSugge
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.card_item_friend, parent, false);
+                .inflate(R.layout.card_item_friend_suggestion, parent, false);
         view.setBackgroundResource(mBackground);
         return new ViewHolder(view);
     }

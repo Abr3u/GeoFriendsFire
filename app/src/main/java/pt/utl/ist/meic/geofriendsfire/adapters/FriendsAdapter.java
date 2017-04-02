@@ -2,9 +2,9 @@ package pt.utl.ist.meic.geofriendsfire.adapters;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +25,9 @@ import java.util.List;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
+import pt.utl.ist.meic.geofriendsfire.activities.CreateMessageActivity;
 import pt.utl.ist.meic.geofriendsfire.models.Friend;
+import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
 
 
 public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHolder> {
@@ -122,26 +124,41 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         String username = mValues.get(position).username;
         holder.mTextView.setText(username);
 
-        Glide.with(holder.mImageView.getContext())
+        Glide.with(holder.mFriendIcon.getContext())
                 .load(R.drawable.ic_person)
                 .fitCenter()
-                .into(holder.mImageView);
+                .into(holder.mFriendIcon);
 
-        Glide.with(holder.mImageView2.getContext())
+        Glide.with(holder.mSendMsgIcon.getContext())
+                .load(R.drawable.ic_message)
+                .fitCenter()
+                .into(holder.mSendMsgIcon);
+
+        Glide.with(holder.mRemoveFriendIcon.getContext())
                 .load(R.drawable.ic_remove)
                 .fitCenter()
-                .into(holder.mImageView2);
+                .into(holder.mRemoveFriendIcon);
 
         View.OnClickListener profileListerner = view ->
                 Toast.makeText(mContext, "Go to User " + username + " profile", Toast.LENGTH_SHORT).show();
 
-        holder.mImageView.setOnClickListener(profileListerner);
+        holder.mFriendIcon.setOnClickListener(profileListerner);
         holder.mTextView.setOnClickListener(profileListerner);
 
-        holder.mImageView2.setOnClickListener(new View.OnClickListener() {
+        holder.mRemoveFriendIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showAlertDialogDelete(position);
+            }
+        });
+
+        holder.mSendMsgIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(mContext, CreateMessageActivity.class);
+                i.putExtra(IntentKeys.messageReceiverUsername.toString(),username);
+                i.putExtra(IntentKeys.messageReceiverRef.toString(),mValues.get(position).ref);
+                mContext.startActivity(i);
             }
         });
 
@@ -201,16 +218,18 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public final ImageView mImageView;
+        public final ImageView mFriendIcon;
         public final TextView mTextView;
-        public final ImageView mImageView2;
+        public final ImageView mSendMsgIcon;
+        public final ImageView mRemoveFriendIcon;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mImageView = (ImageView) view.findViewById(R.id.iv_image);
+            mFriendIcon = (ImageView) view.findViewById(R.id.iv_image);
             mTextView = (TextView) view.findViewById(R.id.iv_friend);
-            mImageView2 = (ImageView) view.findViewById(R.id.iv_add_icon);
+            mSendMsgIcon = (ImageView) view.findViewById(R.id.iv_send_msg_icon);
+            mRemoveFriendIcon = (ImageView) view.findViewById(R.id.iv_add_icon);
         }
 
         @Override

@@ -34,26 +34,22 @@ search people done!
 send messages done!
 amigos nao aparecem nas sugestoes nem no search! - resolvido com list<friend> no appContext (actualizada nos friendAdapters)
 message details done!
+send msg from friends done!
 ______________________________________________________________
 Tomorrow:
+ver os cleanupListeners e memory leaks; settings acho
 
 APP
 perfil de utilizador;
 
 SERVER
-re escrever o createUserIdsNyNy;
-re escrever o createNyNyFriendCount;
-
-testar metricas num dataSet maior ~1000 users??
 ver ndcg
 
 escrever event recommendation - geofire, geohash, bounding boxes
 		friend recommendation - como filtro o dataset - folha. qual o workflow depois de ter os dados de location
 
 After:
-mandar msg a partir dos "friends"
 read/unread msgs
-ver os cleanupListeners e memory leaks
 testar todos os screens à grande!!
 repensar estrutura de msgs - neste momento escrevo sempre em dois lados a mesma msg (redundancia de dados vs mais uma query)
 ATC simulate shitty internet

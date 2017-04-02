@@ -2,24 +2,16 @@ package pt.utl.ist.meic.geofriendsfire.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.parceler.Parcel;
 import org.parceler.Parcels;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import pt.utl.ist.meic.geofriendsfire.R;
-import pt.utl.ist.meic.geofriendsfire.fragments.BaseFragment;
 import pt.utl.ist.meic.geofriendsfire.models.Message;
 import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
 

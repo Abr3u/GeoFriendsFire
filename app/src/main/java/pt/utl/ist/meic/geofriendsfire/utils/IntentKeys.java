@@ -7,5 +7,7 @@ package pt.utl.ist.meic.geofriendsfire.utils;
 public enum IntentKeys {
     eventDetails,
     messageDetails,
-    isMsgReceived;
+    isMsgReceived,
+    messageReceiverUsername,
+    messageReceiverRef;
 }
