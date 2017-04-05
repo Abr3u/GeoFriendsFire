@@ -7,7 +7,7 @@ import java.util.Date;
 public class CheckIn {
 	
 	private DataPoint mDataPoint;
-	private DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+	private static final DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss Z");
 	private Date mDate;
 	
 	public CheckIn(Date date,DataPoint dataPoint) {
@@ -35,4 +35,10 @@ public class CheckIn {
 		this.mDate = mDate;
 	}
 
+	public static DateFormat getDateFormat(){return df;}
+	
+	@Override
+	public String toString() {
+		return "["+mDataPoint.getLatitude()+"//"+mDataPoint.getLongitude()+"] at "+mDate.toString();
+	}
 }

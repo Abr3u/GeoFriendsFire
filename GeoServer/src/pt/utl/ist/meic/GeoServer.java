@@ -1,6 +1,7 @@
 package pt.utl.ist.meic;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,7 +25,10 @@ import pt.utl.ist.meic.domain.Sequence;
 import pt.utl.ist.meic.domain.SequenceAuxiliar;
 import pt.utl.ist.meic.domain.UserProfile;
 import pt.utl.ist.meic.domain.VertexInfo;
+import pt.utl.ist.meic.firebase.Event;
+import pt.utl.ist.meic.firebase.EventCategory;
 import pt.utl.ist.meic.firebase.FirebaseHelper;
+import pt.utl.ist.meic.firebase.User;
 import pt.utl.ist.meic.utility.FileManager;
 
 public class GeoServer {
@@ -37,78 +41,93 @@ public class GeoServer {
 	private static final int MATCHING_MAX_SEQ_LENGTH = 20;// analisar seqs no
 															// maximo de 20
 															// clusters
-	private static final long TRANSITION_TIME_THRESHOLD = 2 * 60 * 60 * 1000;// 2 horas
+	private static final long TRANSITION_TIME_THRESHOLD = 2 * 60 * 60 * 1000;// 2
+																				// horas
 
 	private static final double ACT_SCORE_WEIGHT = 0.75;
 	private static final double SEQ_SCORE_WEIGHT = 0.25;
 	private static final double THRESHOLD = 0.8;
+	private static final boolean FIREBASE_WORKFLOW = false;
 
 	private static List<ClusterWithMean> globalClusters;
 	private static Map<Integer, Double> globalPercentages;
 	private static Map<Integer, Long> globalCheckIns;
 
-	private static List<UserProfile> usersProfiles;
+	private static Map<String, UserProfile> id_userProfile;
 
 	private static long mTotalCheckIns = 130425;// newYork
 
 	public static void main(String[] args) throws ParseException, IOException {
 
-		FileManager mFileManager = new FileManager();
-		Set<String> idList = mFileManager.getNyNyIdListFromFile();
-//		
-		int totalUsers = idList.size();
-
-		String friendsPath = "friendsOf" + totalUsers + "Users.csv";
-		String foundPath = "foundOf" + totalUsers + "Users.csv";
-		String foundPrctPath = "foundPRCTOf" + totalUsers + "Users.csv";
-
 		initGlobalClustersList();
-		// initGlobalPercentages();
-		// initGlobalCheckIns();
-		initUserProfiles(idList);
 
-		calculateGraphs(mFileManager, "0");
-		calculateSimilarities();
-
-		mFileManager.createCsvSimilarities(usersProfiles, friendsPath, THRESHOLD);
-		mFileManager.createFoundCSV(friendsPath, foundPath);
-		mFileManager.createFoundPrctCSV(foundPath, foundPrctPath);
-
-		System.out.println("Precision " + mFileManager.calculatePrecision(friendsPath,foundPath));
-		System.out.println("Recall " + mFileManager.calculateRecall(foundPath));
-		
-		usersProfiles.stream().forEach(x -> {
+		if (FIREBASE_WORKFLOW) {
 			try {
-				mFileManager.calculateAveragePrecision(x,friendsPath);
-			} catch (IOException e) {
+				createUserProfilesFromFirebase();
+				getUserCheckInsFromFirebase("0");
+				getUserEventsFromFirebase();
+				calculateSimilaritiesFromEvents();
+			} catch (FirebaseException e) {
 				e.printStackTrace();
 			}
-		});
-		System.out.println("MAP "+
-		usersProfiles.stream().mapToDouble(UserProfile::getAveragePrecision).sum()/usersProfiles.size());
+		} else {
+			FileManager mFileManager = new FileManager();
+			Set<String> idList = mFileManager.getNyNyIdListFromFile();
 
-		// try {
-		// FirebaseHelper.writeNewFriendsFirebase(usersProfiles, 5, 10);
-		// } catch (FirebaseException | JacksonUtilityException e) {
-		// e.printStackTrace();
-		// }
+			int totalUsers = idList.size();
 
-		// applyKmeans(pathKmeansNewYorkCSV);
+			String friendsPath = "friendsOf" + totalUsers + "Users.csv";
+			String foundPath = "foundOf" + totalUsers + "Users.csv";
+			String foundPrctPath = "foundPRCTOf" + totalUsers + "Users.csv";
 
-		// try {
-		// FirebaseHelper.writeNewClustersFirebase(globalClusters, 0,
-		// mTotalCheckIns);
-		// } catch (FirebaseException | JacksonUtilityException e) {
-		// e.printStackTrace();
-		// }
+			//initGlobalPercentages();
+			//initGlobalCheckIns();
+			initUserProfiles(idList);
 
+			calculateGraphs(mFileManager, "0");
+			calculateSimilarities();
+			
+			List<UserProfile> profiles = new ArrayList<>(id_userProfile.values());
+
+			mFileManager.createCsvSimilarities(profiles , friendsPath, THRESHOLD);
+			mFileManager.createFoundCSV(friendsPath, foundPath);
+			mFileManager.createFoundPrctCSV(foundPath, foundPrctPath);
+
+			System.out.println("Precision " + mFileManager.calculatePrecision(friendsPath, foundPath));
+			System.out.println("Recall " + mFileManager.calculateRecall(foundPath));
+
+//			id_userProfile.values().stream().forEach(x -> {
+//				try {
+//					mFileManager.calculateAveragePrecision(x, friendsPath);
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//			});
+//			System.out.println(
+//					"MAP " + id_userProfile.values().stream().mapToDouble(UserProfile::getAveragePrecision).sum()
+//							/ id_userProfile.values().size());
+//
+//			try {
+//				FirebaseHelper.writeNewFriendsFirebase(profiles, 5, 10);
+//			} catch (FirebaseException | JacksonUtilityException e) {
+//				e.printStackTrace();
+//			}
+//
+//			applyKmeans(pathKmeansNewYorkCSV);
+//
+//			try {
+//				FirebaseHelper.writeNewClustersFirebase(globalClusters, 0, mTotalCheckIns);
+//			} catch (FirebaseException | JacksonUtilityException e) {
+//				e.printStackTrace();
+//			}
+		}
 	}
 
 	private static void calculateGraphs(FileManager fileManager, String level) throws ParseException, IOException {
 		List<CheckIn> userCheckIns;
 		Graph graph;
 
-		for (UserProfile profile : usersProfiles) {
+		for (UserProfile profile : id_userProfile.values()) {
 			userCheckIns = fileManager.getUserCheckInsCsv(profile.userId);
 			graph = getUserGraphFromCheckIns(userCheckIns);
 			profile.addNewGraph(level, graph);
@@ -116,14 +135,16 @@ public class GeoServer {
 	}
 
 	private static void initUserProfiles(Set<String> ids) {
-		usersProfiles = new ArrayList<UserProfile>();
+		id_userProfile = new HashMap<String, UserProfile>();
 		for (String id : ids) {
 			UserProfile profile = new UserProfile(id);
-			usersProfiles.add(profile);
+			id_userProfile.put(id, profile);
 		}
 	}
 
 	private static void calculateSimilarities() {
+		List<UserProfile> usersProfiles = new ArrayList<>(id_userProfile.values());
+
 		// calculate seqScore for each user pair
 		for (int i = 0; i < usersProfiles.size(); i++) {
 			for (int j = 0; j < usersProfiles.size(); j++) {
@@ -196,25 +217,29 @@ public class GeoServer {
 			Graph graphA = profileA.getGraphByLevel(level);
 			Graph graphB = profileB.getGraphByLevel(level);
 
-			double score = 0;
-
-			Map<Integer, Double> percentageA = graphA.cluster_percentage;
-			Map<Integer, Double> percentageB = graphB.cluster_percentage;
-
-			// somar diferencas
-			for (Map.Entry<Integer, Double> entry : percentageA.entrySet()) {
-				if (percentageB.containsKey(entry.getKey())) {
-					double aux = percentageB.get(entry.getKey());
-					score += Math.abs(aux - entry.getValue());
-				}
-			}
-			// passar de range [0-2] para [0-1]
-			score = transformScoreToDiffPrct(score);
-			// passar para prct de igualdade
-			score = 1 - score;
-			return score;
+			return collaborativeFilteringClusterPercentage(graphA, graphB);
 		}
 		return 0;
+	}
+
+	private static double collaborativeFilteringClusterPercentage(Graph graphA, Graph graphB) {
+		double score = 0;
+
+		Map<Integer, Double> percentageA = graphA.cluster_percentage;
+		Map<Integer, Double> percentageB = graphB.cluster_percentage;
+
+		// somar diferencas
+		for (Map.Entry<Integer, Double> entry : percentageA.entrySet()) {
+			if (percentageB.containsKey(entry.getKey())) {
+				double aux = percentageB.get(entry.getKey());
+				score += Math.abs(aux - entry.getValue());
+			}
+		}
+		// passar de range [0-2] para [0-1]
+		score = transformScoreToDiffPrct(score);
+		// passar para prct de igualdade
+		score = 1 - score;
+		return score;
 	}
 
 	private static double transformScoreToDiffPrct(double score) {
@@ -498,4 +523,77 @@ public class GeoServer {
 			mTotalCheckIns += cluster.getVectors().size();
 		}
 	}
+
+	/*
+	 * 
+	 * Collaborative filtering
+	 *
+	 */
+
+	private static void createUserProfilesFromFirebase() throws UnsupportedEncodingException, FirebaseException {
+		id_userProfile = new HashMap<String, UserProfile>();
+
+		List<User> users = FirebaseHelper.getUserListFromFirebase();
+		users.forEach(x -> {
+			UserProfile profile = new UserProfile(x.id);
+			profile.username = x.username;
+			id_userProfile.put(x.id, profile);
+		});
+	}
+
+	private static void getUserCheckInsFromFirebase(String level)
+			throws UnsupportedEncodingException, FirebaseException {
+		List<CheckIn> userCheckIns;
+		Graph graph;
+
+		for (UserProfile profile : id_userProfile.values()) {
+			userCheckIns = FirebaseHelper.getUserCheckIns(profile.userId);
+			System.out.println("checkIns");
+			userCheckIns.forEach(System.out::println);
+			graph = getUserGraphFromCheckIns(userCheckIns);
+			profile.addNewGraph(level, graph);
+		}
+	}
+
+	private static void getUserEventsFromFirebase() throws UnsupportedEncodingException, FirebaseException {
+		List<Event> events = FirebaseHelper.getEventListFromFirebase();
+		events.forEach(x -> {
+			id_userProfile.get(x.authorId).addEvent(x);
+		});
+		id_userProfile.entrySet().stream().forEach(x -> {
+			x.getValue().calculateEventPercentages();
+		});
+	}
+
+	private static void calculateSimilaritiesFromEvents() {
+		for (UserProfile up1 : id_userProfile.values()) {
+			for (UserProfile up2 : id_userProfile.values()) {
+				if (!up1.equals(up2) && up1.getSimilarityScore(up2.userId) == 0 && up1.getEvents().size() > 0
+						&& up2.getEvents().size() > 0) {
+					double score = collaborativeFilteringEventPercentage(up1.getEventPercentages(),
+							up2.getEventPercentages());
+					up1.addSimilarityScore(up2.userId, score);
+					up2.addSimilarityScore(up1.userId, score);
+				}
+			}
+		}
+	}
+
+	private static double collaborativeFilteringEventPercentage(Map<EventCategory, Double> map1,
+			Map<EventCategory, Double> map2) {
+		double score = 0d;
+		// somar diferencas
+		for (Map.Entry<EventCategory, Double> entry : map1.entrySet()) {
+			if (map2.containsKey(entry.getKey())) {
+				double aux = map2.get(entry.getKey());
+				score += Math.abs(aux - entry.getValue());
+			}
+		}
+		// passar de range [0-2] para [0-1]
+		score = transformScoreToDiffPrct(score);
+		// passar para prct de igualdade
+		score = 1 - score;
+		return score;
+	}
+
 }
