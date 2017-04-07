@@ -95,7 +95,7 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Intent intent = new Intent(getContext(), CreateEventActivity.class);
-                        startActivityForResult(intent,CREATE_EVENT_REQ_CODE);
+                        startActivityForResult(intent, CREATE_EVENT_REQ_CODE);
                     }
                 });
 
@@ -114,8 +114,8 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == CREATE_EVENT_REQ_CODE){
-            if(resultCode == RESULT_OK){
+        if (requestCode == CREATE_EVENT_REQ_CODE) {
+            if (resultCode == RESULT_OK) {
                 MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
                 ((DrawerMainActivity) getContext()).setupViewPagerEvents();
             }
@@ -123,18 +123,15 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     }
 
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        super.onCreateView(inflater, container, savedInstanceState);
-        if (rootView != null) {
-            ViewGroup parent = (ViewGroup) rootView.getParent();
-            if (parent != null) {
-                parent.removeView(rootView);
-            }
-        }
+//        if (rootView != null) {
+//            ViewGroup parent = (ViewGroup) rootView.getParent();
+//            if (parent != null) {
+//                parent.removeView(rootView);
+//            }
+//        }
 
         mLastKnownLocation =
                 MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
@@ -150,7 +147,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
             ButterKnife.bind(this, rootView);
             super.setNetworkDetectorHolder(networkDetectorHolder);
             setUpMapIfNeeded();
-
         }
         return rootView;
     }
@@ -328,12 +324,12 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         detailsHolder.setVisibility(View.GONE);
         LatLng center = cameraPosition.target;
 
-            //TODO: change
+        //TODO: change
 
-            Location mocked = new Location("mocked");
-            mocked.setLatitude(center.latitude);
-            mocked.setLongitude(center.longitude);
-            MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);
+        Location mocked = new Location("mocked");
+        mocked.setLatitude(center.latitude);
+        mocked.setLongitude(center.longitude);
+        MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);
 
         this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(center, cameraPosition.zoom));
 
@@ -365,7 +361,7 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     }
 
     private void drawMyLocation(double latitude, double longitude) {
-        if(myMarker != null){
+        if (myMarker != null) {
             myMarker.remove();
         }
         myMarker = this.map.addMarker(new MarkerOptions()

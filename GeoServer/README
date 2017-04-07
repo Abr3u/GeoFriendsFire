@@ -41,13 +41,13 @@ ______________________________________________________________
 Tomorrow:
 
 APP
+fab position
+permissoes dinamicas??
 ver os cleanupListeners e memory leaks; settings acho
-perfil de utilizador;
 
 SERVER
-
-sugerir amigos de amigos;
 nao comparar todos com todos; ter um maximo ate onde calcular similarities
+sugerir amigos de amigos;
 
 ver ndcg
 
@@ -57,8 +57,10 @@ escrever event recommendation - geofire, geohash, bounding boxes
 After:
 quando nao sao suficientemente parecidos com location data usar eventos criados
 factores extra - popularidade, hierarquia;
+cloudrails, eventbrite APIs
 
 testar todos os screens à grande!!
+perfil de utilizador;
 read/unread msgs
 repensar estrutura de msgs - neste momento escrevo sempre em dois lados a mesma msg (redundancia de dados vs mais uma query)
 ATC simulate shitty internet

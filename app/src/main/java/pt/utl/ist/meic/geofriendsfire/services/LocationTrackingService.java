@@ -198,7 +198,11 @@ public class LocationTrackingService extends Service
     public Location getLastKnownLocation(){return mLastKnowLocation;}
 
     public void setMockedLocation(Location mocked){
-        if(mocked.getLatitude() != mLastKnowLocation.getLatitude()
+        if(mLastKnowLocation == null){
+            this.mLastKnowLocation = mocked;
+            EventBus.getDefault().post(new NewLocationEvent(mocked));
+        }
+        else if(mocked.getLatitude() != mLastKnowLocation.getLatitude()
                 || mocked.getLongitude() != mLastKnowLocation.getLongitude()){
             this.mLastKnowLocation = mocked;
             EventBus.getDefault().post(new NewLocationEvent(mocked));

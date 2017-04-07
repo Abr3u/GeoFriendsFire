@@ -40,12 +40,13 @@ public class BaseFragment
                 .distinctUntilChanged()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(online -> {
-                    if (online) {
-                        networkDetectorHolder.setVisibility(View.GONE);
-                    }
-                    else {
-                        networkDetectorHolder.setVisibility(View.VISIBLE);
-                        networkDetectorHolder.setText("You are offline");
+                    if (networkDetectorHolder != null) {
+                        if (online) {
+                            networkDetectorHolder.setVisibility(View.GONE);
+                        } else {
+                            networkDetectorHolder.setVisibility(View.VISIBLE);
+                            networkDetectorHolder.setText("You are offline");
+                        }
                     }
                 });
 
