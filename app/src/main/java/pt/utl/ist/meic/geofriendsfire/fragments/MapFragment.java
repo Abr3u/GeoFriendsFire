@@ -48,11 +48,13 @@ import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.activities.CreateEventActivity;
 import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
+import pt.utl.ist.meic.geofriendsfire.activities.EventDetailsMapActivity;
 import pt.utl.ist.meic.geofriendsfire.events.NewLocationEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewNearbyEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewResidentDomainEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
+import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
 import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
 import static android.app.Activity.RESULT_OK;
@@ -66,9 +68,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     private static final int INITIAL_ZOOM_LEVEL = 15;
     private static final double INITIAL_RADIUS = 0.1;
     private static final int CREATE_EVENT_REQ_CODE = 1;
-
-    @BindView(R.id.networkDetectorHolder)
-    TextView networkDetectorHolder;
 
     private GoogleMap map;
     private Marker myMarker;
@@ -145,7 +144,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
             } catch (InflateException e) {
             }
             ButterKnife.bind(this, rootView);
-            super.setNetworkDetectorHolder(networkDetectorHolder);
             setUpMapIfNeeded();
         }
         return rootView;
@@ -311,7 +309,9 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         for (Event event : mValues) {
             if (marker.getPosition().latitude == event.latitude &&
                     marker.getPosition().longitude == event.longitude) {
-                setupCardView(event);
+                Intent i = new Intent(getContext(), EventDetailsMapActivity.class);
+                i.putExtra(IntentKeys.eventDetails.toString(),Parcels.wrap(event));
+                startActivity(i);
                 return true;
             }
         }
@@ -320,8 +320,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
 
     @Override
     public void onCameraChange(CameraPosition cameraPosition) {
-        View detailsHolder = rootView.findViewById(R.id.detailsHolder);
-        detailsHolder.setVisibility(View.GONE);
         LatLng center = cameraPosition.target;
 
         //TODO: change

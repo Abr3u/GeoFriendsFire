@@ -87,7 +87,7 @@ public class LocationTrackingService extends Service
                 Map<String, Object> locationValues = tl.toMap();
 
                 String uid = MyApplicationContext.getInstance().getFirebaseUser().getUid();
-                mDatabase.child("/locations/"+uid).push().setValue(locationValues);
+                mDatabase.child(LOCATIONS_REF+uid).push().setValue(locationValues);
                 Log.d(TAG, "sent location");
             }
         }
@@ -157,16 +157,16 @@ public class LocationTrackingService extends Service
         //observe location changes
         try {
             mLocationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
                     mLocationListeners[1]);
         } catch (java.lang.SecurityException | IllegalArgumentException ex) {
-            Log.i(TAG, "fail to request location update NETWORK", ex);
+            Log.i(TAG, "fail to request location update GPS", ex);
             try {
                 mLocationManager.requestLocationUpdates(
-                        LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                        LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
                         mLocationListeners[0]);
             } catch (java.lang.SecurityException | IllegalArgumentException ex1) {
-                Log.i(TAG, "fail to request location update GPS", ex1);
+                Log.i(TAG, "fail to request location update network", ex1);
             }
         }
 

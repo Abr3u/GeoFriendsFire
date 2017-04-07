@@ -40,8 +40,12 @@ sugestoes baseadas em eventos criados done! collaborative filtering entre catego
 ______________________________________________________________
 Tomorrow:
 
+mudar os detalhes de eventos do mapa para uma activity details tipo msg details
+
 APP
 fab position
+mapa onCreate
+network holder fica atrás da recycler view
 permissoes dinamicas??
 ver os cleanupListeners e memory leaks; settings acho
 
