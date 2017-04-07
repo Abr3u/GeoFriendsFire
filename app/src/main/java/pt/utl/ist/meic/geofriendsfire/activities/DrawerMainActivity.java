@@ -56,6 +56,8 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
     private static final String PARCEL_FRAGMENT = "fragment";
     private static final String PARCEL_EVENT = "event";
 
+    private static final int CREATE_EVENT_REQ_CODE = 1;
+
     @BindView(R.id.drawer_layout)
     DrawerLayout mDrawerLayout;
 
@@ -67,6 +69,9 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
 
     @BindView(R.id.tabs)
     TabLayout mTabLayout;
+
+    @BindView(R.id.fab)
+    FloatingActionButton fab;
 
     // Firebase
     private FirebaseAuth mFirebaseAuth;
@@ -260,6 +265,8 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.add(FragmentKeys.MessagesReceived);
         mAdapter.add(FragmentKeys.MessagesSent);
         mTabLayout.setVisibility(View.VISIBLE);
+        fab.setOnClickListener(x-> startActivity(new Intent(DrawerMainActivity.this, CreateMessageActivity.class)));
+        fab.setVisibility(View.VISIBLE);
     }
 
     public void setupViewPagerFriends() {
@@ -269,6 +276,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.add(FragmentKeys.FriendsSuggestions);
         mAdapter.add(FragmentKeys.FriendSearch);
         mTabLayout.setVisibility(View.VISIBLE);
+        fab.setVisibility(View.GONE);
     }
 
     public void setupViewPagerEvents() {
@@ -277,6 +285,8 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.add(FragmentKeys.EventsNearby);
         mAdapter.add(FragmentKeys.MyEvents);
         mTabLayout.setVisibility(View.VISIBLE);
+        fab.setOnClickListener(x-> showAlertDialogCreateEvent());
+        fab.setVisibility(View.VISIBLE);
     }
 
     public void setupViewPagerMap() {
@@ -284,6 +294,8 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.clear();
         mAdapter.add(FragmentKeys.EventsNearbyMap);
         mTabLayout.setVisibility(View.GONE);
+        fab.setOnClickListener(x-> showAlertDialogCreateEvent());
+        fab.setVisibility(View.VISIBLE);
     }
 
     public void setupViewPagerEventDetails(Event event) {
@@ -293,7 +305,55 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.setEventForDetails(event);
         mAdapter.add(FragmentKeys.EventDetailsMap);
         mTabLayout.setVisibility(View.GONE);
+        fab.setOnClickListener(x-> showAlertDialogCreateEvent());
+        fab.setVisibility(View.VISIBLE);
     }
+
+    /*
+    *
+    * FAB listeners
+    *
+     */
+
+    private void showAlertDialogCreateEvent() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.dialog_title_create_event));
+        builder.setMessage(getString(R.string.dialog_message_create_event));
+
+        String positiveText = getString(android.R.string.ok);
+        builder.setPositiveButton(positiveText,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(DrawerMainActivity.this, CreateEventActivity.class);
+                        startActivityForResult(intent,CREATE_EVENT_REQ_CODE);
+                    }
+                });
+
+        String negativeText = getString(android.R.string.cancel);
+        builder.setNegativeButton(negativeText,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == CREATE_EVENT_REQ_CODE){
+            if(resultCode == RESULT_OK){
+                MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
+                //DrawerMainActivity.this.setupViewPagerEvents();
+            }
+        }
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

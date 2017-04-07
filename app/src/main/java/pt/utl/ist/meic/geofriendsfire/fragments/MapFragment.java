@@ -78,50 +78,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     private double mRadius;
     private Set<Event> mValues;
 
-    @OnClick(R.id.fab)
-    public void onFABClick(View view) {
-        showAlertDialog();
-    }
-
-    private void showAlertDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(getString(R.string.dialog_title_create_event));
-        builder.setMessage(getString(R.string.dialog_message_create_event));
-
-        String positiveText = getString(android.R.string.ok);
-        builder.setPositiveButton(positiveText,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(getContext(), CreateEventActivity.class);
-                        startActivityForResult(intent, CREATE_EVENT_REQ_CODE);
-                    }
-                });
-
-        String negativeText = getString(android.R.string.cancel);
-        builder.setNegativeButton(negativeText,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == CREATE_EVENT_REQ_CODE) {
-            if (resultCode == RESULT_OK) {
-                MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
-                ((DrawerMainActivity) getContext()).setupViewPagerEvents();
-            }
-        }
-    }
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -249,60 +205,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         this.map.setOnMarkerClickListener(this);
         this.map.setOnCameraChangeListener(this);
     }
-
-    protected void setupCardView(final Event event) {
-        View detailsHolder = rootView.findViewById(R.id.detailsHolder);
-        View cardview = detailsHolder.findViewById(R.id.card_view);
-
-        TextView description = (TextView) cardview.findViewById(R.id.iv_text);
-        description.setText(event.description);
-
-        TextView extra = (TextView) cardview.findViewById(R.id.iv_extra);
-        if (mLastKnownLocation == null) {
-            extra.setText(event.creationDate);
-        } else {
-            double distance = Utils.distance(mLastKnownLocation.getLatitude(), event.latitude,
-                    mLastKnownLocation.getLongitude(), event.longitude);
-            extra.setText(String.format("%.3f", distance / 1000) + " kms away");
-        }
-
-        cardview.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                Uri gmmIntentUri = Uri.parse("google.navigation:" +
-                        "q=" + event.latitude + "," + event.longitude + "&mode=w");
-                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                mapIntent.setPackage("com.google.android.apps.maps");
-                startActivity(mapIntent);
-                return true;
-            }
-        });
-
-        ImageView category = (ImageView) cardview.findViewById(R.id.iv_image);
-        switch (event.category) {
-            case "Food":
-                Glide.with(category.getContext())
-                        .load(R.drawable.ic_food)
-                        .fitCenter()
-                        .into(category);
-                break;
-            case "Sports":
-                Glide.with(category.getContext())
-                        .load(R.drawable.ic_sports)
-                        .fitCenter()
-                        .into(category);
-                break;
-            case "Shop":
-                Glide.with(category.getContext())
-                        .load(R.drawable.ic_shopping)
-                        .fitCenter()
-                        .into(category);
-                break;
-
-        }
-        detailsHolder.setVisibility(View.VISIBLE);
-    }
-
 
     @Override
     public boolean onMarkerClick(final Marker marker) {

@@ -2,6 +2,7 @@ package pt.utl.ist.meic.geofriendsfire.adapters;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 
 import com.nakama.arraypageradapter.ArrayFragmentStatePagerAdapter;
 
