@@ -4,11 +4,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-
     <fragment
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         class="com.google.android.gms.maps.SupportMapFragment" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:id="@+id/nextRoutePointFAB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@drawable/ic_directions" />
 
 </RelativeLayout>

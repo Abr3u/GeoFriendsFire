@@ -2,6 +2,7 @@ package pt.utl.ist.meic.geofriendsfire.activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -21,6 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
@@ -35,21 +37,19 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.parceler.Parcels;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
 import pt.utl.ist.meic.geofriendsfire.adapters.DynamicViewPagerAdapter;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
-import pt.utl.ist.meic.geofriendsfire.models.Message;
 import pt.utl.ist.meic.geofriendsfire.models.User;
 import pt.utl.ist.meic.geofriendsfire.utils.FragmentKeys;
-import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
 
 public class DrawerMainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -102,17 +102,16 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mTabLayout.setupWithViewPager(mViewPager);
         mTabLayout.setVisibility(View.GONE);
 
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             recoverSavedState(savedInstanceState);
-        }
-        else{
+        } else {
             setupViewPagerEvents();
         }
     }
 
     private void recoverSavedState(Bundle savedInstanceState) {
         int savedFrag = Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_FRAGMENT));
-        switch(savedFrag){
+        switch (savedFrag) {
             case 0:
                 setupViewPagerMap();
                 break;
@@ -123,7 +122,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
                 setupViewPagerFriends();
                 break;
             case 3:
-                setupViewPagerEventDetails((Event)Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_EVENT)));
+                setupViewPagerEventDetails((Event) Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_EVENT)));
                 break;
         }
     }
@@ -132,7 +131,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(PARCEL_FRAGMENT, Parcels.wrap(fragment));
-        if(detailedEvent != null){
+        if (detailedEvent != null) {
             outState.putParcelable(PARCEL_EVENT, Parcels.wrap(detailedEvent));
         }
     }
@@ -221,7 +220,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
 
         View header = navigationView.getHeaderView(0);
         FirebaseUser user = MyApplicationContext.getInstance().getFirebaseUser();
-        if(user != null){
+        if (user != null) {
             ((TextView) header.findViewById(R.id.navTextView)).setText(user.getDisplayName());
         }
 
@@ -250,6 +249,18 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
                                 setupViewPagerMessages();
                                 mDrawerLayout.closeDrawers();
                                 return true;
+                            case R.id.nav_load_route:
+                                try {
+                                    MyApplicationContext.getLocationsServiceInstance().loadRoute();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                mDrawerLayout.closeDrawers();
+                                return true;
+                            case R.id.nav_next_route_point:
+                                MyApplicationContext.getLocationsServiceInstance().nextRouteLocation();
+                                mDrawerLayout.closeDrawers();
+                                return true;
                             default:
                                 mDrawerLayout.closeDrawers();
                                 return true;
@@ -265,7 +276,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.add(FragmentKeys.MessagesReceived);
         mAdapter.add(FragmentKeys.MessagesSent);
         mTabLayout.setVisibility(View.VISIBLE);
-        fab.setOnClickListener(x-> startActivity(new Intent(DrawerMainActivity.this, CreateMessageActivity.class)));
+        fab.setOnClickListener(x -> startActivity(new Intent(DrawerMainActivity.this, CreateMessageActivity.class)));
         fab.setVisibility(View.VISIBLE);
     }
 
@@ -285,7 +296,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.add(FragmentKeys.EventsNearby);
         mAdapter.add(FragmentKeys.MyEvents);
         mTabLayout.setVisibility(View.VISIBLE);
-        fab.setOnClickListener(x-> showAlertDialogCreateEvent());
+        fab.setOnClickListener(x -> showAlertDialogCreateEvent());
         fab.setVisibility(View.VISIBLE);
     }
 
@@ -294,7 +305,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.clear();
         mAdapter.add(FragmentKeys.EventsNearbyMap);
         mTabLayout.setVisibility(View.GONE);
-        fab.setOnClickListener(x-> showAlertDialogCreateEvent());
+        fab.setOnClickListener(x -> showAlertDialogCreateEvent());
         fab.setVisibility(View.VISIBLE);
     }
 
@@ -305,7 +316,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.setEventForDetails(event);
         mAdapter.add(FragmentKeys.EventDetailsMap);
         mTabLayout.setVisibility(View.GONE);
-        fab.setOnClickListener(x-> showAlertDialogCreateEvent());
+        fab.setOnClickListener(x -> showAlertDialogCreateEvent());
         fab.setVisibility(View.VISIBLE);
     }
 
@@ -316,38 +327,43 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
      */
 
     private void showAlertDialogCreateEvent() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.dialog_title_create_event));
-        builder.setMessage(getString(R.string.dialog_message_create_event));
+        Location lastKnown = MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
+        if (lastKnown == null) {
+            Toast.makeText(DrawerMainActivity.this, "Can't get current location", Toast.LENGTH_SHORT).show();
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(getString(R.string.dialog_title_create_event));
+            builder.setMessage(getString(R.string.dialog_message_create_event));
 
-        String positiveText = getString(android.R.string.ok);
-        builder.setPositiveButton(positiveText,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(DrawerMainActivity.this, CreateEventActivity.class);
-                        startActivityForResult(intent,CREATE_EVENT_REQ_CODE);
-                    }
-                });
+            String positiveText = getString(android.R.string.ok);
+            builder.setPositiveButton(positiveText,
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(DrawerMainActivity.this, CreateEventActivity.class);
+                            startActivityForResult(intent, CREATE_EVENT_REQ_CODE);
+                        }
+                    });
 
-        String negativeText = getString(android.R.string.cancel);
-        builder.setNegativeButton(negativeText,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
+            String negativeText = getString(android.R.string.cancel);
+            builder.setNegativeButton(negativeText,
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
 
-        AlertDialog dialog = builder.create();
-        dialog.show();
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
     }
 
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == CREATE_EVENT_REQ_CODE){
-            if(resultCode == RESULT_OK){
+        if (requestCode == CREATE_EVENT_REQ_CODE) {
+            if (resultCode == RESULT_OK) {
                 MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
                 //DrawerMainActivity.this.setupViewPagerEvents();
             }

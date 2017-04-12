@@ -17,6 +17,12 @@
         <item
             android:id="@+id/nav_settings"
             android:title="Settings" />
+        <item
+            android:id="@+id/nav_load_route"
+            android:title="Load Route" />
+        <item
+            android:id="@+id/nav_next_route_point"
+            android:title="Next Route Point" />
     </group>
 
 </menu>

@@ -1,23 +1,19 @@
 package pt.utl.ist.meic.geofriendsfire.fragments;
 
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
+import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -41,13 +37,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
-import pt.utl.ist.meic.geofriendsfire.activities.CreateEventActivity;
-import pt.utl.ist.meic.geofriendsfire.activities.DrawerMainActivity;
 import pt.utl.ist.meic.geofriendsfire.activities.EventDetailsMapActivity;
 import pt.utl.ist.meic.geofriendsfire.events.NewLocationEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewNearbyEvent;
@@ -55,9 +48,6 @@ import pt.utl.ist.meic.geofriendsfire.events.NewResidentDomainEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
 import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
-import pt.utl.ist.meic.geofriendsfire.utils.Utils;
-
-import static android.app.Activity.RESULT_OK;
 
 public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChangeListener,
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
@@ -75,18 +65,20 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     private View rootView;
     private Location mLastKnownLocation;
 
+    private float currentZoom = INITIAL_ZOOM_LEVEL;
+
     private double mRadius;
     private Set<Event> mValues;
+
+
+    @OnClick(R.id.nextRoutePointFAB)
+    public void onClick(View v){
+        MyApplicationContext.getLocationsServiceInstance().nextRouteLocation();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-//        if (rootView != null) {
-//            ViewGroup parent = (ViewGroup) rootView.getParent();
-//            if (parent != null) {
-//                parent.removeView(rootView);
-//            }
-//        }
 
         mLastKnownLocation =
                 MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
@@ -223,15 +215,15 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     @Override
     public void onCameraChange(CameraPosition cameraPosition) {
         LatLng center = cameraPosition.target;
-
+        currentZoom = cameraPosition.zoom;
         //TODO: change
 
-        Location mocked = new Location("mocked");
-        mocked.setLatitude(center.latitude);
-        mocked.setLongitude(center.longitude);
-        MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);
-
-        this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(center, cameraPosition.zoom));
+//        Location mocked = new Location("mocked");
+//        mocked.setLatitude(center.latitude);
+//        mocked.setLongitude(center.longitude);
+//        MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);
+//
+//        this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(center, cameraPosition.zoom));
 
     }
 
@@ -267,6 +259,9 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         myMarker = this.map.addMarker(new MarkerOptions()
                 .position(new LatLng(latitude, longitude))
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_my_location)));
+
+        CameraUpdate location = CameraUpdateFactory.newLatLngZoom(new LatLng(latitude,longitude), currentZoom);
+        map.animateCamera(location);
     }
 
     private void drawResiDomain(Map<String, Double> resiDomain) {

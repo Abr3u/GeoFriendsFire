@@ -36,15 +36,19 @@ amigos nao aparecem nas sugestoes nem no search! - resolvido com list<friend> no
 message details done!
 send msg from friends done!
 sugestoes baseadas em eventos criados done! collaborative filtering entre categorias de eventos
+loadRoute done!!
 
 ______________________________________________________________
 Tomorrow:
 
+evaluate scalability - mocked locations
+ver os cleanupListeners e memory leaks; settings acho
+
+problema de nao ter GPS (no inicio e nao só)
+
 APP
 mapa onCreate
 network holder fica atrás da recycler view
-permissoes dinamicas??
-ver os cleanupListeners e memory leaks; settings acho
 
 SERVER
 nao comparar todos com todos; ter um maximo ate onde calcular similarities
