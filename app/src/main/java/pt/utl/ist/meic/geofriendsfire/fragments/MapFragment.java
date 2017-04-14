@@ -80,6 +80,11 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        try {
+            rootView = inflater.inflate(R.layout.map_fragment, container, false);
+        } catch (InflateException e) {
+        }
+
         mLastKnownLocation =
                 MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
         if (mLastKnownLocation == null) {
@@ -87,10 +92,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         } else {
             mValues = new HashSet<>();
             mRadius = INITIAL_RADIUS;
-            try {
-                rootView = inflater.inflate(R.layout.map_fragment, container, false);
-            } catch (InflateException e) {
-            }
             ButterKnife.bind(this, rootView);
             setUpMapIfNeeded();
         }
@@ -242,7 +243,7 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(NewLocationEvent event) {
-        Log.d("yyy", "mapa recebi nova location " + event.getLocation());
+        Log.d("ooo", "mapa recebi nova location " + event.getLocation());
         drawMyLocation(event.getLocation().getLatitude(), event.getLocation().getLongitude());
     }
 

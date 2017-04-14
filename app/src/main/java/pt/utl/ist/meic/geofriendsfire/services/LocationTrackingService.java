@@ -87,7 +87,12 @@ public class LocationTrackingService extends Service {
             tl.time = new Date();
             tl.location = location;
             mLocations.add(tl);
-            mLastKnowLocation = location;
+            if(mLastKnowLocation == null){
+                mLastKnowLocation = location;
+                MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
+            }else{
+                mLastKnowLocation = location;
+            }
             EventBus.getDefault().post(new NewLocationEvent(location));
 
             if (mLocations.size() > LOCATION_AGGREGATION_THRESHOLD) {
@@ -249,28 +254,20 @@ public class LocationTrackingService extends Service {
             mDatabase.child(LOCATIONS_REF+uid).push().setValue(locationValues);*/
         } else {
             Log.d("ooo", "tracker cant get location");
-            wifiIpAddress(this);
-            String ipv6 = getIPAddress(false);
-            Log.d("ooo", "IPv6 " + ipv6);
-            String ipv4 = getIPAddress(true);
-            Log.d("ooo", "IPv4 " + ipv4);
+            MyApplicationContext.getInstance().getRetrofitFindIP();
         }
 
         //observe location changes
         try {
             mLocationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    mLocationListeners[0]);
+
+            mLocationManager.requestLocationUpdates(
                     LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
                     mLocationListeners[1]);
-            Log.d("ooo", "net location");
         } catch (java.lang.SecurityException | IllegalArgumentException ex) {
-            Log.i("ooo", "fail to request location update net", ex);
-            try {
-                mLocationManager.requestLocationUpdates(
-                        LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
-                        mLocationListeners[0]);
-            } catch (java.lang.SecurityException | IllegalArgumentException ex1) {
-                Log.i("ooo", "fail to request location update gps", ex1);
-            }
+            Log.i("ooo", "fail to request location updates", ex);
         }
 
     }

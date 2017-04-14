@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -23,13 +25,24 @@ import java.util.List;
 
 import pt.utl.ist.meic.geofriendsfire.events.NewSettingsEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Friend;
+import pt.utl.ist.meic.geofriendsfire.models.GeoIpResponse;
+import pt.utl.ist.meic.geofriendsfire.models.IpAddressResponse;
+import pt.utl.ist.meic.geofriendsfire.network.GeoIpEndpoints;
+import pt.utl.ist.meic.geofriendsfire.network.IdentMeEndpoints;
 import pt.utl.ist.meic.geofriendsfire.services.EventsNearbyService;
 import pt.utl.ist.meic.geofriendsfire.services.LocationTrackingService;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class MyApplicationContext extends Application{
 
     private static final String FRIENDS_REF = "/friends/";
+    public static final String FIND_IP_BASE_URL = "http://ident.me";
+    public static final String FIND_LOCATION_BASE_URL = "http://freegeoip.net";
 
     private RefWatcher refWatcher;
     private static MyApplicationContext instance;
@@ -52,9 +65,65 @@ public class MyApplicationContext extends Application{
         }
         instance = (MyApplicationContext) getApplicationContext();
         refWatcher = LeakCanary.install(this);
+
         maximumWorkLoad = 2;
         furthestEvent = 5;
         myFriends = new ArrayList<>();
+    }
+
+    public void getRetrofitFindIP(){
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(FIND_IP_BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        IdentMeEndpoints apiService =
+                retrofit.create(IdentMeEndpoints.class);
+
+        Call<IpAddressResponse> call = apiService.getIpAddress();
+        call.enqueue(new Callback<IpAddressResponse>() {
+            @Override
+            public void onResponse(Call<IpAddressResponse> call, Response<IpAddressResponse> response) {
+                int statusCode = response.code();
+                IpAddressResponse ipResponse = response.body();
+                String ip = ipResponse.getAddress();
+                Log.d("ooo","IP "+ip);
+                Toast.makeText(MyApplicationContext.this, "IP "+ip, Toast.LENGTH_SHORT).show();
+                getRetrofitFindGeoLocation(ip);
+            }
+
+            @Override
+            public void onFailure(Call<IpAddressResponse> call, Throwable t) {
+                // Log error here since request failed
+            }
+        });
+    }
+
+    public void getRetrofitFindGeoLocation(String ip){
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(FIND_LOCATION_BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        GeoIpEndpoints apiService =
+                retrofit.create(GeoIpEndpoints.class);
+
+        Call<GeoIpResponse> call = apiService.getLocationInfoFromIp(ip);
+        call.enqueue(new Callback<GeoIpResponse>() {
+            @Override
+            public void onResponse(Call<GeoIpResponse> call, Response<GeoIpResponse> response) {
+                int statusCode = response.code();
+                GeoIpResponse geoIpResponse = response.body();
+                String city = geoIpResponse.getCity();
+                Log.d("ooo","city "+city);
+                Toast.makeText(MyApplicationContext.this, "City "+city, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Call<GeoIpResponse> call, Throwable t) {
+                // Log error here since request failed
+            }
+        });
     }
 
     public void populateFriendsList() {

@@ -38,6 +38,14 @@ send msg from friends done!
 sugestoes baseadas em eventos criados done! collaborative filtering entre categorias de eventos
 loadRoute done!!
 
+
+_________________________________________________
+hack
+
+get IPv6 -> GET https://v6.ident.me/
+
+get location from public IP -> freegeoip.net/json/176.78.76.198
+
 ______________________________________________________________
 Tomorrow:
 
