@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public class UserProfile {
 	
-	private Map<String, Graph> mGraphs;
+	private Map<Integer, Graph> mGraphs;
 	public String userId;
 	public String username;
 	public double avgPrecision;
@@ -26,7 +26,7 @@ public class UserProfile {
  	public UserProfile(String userId) {
 		this.userId = userId;
 		this.avgPrecision = 0;
-		this.mGraphs = new HashMap<String, Graph>();
+		this.mGraphs = new HashMap<Integer, Graph>();
 		this.similarityScores = new HashMap<String, Double>();
 		this.mEvents = new ArrayList<Event>();
 		eventPercentages = new HashMap<EventCategory, Double>(){{
@@ -60,11 +60,11 @@ public class UserProfile {
  		return this.eventPercentages;
  	}
  	
- 	public void addNewGraph(String level, Graph graph) {
+ 	public void addNewGraph(int level, Graph graph) {
 		this.mGraphs.put(level, graph);
 	}
 
-	public Graph getGraphByLevel(String level) {
+	public Graph getGraphByLevel(int level) {
 		return this.mGraphs.get(level);
 	}
 

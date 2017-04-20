@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
+
 public class Graph {
 
 	private static final int MIN_SEQUENCE_CHECKINS = 3;
@@ -21,8 +23,10 @@ public class Graph {
 	public Set<Sequence> mSequences;
 
 	public Map<Integer, Double> cluster_percentage;
+	
+	public ClusterWithMean mCluster;
 
-	public Graph(int numClusters) {
+ 	public Graph(int numClusters) {
 		vertexes = new ArrayList<VertexInfo>();
 		mSequences = new HashSet<Sequence>();
 		cluster_percentage = new HashMap<Integer, Double>(){{
@@ -61,6 +65,15 @@ public class Graph {
 		for (Map.Entry<Integer, Double> entry : cluster_percentage.entrySet()) {
 			cluster_percentage.put(entry.getKey(), entry.getValue() / total);
 		}
+		
+		//set mCluster as the cluster with highest activity
+		int maxActivityId = cluster_percentage.entrySet().stream().max(Map.Entry.comparingByValue()).get().getKey();
+		for(VertexInfo vi : vertexes){
+			if(vi.cluster.mId == maxActivityId){
+				mCluster = vi.cluster;
+			}
+		}
+		
 	}
 
 	private void removeShortSequences() {

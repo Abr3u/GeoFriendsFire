@@ -113,19 +113,19 @@ public class FirebaseHelper {
 		return new CheckIn(df.parse(time), new DataPoint(latitude, longitude));
 	}
 
-	public static void writeNewClustersFirebase(List<ClusterWithMean> globalClusters, int level, long totalCheckIns)
+	public static void writeNewClustersFirebase(List<ClusterWithMean> clusters, int level, long totalCheckIns)
 			throws FirebaseException, JacksonUtilityException, UnsupportedEncodingException {
 
 		deleteClustersFirebase(level);
 
 		Firebase firebase = new Firebase(FIREBASE_URL + "/clusters" + level);
 
-		for (int i = 0; i < globalClusters.size(); i++) {
+		for (int i = 0; i < clusters.size(); i++) {
 			// "PUT cluster to /clusters
 			Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
-			dataMap.put("mean", globalClusters.get(i).getmean().toString());
-			dataMap.put("size", globalClusters.get(i).getVectors().size());
-			dataMap.put("sizePerc", new Double(globalClusters.get(i).getVectors().size()) / totalCheckIns);
+			dataMap.put("mean", clusters.get(i).getmean().toString());
+			dataMap.put("size", clusters.get(i).getVectors().size());
+			dataMap.put("sizePerc", new Double(clusters.get(i).getVectors().size()) / totalCheckIns);
 
 			FirebaseResponse response = firebase.put("cluster" + i, dataMap);
 			System.out.println("\n\nResult of PUT cluster:\n" + response.getRawBody().toString());
