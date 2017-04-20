@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
@@ -22,15 +21,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.UnknownHostException;
-import java.nio.ByteOrder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -47,10 +40,10 @@ public class LocationTrackingService extends Service {
 
     private static String ROUTE_FILE_NAME = "route.txt";
 
-    private static final String TAG = "trackingService";
+    private static final String TAG = "ooo";
     private static final String LOCATIONS_REF = "/locations/";
     private static final int LOCATION_AGGREGATION_THRESHOLD = 5;
-    private static final int LOCATION_INTERVAL = 30 * 60 * 1000;//30mins
+    private static final int LOCATION_INTERVAL =  1 * 1000;//1 segundo
     private static final float LOCATION_DISTANCE = 250f;//meters
 
     private LocationManager mLocationManager;
@@ -82,15 +75,15 @@ public class LocationTrackingService extends Service {
 
         @Override
         public void onLocationChanged(Location location) {
-            Log.e("ooo", "onLocationChanged: " + location);
+            Log.e("ooo", "onLocationChanged: " + location+ " from provider "+location.getProvider());
             TimeLocation tl = new TimeLocation();
             tl.time = new Date();
             tl.location = location;
             mLocations.add(tl);
-            if(mLastKnowLocation == null){
+            if (mLastKnowLocation == null) {
                 mLastKnowLocation = location;
                 MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
-            }else{
+            } else {
                 mLastKnowLocation = location;
             }
             EventBus.getDefault().post(new NewLocationEvent(location));
@@ -124,7 +117,7 @@ public class LocationTrackingService extends Service {
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
-            Log.e(TAG, "onStatusChanged: " + provider);
+            Log.d(TAG, "onStatusChanged: " + provider +"changed to "+status);
         }
     }
 
@@ -144,69 +137,12 @@ public class LocationTrackingService extends Service {
         }
     }
 
-
-    /*
-    *
-    * get lat long from ip address
-    *
-     */
-    protected String wifiIpAddress(Context context) {
-        WifiManager wifiManager = (WifiManager) context.getSystemService(WIFI_SERVICE);
-        int ipAddress = wifiManager.getConnectionInfo().getIpAddress();
-
-        // Convert little-endian to big-endianif needed
-        if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
-            ipAddress = Integer.reverseBytes(ipAddress);
-        }
-
-        byte[] ipByteArray = BigInteger.valueOf(ipAddress).toByteArray();
-
-        String ipAddressString;
-        try {
-            ipAddressString = InetAddress.getByAddress(ipByteArray).getHostAddress();
-        } catch (UnknownHostException ex) {
-            Log.e("ooo", "Unable to get host address.");
-            ipAddressString = null;
-        }
-        Log.d("ooo", "IP " + ipAddressString);
-        return ipAddressString;
-    }
-
-    public static String getIPAddress(boolean useIPv4) {
-        try {
-            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
-            for (NetworkInterface intf : interfaces) {
-                List<InetAddress> addrs = Collections.list(intf.getInetAddresses());
-                for (InetAddress addr : addrs) {
-                    if (!addr.isLoopbackAddress()) {
-                        String sAddr = addr.getHostAddress();
-                        //boolean isIPv4 = InetAddressUtils.isIPv4Address(sAddr);
-                        boolean isIPv4 = sAddr.indexOf(':') < 0;
-
-                        if (useIPv4) {
-                            if (isIPv4)
-                                return sAddr;
-                        } else {
-                            if (!isIPv4) {
-                                int delim = sAddr.indexOf('%'); // drop ip6 zone suffix
-                                return delim < 0 ? sAddr.toUpperCase() : sAddr.substring(0, delim).toUpperCase();
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception ex) {
-        } // for now eat exceptions
-        return "";
-    }
-
-    public void nextRouteLocation(){
-        if(routeLocations.isEmpty()){
+    public void nextRouteLocation() {
+        if (routeLocations.isEmpty()) {
             Toast.makeText(this, "No route loaded", Toast.LENGTH_SHORT).show();
-        }
-        else if(counter > routeLocations.size()){
+        } else if (counter > routeLocations.size()) {
             Toast.makeText(this, "No more points in route", Toast.LENGTH_SHORT).show();
-        }else{
+        } else {
             setMockedLocation(routeLocations.get(counter));
             counter++;
         }
@@ -240,7 +176,7 @@ public class LocationTrackingService extends Service {
         if (tracker.canGetLocation()) {
             Location location = tracker.getLocation();
             mLastKnowLocation = location;
-            Log.d("ooo", "tracker location");
+            Log.d("ooo", "tracker location "+mLastKnowLocation);
             EventBus.getDefault().post(new NewLocationEvent(location));
 
             //send first location to Firebase
@@ -266,6 +202,7 @@ public class LocationTrackingService extends Service {
             mLocationManager.requestLocationUpdates(
                     LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
                     mLocationListeners[1]);
+
         } catch (java.lang.SecurityException | IllegalArgumentException ex) {
             Log.i("ooo", "fail to request location updates", ex);
         }
@@ -274,7 +211,7 @@ public class LocationTrackingService extends Service {
 
     @Override
     public void onDestroy() {
-        Log.e(TAG, "onDestroy");
+        Log.e("ooo", "onDestroy");
         super.onDestroy();
         if (mLocationManager != null) {
             for (int i = 0; i < mLocationListeners.length; i++) {
@@ -299,11 +236,9 @@ public class LocationTrackingService extends Service {
     }
 
     public void setMockedLocation(Location mocked) {
-        if (mLastKnowLocation == null) {
-            this.mLastKnowLocation = mocked;
-            EventBus.getDefault().post(new NewLocationEvent(mocked));
-        } else if (mocked.getLatitude() != mLastKnowLocation.getLatitude()
-                || mocked.getLongitude() != mLastKnowLocation.getLongitude()) {
+        if (mLastKnowLocation == null ||
+                mocked.getLatitude() != mLastKnowLocation.getLatitude() ||
+                mocked.getLongitude() != mLastKnowLocation.getLongitude()) {
             this.mLastKnowLocation = mocked;
             EventBus.getDefault().post(new NewLocationEvent(mocked));
         }
