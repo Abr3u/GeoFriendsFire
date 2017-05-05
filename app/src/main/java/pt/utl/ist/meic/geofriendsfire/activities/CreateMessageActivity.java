@@ -1,16 +1,20 @@
 package pt.utl.ist.meic.geofriendsfire.activities;
 
 import android.content.Intent;
+import android.support.v4.view.GravityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.api.model.StringList;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -34,13 +38,10 @@ import pt.utl.ist.meic.geofriendsfire.models.Friend;
 import pt.utl.ist.meic.geofriendsfire.models.Message;
 import pt.utl.ist.meic.geofriendsfire.utils.IntentKeys;
 
-public class CreateMessageActivity extends AppCompatActivity {
+public class CreateMessageActivity extends AppCompatActivity{
 
-    private static final String FRIENDS_REF = "friends/";
     private static final String MSG_REF = "messages/";
-    private DatabaseReference mDatabase;
     private ArrayAdapter<String> adapter;
-    private ValueEventListener mListener;
     private List<Friend> mValues;
 
     @BindView(R.id.friendsSpinner)
@@ -117,11 +118,4 @@ public class CreateMessageActivity extends AppCompatActivity {
         spinner.setAdapter(adapter);
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if(mListener != null){
-            mDatabase.removeEventListener(mListener);
-        }
-    }
 }

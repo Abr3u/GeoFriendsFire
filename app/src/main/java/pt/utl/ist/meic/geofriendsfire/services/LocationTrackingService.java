@@ -1,15 +1,23 @@
 package pt.utl.ist.meic.geofriendsfire.services;
 
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.provider.Settings;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
@@ -31,20 +39,18 @@ import java.util.Map;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.events.NewLocationEvent;
-import pt.utl.ist.meic.geofriendsfire.location.GPSTracker;
+
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class LocationTrackingService extends Service {
-
-    private List<Location> routeLocations = new ArrayList<Location>();
-    private static int counter = 0;
-
-    private static String ROUTE_FILE_NAME = "route.txt";
-
     private static final String TAG = "ooo";
     private static final String LOCATIONS_REF = "/locations/";
     private static final int LOCATION_AGGREGATION_THRESHOLD = 5;
-    private static final int LOCATION_INTERVAL =  1 * 1000;//1 segundo
+    private static final int LOCATION_INTERVAL = 5 * 1000;//5 secs
     private static final float LOCATION_DISTANCE = 250f;//meters
+
+    private boolean isGpsEnabled;
+    private boolean isNetworkEnabled;
 
     private LocationManager mLocationManager;
     private DatabaseReference mDatabase;
@@ -75,7 +81,7 @@ public class LocationTrackingService extends Service {
 
         @Override
         public void onLocationChanged(Location location) {
-            Log.e("ooo", "onLocationChanged: " + location+ " from provider "+location.getProvider());
+            Log.e("ooo", "onLocationChanged: " + location + " from provider " + location.getProvider());
             TimeLocation tl = new TimeLocation();
             tl.time = new Date();
             tl.location = location;
@@ -89,36 +95,45 @@ public class LocationTrackingService extends Service {
             EventBus.getDefault().post(new NewLocationEvent(location));
 
             if (mLocations.size() > LOCATION_AGGREGATION_THRESHOLD) {
-                sendLocationsFirebase();
+                sendPastLocationsFirebase();
                 mLocations.clear();
                 Log.d(TAG, "cleared locations");
             }
         }
 
-        private void sendLocationsFirebase() {
-            for (TimeLocation tl : mLocations) {
-                Map<String, Object> locationValues = tl.toMap();
-
-                String uid = MyApplicationContext.getInstance().getFirebaseUser().getUid();
-                mDatabase.child(LOCATIONS_REF + uid).push().setValue(locationValues);
-                Log.d(TAG, "sent location");
-            }
-        }
-
         @Override
         public void onProviderDisabled(String provider) {
-            Log.e(TAG, "onProviderDisabled: " + provider);
         }
 
         @Override
         public void onProviderEnabled(String provider) {
-            Log.e(TAG, "onProviderEnabled: " + provider);
         }
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
-            Log.d(TAG, "onStatusChanged: " + provider +"changed to "+status);
+            Log.d(TAG, "onStatusChanged: " + provider + "changed to " + status);
         }
+    }
+
+
+    private void sendPastLocationsFirebase() {
+        for (TimeLocation tl : mLocations) {
+            Map<String, Object> locationValues = tl.toMap();
+
+            String uid = MyApplicationContext.getInstance().getFirebaseUser().getUid();
+            mDatabase.child(LOCATIONS_REF + uid).push().setValue(locationValues);
+            Log.d(TAG, "sent location");
+        }
+    }
+
+    private void sendSingleLocationFirebase(Location loc) {
+        TimeLocation first = new TimeLocation();
+        first.location = loc;
+        first.time = new Date();
+        Map<String, Object> locationValues = first.toMap();
+
+        String uid = MyApplicationContext.getInstance().getFirebaseUser().getUid();
+        mDatabase.child(LOCATIONS_REF + uid).push().setValue(locationValues);
     }
 
     LocationListener[] mLocationListeners = new LocationListener[]{
@@ -137,61 +152,14 @@ public class LocationTrackingService extends Service {
         }
     }
 
-    public void nextRouteLocation() {
-        if (routeLocations.isEmpty()) {
-            Toast.makeText(this, "No route loaded", Toast.LENGTH_SHORT).show();
-        } else if (counter > routeLocations.size()) {
-            Toast.makeText(this, "No more points in route", Toast.LENGTH_SHORT).show();
-        } else {
-            setMockedLocation(routeLocations.get(counter));
-            counter++;
-        }
-    }
-
-    public void loadRoute() throws IOException {
-        counter = 0;
-        File sdcard = Environment.getExternalStorageDirectory();
-        File file = new File(sdcard, ROUTE_FILE_NAME);
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-        String line;
-
-        while ((line = bufferedReader.readLine()) != null) {
-            String[] latLong = line.split(",");
-            Location test = new Location("test");
-            test.setLatitude(Double.parseDouble(latLong[1]));
-            test.setLongitude(Double.parseDouble(latLong[0]));
-            routeLocations.add(test);
-        }
-        Toast.makeText(this, "Route loaded successfully", Toast.LENGTH_SHORT).show();
-    }
 
     @Override
     public void onCreate() {
         Log.e(TAG, "onCreate");
-        initializeLocationManager();
+        initLocationManager();
+        initLastKnowLocation();
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mLocations = new ArrayList<TimeLocation>();
-
-        GPSTracker tracker = new GPSTracker(this);
-        if (tracker.canGetLocation()) {
-            Location location = tracker.getLocation();
-            mLastKnowLocation = location;
-            Log.d("ooo", "tracker location "+mLastKnowLocation);
-            EventBus.getDefault().post(new NewLocationEvent(location));
-
-            //send first location to Firebase
-            //TODO: uncomment
-            /*TimeLocation first = new TimeLocation();
-            first.location = location;
-            first.time = new Date();
-            Map<String, Object> locationValues = first.toMap();
-
-            String uid = MyApplicationContext.getInstance().getFirebaseUser().getUid();
-            mDatabase.child(LOCATIONS_REF+uid).push().setValue(locationValues);*/
-        } else {
-            Log.d("ooo", "tracker cant get location");
-            MyApplicationContext.getInstance().getRetrofitFindIP();
-        }
 
         //observe location changes
         try {
@@ -209,9 +177,74 @@ public class LocationTrackingService extends Service {
 
     }
 
+    private void initLocationManager() {
+        Log.e(TAG, "initLocationManager");
+        if (mLocationManager == null) {
+            mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        }
+    }
+
+    private void initLastKnowLocation() {
+        if (Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        isGpsEnabled = mLocationManager
+                .isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+        // getting network status
+        isNetworkEnabled = mLocationManager
+                .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+        if (isGpsEnabled) {
+            mLastKnowLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Log.d("ggg","Got Location from GPS " + mLastKnowLocation.toString());
+
+        } else if (isNetworkEnabled) {
+            mLastKnowLocation = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            Log.d("ggg","Got Location from net " + mLastKnowLocation.toString());
+        }
+        else{
+            showSettingsAlert();
+        }
+
+    }
+
+    private void showSettingsAlert() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // Setting Dialog Title
+        builder.setTitle("GPS settings");
+
+        // Setting Dialog Message
+        builder.setMessage("GPS is not enabled. Do you want to go to settings menu?");
+
+        // On pressing Settings button
+        builder.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                LocationTrackingService.this.startActivity(intent);
+            }
+        });
+
+        // on pressing cancel button
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        // Showing Alert Message
+        dialog.show();
+    }
+
     @Override
     public void onDestroy() {
-        Log.e("ooo", "onDestroy");
         super.onDestroy();
         if (mLocationManager != null) {
             for (int i = 0; i < mLocationListeners.length; i++) {
@@ -221,13 +254,6 @@ public class LocationTrackingService extends Service {
                     Log.i(TAG, "fail to remove location listners, ignore", ex);
                 }
             }
-        }
-    }
-
-    private void initializeLocationManager() {
-        Log.e(TAG, "initializeLocationManager");
-        if (mLocationManager == null) {
-            mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         }
     }
 
@@ -241,6 +267,56 @@ public class LocationTrackingService extends Service {
                 mocked.getLongitude() != mLastKnowLocation.getLongitude()) {
             this.mLastKnowLocation = mocked;
             EventBus.getDefault().post(new NewLocationEvent(mocked));
+        }
+    }
+
+
+    public void loadRoute() throws IOException {
+        new EmulateTrajectoryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    public class EmulateTrajectoryTask extends AsyncTask<Void, Void, Boolean> {
+
+        List<Double> mockedLatitudes;
+
+        List<Double> mockedLongitudes;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mockedLatitudes = new ArrayList<Double>(){{
+                add(38.7022d);add(38.6997d);add(38.6972d);add(38.6954d);add(38.6956d);
+                add(38.6957d);add(38.6930d);add(38.6909d);add(38.6902d);add(38.6926d);
+                add(38.6959d);add(38.6994d);add(38.7037d);add(38.7033d);add(38.7072d);
+
+            }};
+            mockedLongitudes = new ArrayList<Double>(){{
+                add(-9.4757d);add(-9.4678d);add(-9.4626d);add(-9.4577d);add(-9.4494d);
+                add(-9.4428d);add(-9.4343d);add(-9.4292d);add(-9.4249d);add(-9.4208d);
+                add(-9.4201d);add(-9.4178d);add(-9.4067d);add(-9.3988d);add(-9.3967d);
+            }};
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            Location mocked = new Location("mocked");
+            for (int i = 0; i < mockedLatitudes.size(); i++) {
+                try {
+                    Thread.sleep(4000);
+                    mocked.setLatitude(mockedLatitudes.get(i));
+                    mocked.setLongitude(mockedLongitudes.get(i));
+                    MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);
+                } catch (InterruptedException e) {
+                    Log.d("zzz", "interrupted exception");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            return;
         }
     }
 

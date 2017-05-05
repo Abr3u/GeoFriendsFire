@@ -25,8 +25,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.SignInAccount;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -257,10 +260,6 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
                                 }
                                 mDrawerLayout.closeDrawers();
                                 return true;
-                            case R.id.nav_next_route_point:
-                                MyApplicationContext.getLocationsServiceInstance().nextRouteLocation();
-                                mDrawerLayout.closeDrawers();
-                                return true;
                             default:
                                 mDrawerLayout.closeDrawers();
                                 return true;
@@ -377,24 +376,6 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         return true;
     }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        switch (AppCompatDelegate.getDefaultNightMode()) {
-            case AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM:
-                menu.findItem(R.id.menu_night_mode_system).setChecked(true);
-                break;
-            case AppCompatDelegate.MODE_NIGHT_AUTO:
-                menu.findItem(R.id.menu_night_mode_auto).setChecked(true);
-                break;
-            case AppCompatDelegate.MODE_NIGHT_YES:
-                menu.findItem(R.id.menu_night_mode_night).setChecked(true);
-                break;
-            case AppCompatDelegate.MODE_NIGHT_NO:
-                menu.findItem(R.id.menu_night_mode_day).setChecked(true);
-                break;
-        }
-        return true;
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -402,29 +383,22 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
-            case R.id.menu_night_mode_system:
-                setNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                break;
-            case R.id.menu_night_mode_day:
-                setNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                break;
-            case R.id.menu_night_mode_night:
-                setNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                break;
-            case R.id.menu_night_mode_auto:
-                setNightMode(AppCompatDelegate.MODE_NIGHT_AUTO);
+            case R.id.action_sign_out:
+                signOut();
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void setNightMode(@AppCompatDelegate.NightMode int nightMode) {
-        AppCompatDelegate.setDefaultNightMode(nightMode);
-
-        if (Build.VERSION.SDK_INT >= 11) {
-            recreate();
-        }
+    private void signOut(){
+        FirebaseAuth.getInstance().signOut();
+        // Google sign out
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(@NonNull Status status) {
+                        startActivity(new Intent(DrawerMainActivity.this, SignInActivity.class));
+                    }
+                });
     }
-
-
 }

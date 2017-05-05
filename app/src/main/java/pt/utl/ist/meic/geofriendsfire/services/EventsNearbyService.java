@@ -7,6 +7,7 @@ import android.location.Location;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
@@ -157,12 +158,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
 
     @Override
     public void onGeoQueryError(DatabaseError error) {
-        new AlertDialog.Builder(this)
-                .setTitle("Error")
-                .setMessage("There was an unexpected error querying GeoFire: " + error.getMessage())
-                .setPositiveButton(android.R.string.ok, null)
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
+        Toast.makeText(this, "ERROR "+error.getMessage(), Toast.LENGTH_SHORT).show();
     }
 
 

@@ -5,10 +5,14 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.view.GravityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Spinner;
@@ -17,6 +21,10 @@ import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -123,4 +131,6 @@ public class CreateEventActivity extends AppCompatActivity {
         outState.putParcelable(PARCEL_DESCRIPTION, Parcels.wrap(eventDescription.getText().toString().trim()));
         outState.putParcelable(PARCEL_CATEGORY, Parcels.wrap(""+eventCategory.getSelectedItemId()));
     }
+
+
 }

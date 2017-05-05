@@ -70,12 +70,6 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
     private double mRadius;
     private Set<Event> mValues;
 
-
-    @OnClick(R.id.nextRoutePointFAB)
-    public void onClick(View v){
-        MyApplicationContext.getLocationsServiceInstance().nextRouteLocation();
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

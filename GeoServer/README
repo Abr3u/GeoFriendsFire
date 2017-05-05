@@ -36,13 +36,16 @@ amigos nao aparecem nas sugestoes nem no search! - resolvido com list<friend> no
 message details done!
 send msg from friends done!
 sugestoes baseadas em eventos criados done! collaborative filtering entre categorias de eventos
-loadRoute done!!
 gpsScript/Lockito ja funciona!! - problema dos settings de min tempo e min distancia passados
 adicionado comparing distance threshold!!
 adicionada vertente hierarquica!! - de momento so se compara num nivel de cada vez - NUM_CLUSTERS + LEVEL definidos antes de começar
+async task para emular trajectoria done!
+straight forward approach done!
+se nao tiver GPS no inicio, done!
+signOut done!
 
 _________________________________________________
-hack
+no GPS hack to get location
 
 get IPv6 -> GET https://v6.ident.me/
 
@@ -50,33 +53,41 @@ get location from public IP -> freegeoip.net/json/176.78.76.198
 
 ______________________________________________________________
 Tomorrow:
+rever o deleted event - cleanup listeners
+serviceNearbyBAD - mudar location e raio da geoQuery em vez de restart
+perfis de utilização de bateria para o location teacking service.
+alterar os minDistance e minTime thresholds quando tem menos de X bateria.
+
 
 APP
-evaluate scalability - mocked locations
-
+evaluate scalability
 
 SERVER
+schedule computation OR enough new data
 factores extra - popularidade, hierarquia;
-sugerir amigos de amigos;
 
 ver ndcg
-network holder fica atrás da recycler view
 
 escrever event recommendation - geofire, geohash, bounding boxes
 		friend recommendation - como filtro o dataset - folha. qual o workflow depois de ter os dados de location
 
 After:
+melhorar performance so ir buscar meta data nos nearby, ir buscar conteudo do evento quando está mesmo perto do evento (por exemplo se for imagem)
+melhorar performance da app com hashMap(locationHash,eventos) com STD raio para location e workload para eventos
+desnormalizar dados no firebase para escalar melhor!!
+testar todos os screens à grande!!
+
+BUGS:
+network holder fica atrás da recycler view
 ver os cleanupListeners e memory leaks; todo o lado
 problema de nao ter GPS (no inicio e nao só)
-cloudrails, eventbrite APIs
-
-testar todos os screens à grande!!
-perfil de utilizador;
-read/unread msgs
-repensar estrutura de msgs - neste momento escrevo sempre em dois lados a mesma msg (redundancia de dados vs mais uma query)
-ATC simulate shitty internet
 
 Extra:
+repensar estrutura de msgs - neste momento escrevo sempre em dois lados a mesma msg (redundancia de dados vs mais uma query)
+ATC simulate shitty internet
+perfil de utilizador;
+read/unread msgs
+cloudrails, eventbrite APIs
 mudar aspecto dos pins no mapa para icon de categoria
 clustering de markers,
 security rules
