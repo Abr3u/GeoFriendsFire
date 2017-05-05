@@ -1,0 +1,64 @@
+package pt.utl.ist.meic.domain.managers;
+
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import net.thegreshams.firebase4j.error.FirebaseException;
+import pt.utl.ist.meic.domain.UserProfile;
+import pt.utl.ist.meic.firebase.FirebaseHelper;
+import pt.utl.ist.meic.firebase.models.User;
+import pt.utl.ist.meic.utility.FileManager;
+
+public class UserProfilesManager {
+	
+	private boolean firebase;
+	private FileManager fileManager;
+	
+	public UserProfilesManager(FileManager fileManager, boolean firebaseWorkflow) {
+		this.firebase = firebaseWorkflow;
+		this.fileManager = fileManager;
+	}
+
+	public Map<String, UserProfile> createUserProfiles(){
+		Map<String,UserProfile> id_userProfile = new HashMap<String, UserProfile>();
+		
+		if(firebase){
+			try {
+				id_userProfile = createUserProfilesFromFirebase();
+			} catch (UnsupportedEncodingException | FirebaseException e) {
+				e.printStackTrace();
+			}
+		}else{
+			Set<String> idList = fileManager.getNyNyIdListFromFile();
+			createUserProfilesGowalla(idList);
+		}
+		
+		return id_userProfile;
+	}
+	
+	
+	private Map<String, UserProfile> createUserProfilesFromFirebase() throws UnsupportedEncodingException, FirebaseException {
+		Map<String,UserProfile> id_userProfile = new HashMap<String, UserProfile>();
+
+		List<User> users = FirebaseHelper.getUserListFromFirebase();
+		users.forEach(x -> {
+			UserProfile profile = new UserProfile(x.id);
+			profile.username = x.username;
+			id_userProfile.put(x.id, profile);
+		});
+		
+		return id_userProfile;
+	}
+	
+	private Map<String,UserProfile> createUserProfilesGowalla(Set<String> ids) {
+		Map<String,UserProfile> id_userProfile = new HashMap<String, UserProfile>();
+		for (String id : ids) {
+			UserProfile profile = new UserProfile(id);
+			id_userProfile.put(id, profile);
+		}
+		return id_userProfile;
+	}
+}

@@ -19,10 +19,27 @@ import net.thegreshams.firebase4j.service.Firebase;
 import pt.utl.ist.meic.domain.CheckIn;
 import pt.utl.ist.meic.domain.DataPoint;
 import pt.utl.ist.meic.domain.UserProfile;
+import pt.utl.ist.meic.firebase.models.Event;
+import pt.utl.ist.meic.firebase.models.EventCategory;
+import pt.utl.ist.meic.firebase.models.User;
 
 public class FirebaseHelper {
 
 	private static final String FIREBASE_URL = "https://geofriendsfire.firebaseio.com";
+
+	public static Map<String, UserProfile> populateUserEventsFromFirebase(Map<String, UserProfile> profiles)
+			throws UnsupportedEncodingException, FirebaseException {
+		List<Event> events = getEventListFromFirebase();
+		events.forEach(x -> {
+			if (profiles.containsKey(x.authorId)) {
+				profiles.get(x.authorId).addEvent(x);
+			}
+		});
+		profiles.entrySet().stream().forEach(x -> {
+			x.getValue().calculateEventPercentages();
+		});
+		return profiles;
+	}
 
 	public static List<User> getUserListFromFirebase() throws FirebaseException, UnsupportedEncodingException {
 		List<User> toReturn = new ArrayList<>();
@@ -45,7 +62,7 @@ public class FirebaseHelper {
 		return new User(x.getKey(), username);
 	}
 
-	public static List<Event> getEventListFromFirebase() throws FirebaseException, UnsupportedEncodingException {
+	private static List<Event> getEventListFromFirebase() throws FirebaseException, UnsupportedEncodingException {
 		List<Event> toReturn = new ArrayList<>();
 
 		Firebase firebase = new Firebase(FIREBASE_URL + "/events");
@@ -84,10 +101,10 @@ public class FirebaseHelper {
 		return new Event(x.getKey(), authorId, authorName, category, creationDate, description);
 	}
 
-	public static List<CheckIn> getUserCheckIns(String userId) throws FirebaseException, UnsupportedEncodingException{
+	public static List<CheckIn> getUserCheckIns(String userId) throws FirebaseException, UnsupportedEncodingException {
 		List<CheckIn> toReturn = new ArrayList<>();
 
-		Firebase firebase = new Firebase(FIREBASE_URL + "/locations/"+userId);
+		Firebase firebase = new Firebase(FIREBASE_URL + "/locations/" + userId);
 
 		FirebaseResponse response = firebase.get();
 		response.getBody().entrySet().stream().forEach(x -> {
@@ -108,7 +125,7 @@ public class FirebaseHelper {
 		Double longitude = Double.parseDouble(aux[1].split("=")[1]);
 		String time = aux[2].split("=")[1];
 		time = time.substring(0, time.length() - 1);
-		
+
 		DateFormat df = CheckIn.getDateFormat();
 		return new CheckIn(df.parse(time), new DataPoint(latitude, longitude));
 	}
@@ -140,26 +157,39 @@ public class FirebaseHelper {
 		System.out.println(response.getBody().toString());
 	}
 
-	public static void writeNewFriendsFirebase(List<UserProfile> profiles, int limitProfiles, int limitSuggestions)
-			throws FirebaseException, JacksonUtilityException, UnsupportedEncodingException {
+	public static void writeNewFriendsFirebase(List<UserProfile> profiles, boolean limited, int limitProfiles,
+			int limitSuggestions) throws FirebaseException, JacksonUtilityException, UnsupportedEncodingException {
 
 		deleteFriendsFirebase();
 
 		Firebase firebase = new Firebase(FIREBASE_URL + "/friends");
-		for (UserProfile profile : profiles) {
-			if (limitProfiles > 0) {
-				// "POST firends to /friends
+		if (limited) {
+			for (UserProfile profile : profiles) {
+				if (limitProfiles > 0) {
+					// "POST firends to /friends
+					Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
+					profile.getSimilarities().entrySet().stream()
+							.sorted(Map.Entry.<String, Double>comparingByValue().reversed()).limit(limitSuggestions)
+							.forEach(x -> dataMap.put(x.getKey(), x.getValue()));
+
+					FirebaseResponse response = firebase.put("user" + profile.userId, dataMap);
+					System.out.println("\n\nResult of PUT friends:\n" + response.getRawBody().toString());
+					System.out.println("\n");
+					limitProfiles--;
+				} else {
+					break;
+				}
+			}
+		} else {
+			for (UserProfile profile : profiles) {
 				Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
 				profile.getSimilarities().entrySet().stream()
-						.sorted(Map.Entry.<String, Double>comparingByValue().reversed()).limit(limitSuggestions)
+						.sorted(Map.Entry.<String, Double>comparingByValue().reversed())
 						.forEach(x -> dataMap.put(x.getKey(), x.getValue()));
 
 				FirebaseResponse response = firebase.put("user" + profile.userId, dataMap);
 				System.out.println("\n\nResult of PUT friends:\n" + response.getRawBody().toString());
 				System.out.println("\n");
-				limitProfiles--;
-			} else {
-				break;
 			}
 		}
 

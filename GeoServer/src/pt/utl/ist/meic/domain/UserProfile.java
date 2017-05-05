@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import pt.utl.ist.meic.firebase.Event;
-import pt.utl.ist.meic.firebase.EventCategory;
+import pt.utl.ist.meic.firebase.models.Event;
+import pt.utl.ist.meic.firebase.models.EventCategory;
 
 import java.util.Optional;
 
