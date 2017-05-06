@@ -1,0 +1,7 @@
+6.8km
+LOCATION_INTERVAL = 5 * 1000;//5 secs
+LOCATION_DISTANCE = 250f;//meters
+_____________________________________________
+
+BAD - 1059991 bytes = 1.01088619232178 Megabytes
+GOOD - 883673 bytes = 0.84273624420166 Megabytes
