@@ -23,10 +23,15 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.parceler.Parcels;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.R;
@@ -42,7 +47,7 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
 
     private static final String EVENTS_LOCATIONS_REF = "/eventsLocations";
 
-    private final Context mContext;
+    private Context mContext;
     private DatabaseReference mDatabaseReference;
     private ChildEventListener mChildEventListener;
 
@@ -84,7 +89,7 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
                         // Update RecyclerView
                         mEventsMap.put(eventKey,v);
                         mValues.add(v);
-                        notifyDataSetChanged();
+                        updateUI();
                     }
 
                     @Override
@@ -140,19 +145,12 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d(TAG, "onChildMoved:" + dataSnapshot.getKey());
-
-                // A comment has changed position, use the key to determine if we are
-                // displaying this comment and if so move it.
-                Event movedEvent = dataSnapshot.getValue(Event.class);
-                String eventKey = dataSnapshot.getKey();
-
-                Toast.makeText(mContext, "Event Moved -> "+movedEvent.toString(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.w(TAG, "postComments:onCancelled", databaseError.toException());
-                Toast.makeText(mContext, "Failed to load comments.",
+                Log.w(TAG, "onCancelled", databaseError.toException());
+                Toast.makeText(mContext, "Failed to load My Events.",
                         Toast.LENGTH_SHORT).show();
             }
         };
@@ -165,6 +163,24 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
         // Store reference to listener so it can be removed on app stop
         mChildEventListener = childEventListener;
 
+    }
+
+    private void updateUI(){
+        Log.d("zzz","size inicio "+mValues.size());
+        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        Collections.sort(mValues,(x, y)->{
+            try {
+                Date date1 = df.parse(x.creationDate);
+                Date date2 = df.parse(y.creationDate);
+                //*(-1) so that newer events come first
+                return -1*date1.compareTo(date2);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return 0; //never happens :)
+        });
+        notifyDataSetChanged();
+        Log.d("zzz","size fim "+mValues.size());
     }
 
     public void removeValue(int position){
