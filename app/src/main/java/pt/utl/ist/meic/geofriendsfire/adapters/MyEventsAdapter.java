@@ -166,7 +166,6 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
     }
 
     private void updateUI(){
-        Log.d("zzz","size inicio "+mValues.size());
         SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         Collections.sort(mValues,(x, y)->{
             try {
@@ -180,7 +179,6 @@ public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.ViewHo
             return 0; //never happens :)
         });
         notifyDataSetChanged();
-        Log.d("zzz","size fim "+mValues.size());
     }
 
     public void removeValue(int position){

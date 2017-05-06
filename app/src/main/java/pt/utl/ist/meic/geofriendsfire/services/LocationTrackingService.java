@@ -12,22 +12,17 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -39,8 +34,6 @@ import java.util.Map;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 import pt.utl.ist.meic.geofriendsfire.events.NewLocationEvent;
-
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class LocationTrackingService extends Service {
     private static final String TAG = "ooo";
@@ -200,13 +193,12 @@ public class LocationTrackingService extends Service {
 
         if (isGpsEnabled) {
             mLastKnowLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            Log.d("ggg","Got Location from GPS " + mLastKnowLocation.toString());
+            Log.d("ggg", "Got Location from GPS " + mLastKnowLocation.toString());
 
         } else if (isNetworkEnabled) {
             mLastKnowLocation = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            Log.d("ggg","Got Location from net " + mLastKnowLocation.toString());
-        }
-        else{
+            Log.d("ggg", "Got Location from net " + mLastKnowLocation.toString());
+        } else {
             showSettingsAlert();
         }
 
@@ -263,8 +255,8 @@ public class LocationTrackingService extends Service {
 
     public void setMockedLocation(Location mocked) {
         if (mLastKnowLocation == null ||
-                mocked.getLatitude() != mLastKnowLocation.getLatitude() ||
-                mocked.getLongitude() != mLastKnowLocation.getLongitude()) {
+                mLastKnowLocation.getLatitude() != mocked.getLatitude() ||
+                mLastKnowLocation.getLongitude() != mocked.getLongitude()) {
             this.mLastKnowLocation = mocked;
             EventBus.getDefault().post(new NewLocationEvent(mocked));
         }
@@ -284,16 +276,40 @@ public class LocationTrackingService extends Service {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            mockedLatitudes = new ArrayList<Double>(){{
-                add(38.7022d);add(38.6997d);add(38.6972d);add(38.6954d);add(38.6956d);
-                add(38.6957d);add(38.6930d);add(38.6909d);add(38.6902d);add(38.6926d);
-                add(38.6959d);add(38.6994d);add(38.7037d);add(38.7033d);add(38.7072d);
+            mockedLatitudes = new ArrayList<Double>() {{
+                add(38.7022d);
+                add(38.6997d);
+                add(38.6972d);
+                add(38.6954d);
+                add(38.6956d);
+                add(38.6957d);
+                add(38.6930d);
+                add(38.6909d);
+                add(38.6902d);
+                add(38.6926d);
+                add(38.6959d);
+                add(38.6994d);
+                add(38.7037d);
+                add(38.7033d);
+                add(38.7072d);
 
             }};
-            mockedLongitudes = new ArrayList<Double>(){{
-                add(-9.4757d);add(-9.4678d);add(-9.4626d);add(-9.4577d);add(-9.4494d);
-                add(-9.4428d);add(-9.4343d);add(-9.4292d);add(-9.4249d);add(-9.4208d);
-                add(-9.4201d);add(-9.4178d);add(-9.4067d);add(-9.3988d);add(-9.3967d);
+            mockedLongitudes = new ArrayList<Double>() {{
+                add(-9.4757d);
+                add(-9.4678d);
+                add(-9.4626d);
+                add(-9.4577d);
+                add(-9.4494d);
+                add(-9.4428d);
+                add(-9.4343d);
+                add(-9.4292d);
+                add(-9.4249d);
+                add(-9.4208d);
+                add(-9.4201d);
+                add(-9.4178d);
+                add(-9.4067d);
+                add(-9.3988d);
+                add(-9.3967d);
             }};
         }
 

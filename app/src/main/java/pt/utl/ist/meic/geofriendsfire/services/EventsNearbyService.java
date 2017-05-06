@@ -1,6 +1,5 @@
 package pt.utl.ist.meic.geofriendsfire.services;
 
-import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Intent;
 import android.location.Location;
@@ -28,8 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
-import pt.utl.ist.meic.geofriendsfire.events.NewNearbyEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewLocationEvent;
+import pt.utl.ist.meic.geofriendsfire.events.NewNearbyEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewResidentDomainEvent;
 import pt.utl.ist.meic.geofriendsfire.events.NewSettingsEvent;
 import pt.utl.ist.meic.geofriendsfire.models.Event;
@@ -66,28 +65,25 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
 
     @Override
     public void onKeyEntered(final String key, final GeoLocation location) {
-        if (this.mValues.size() < mWorkload && mCurrentRadius < mFurthest) {
-            // New Event nearby
-            FirebaseDatabase.getInstance().getReference(EVENTS_REF).child(key).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Event v = dataSnapshot.getValue(Event.class);
-                    v.latitude = location.latitude;
-                    v.longitude = location.longitude;
-                    v.setRef(key);
-                    Log.d("ttt","add event "+v);
-                    mValues.add(v);
-                    mEventsMap.put(key, v);
-                    EventBus.getDefault().post(new NewNearbyEvent(v));
-                }
+        // New Event nearby
+        FirebaseDatabase.getInstance().getReference(EVENTS_REF).child(key).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Event v = dataSnapshot.getValue(Event.class);
+                v.latitude = location.latitude;
+                v.longitude = location.longitude;
+                v.setRef(key);
+                Log.d("ttt", "add event " + v);
+                mValues.add(v);
+                mEventsMap.put(key, v);
+                EventBus.getDefault().post(new NewNearbyEvent(v));
+            }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Log.e("ena", databaseError.toString());
-                }
-            });
-
-        }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.e("ena", databaseError.toString());
+            }
+        });
     }
 
     @Override
@@ -118,27 +114,15 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
             geoQuery.setRadius(mCurrentRadius);
         } else {
             Log.d("ttt", "ja pssou algum maximo com Current radius -> " + mCurrentRadius
-                    +" // "+mValues.size()+" tamanho" );
+                    + " // " + mValues.size() + " tamanho");
             //ja tem os events maximos ou ja passou do furthest limit
-            cleanupListener();
             calculateResidentialDomainLimits();
-            startMonitoringCurrentLocation();
-        }
-    }
-
-    private void startMonitoringCurrentLocation() {
-        Log.d("ttt", "startMonitoringCurrentLocation");
-        monitoring = true;
-    }
-
-    private void debugResiDomain(){
-        for(Map.Entry<String,Double> entry : residentialDomainLimits.entrySet()){
-            Log.d("ttt","entry -> "+entry.getKey()+" // "+entry.getValue());
+            monitoring = true;
         }
     }
 
     public boolean isOutside(Location location) {
-        if(residentialDomainLimits.isEmpty()){
+        if (residentialDomainLimits.isEmpty()) {
             calculateResidentialDomainLimits();
         }
 
@@ -153,12 +137,11 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
                 .getLastKnownLocation(), mCurrentRadius);
 
         EventBus.getDefault().post(new NewResidentDomainEvent(residentialDomainLimits));
-        debugResiDomain();
     }
 
     @Override
     public void onGeoQueryError(DatabaseError error) {
-        Toast.makeText(this, "ERROR "+error.getMessage(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "ERROR " + error.getMessage(), Toast.LENGTH_SHORT).show();
     }
 
 
@@ -179,7 +162,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
         Location lastKnowLocation =
                 MyApplicationContext.getLocationsServiceInstance().getLastKnownLocation();
         if (lastKnowLocation != null) {
-            Log.d("ttt","criei listeners geofire");
+            Log.d("zzz", "criei listeners geofire");
             this.mCurrentLocation = new GeoLocation(lastKnowLocation.getLatitude(), lastKnowLocation.getLongitude());
 
             this.geoQuery = new GeoFire(FirebaseDatabase.getInstance().getReference(EVENTS_LOCATIONS_REF))
@@ -190,13 +173,13 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     }
 
     public void cleanupListener() {
-        Log.d("ttt","cleanupListener");
+        Log.d("ttt", "cleanupListener");
         if (geoQuery != null) {
             geoQuery.removeAllListeners();
         }
     }
 
-    public void initVars(){
+    public void initVars() {
         monitoring = false;
         mEventsMap = new HashMap<>();
         mValues = new ArrayList<>();
@@ -207,7 +190,7 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
         mWorkload = MyApplicationContext.getInstance().getMaximumWorkLoad();
     }
 
-    public void restartVars(){
+    public void restartVars() {
         cleanupListener();
         monitoring = false;
         mEventsMap.clear();
@@ -218,9 +201,13 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
         mWorkload = MyApplicationContext.getInstance().getMaximumWorkLoad();
     }
 
-    public List<Event> getValues(){ return this.mValues;}
+    public List<Event> getValues() {
+        return this.mValues;
+    }
 
-    public Map<String,Double> getResidentialDomainLimits(){return residentialDomainLimits;}
+    public Map<String, Double> getResidentialDomainLimits() {
+        return residentialDomainLimits;
+    }
 
     @Override
     public void onCreate() {
@@ -244,15 +231,15 @@ public class EventsNearbyService extends Service implements GeoQueryEventListene
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(NewSettingsEvent event) {
-        Log.d("yyy","service restarting due to new setts");
+        Log.d("yyy", "service restarting due to new setts");
         this.restartListener();
     }
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(NewLocationEvent event) {
-        Log.d("yyy","service nearbyEvents new Location");
-        if(monitoring && isOutside(event.getLocation())){
+        Log.d("yyy", "service nearbyEvents new Location");
+        if (monitoring && isOutside(event.getLocation())) {
             residentialDomainLimits.clear();
             this.restartListener();
         }

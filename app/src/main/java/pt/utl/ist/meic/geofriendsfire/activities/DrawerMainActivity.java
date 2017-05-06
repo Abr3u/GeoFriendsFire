@@ -363,6 +363,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CREATE_EVENT_REQ_CODE) {
             if (resultCode == RESULT_OK) {
+                Log.d("zzz","result OK");
                 MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
                 //DrawerMainActivity.this.setupViewPagerEvents();
             }

@@ -31,10 +31,6 @@ import pt.utl.ist.meic.geofriendsfire.utils.Utils;
 
 public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapter.ViewHolder> {
 
-    private static final String EVENTS_LOCATIONS_REF = "/eventsLocations";
-    private static final String EVENTS_REF = "/events";
-    private static final double MIN_RADIUS = 0.1;
-
     private final Context mContext;
     private final TypedValue mTypedValue = new TypedValue();
     private int mBackground;
@@ -56,9 +52,13 @@ public class EventsNearbyAdapter extends RecyclerView.Adapter<EventsNearbyAdapte
     }
 
     public void removeItem(Event toDelete) {
-        Log.d("yyy", "evntsNearbyAdapter remove " + toDelete);
-        mValues.remove(toDelete);
-        notifyDataSetChanged();
+        if(mValues.contains(toDelete)){
+            mValues.remove(toDelete);
+            notifyDataSetChanged();
+        }
+        if(mValues.size() < MyApplicationContext.getInstance().getMaximumWorkLoad()){
+            MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
+        }
     }
 
     @Override

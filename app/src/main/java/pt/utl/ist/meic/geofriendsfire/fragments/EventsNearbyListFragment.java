@@ -54,7 +54,7 @@ public class EventsNearbyListFragment extends BaseFragment {
         View view = inflater.inflate(R.layout.fragment_event_list, container, false);
         ButterKnife.bind(this, view);
         super.setNetworkDetectorHolder(networkDetectorHolder);
-        Log.d("ttt", "oncreateview");
+        Log.d("zzz", "oncreateview");
         mAdapter = new EventsNearbyAdapter(getContext());
         populateSavedEvents();
         setupRecyclerView();
@@ -88,24 +88,6 @@ public class EventsNearbyListFragment extends BaseFragment {
         recyclerView.setAdapter(mAdapter);
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        Log.d("ttt","onsave");
-        outState.putParcelable(PARCEL_VALUES, Parcels.wrap(mAdapter.getValues()));
-    }
-
-    @Override
-    public void onViewStateRestored(Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        if(savedInstanceState != null){
-            Log.d("ttt","onRestore");
-            mAdapter.setValues(Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_VALUES)));
-        }else{
-            Log.d("ttt","onRestore era null");
-        }
-    }
-
 
     //
     // EventBus
@@ -115,15 +97,12 @@ public class EventsNearbyListFragment extends BaseFragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(NewDeletedEvent event) {
         mAdapter.removeItem(event.getDeleted());
-        if(mAdapter.getItemCount() < MyApplicationContext.getInstance().getMaximumWorkLoad()){
-            MyApplicationContext.getEventsNearbyServiceInstance().restartListener();
-        }
     }
 
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(NewNearbyEvent event) {
-        Log.d("yyy","list recebi novo "+event);
+        Log.d("zzz","nearbylist recebi novo "+event);
         mAdapter.addItem(event.getNearby());
     }
 }

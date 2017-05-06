@@ -43,6 +43,8 @@ async task para emular trajectoria done!
 straight forward approach done!
 se nao tiver GPS no inicio, done!
 signOut done!
+sorted myEvents done!
+syncronize events while monitoring resiDomain done!
 
 _________________________________________________
 no GPS hack to get location
@@ -53,9 +55,7 @@ get location from public IP -> freegeoip.net/json/176.78.76.198
 
 ______________________________________________________________
 Tomorrow:
-rever o deleted event - cleanup listeners
-serviceNearbyBAD - mudar location e raio da geoQuery em vez de restart
-perfis de utilização de bateria para o location teacking service.
+perfis de utilização de bateria para o location tracking service.
 alterar os minDistance e minTime thresholds quando tem menos de X bateria.
 
 
