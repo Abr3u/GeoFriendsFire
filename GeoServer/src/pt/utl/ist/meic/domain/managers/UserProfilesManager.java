@@ -32,8 +32,7 @@ public class UserProfilesManager {
 				e.printStackTrace();
 			}
 		}else{
-			Set<String> idList = fileManager.getNyNyIdListFromFile();
-			createUserProfilesGowalla(idList);
+			id_userProfile = createUserProfilesGowalla();
 		}
 		
 		return id_userProfile;
@@ -53,9 +52,10 @@ public class UserProfilesManager {
 		return id_userProfile;
 	}
 	
-	private Map<String,UserProfile> createUserProfilesGowalla(Set<String> ids) {
+	private Map<String,UserProfile> createUserProfilesGowalla() {
 		Map<String,UserProfile> id_userProfile = new HashMap<String, UserProfile>();
-		for (String id : ids) {
+		Set<String> idList = fileManager.getNyNyIdListFromFile();
+		for (String id : idList) {
 			UserProfile profile = new UserProfile(id);
 			id_userProfile.put(id, profile);
 		}

@@ -45,6 +45,7 @@ se nao tiver GPS no inicio, done!
 signOut done!
 sorted myEvents done!
 syncronize events while monitoring resiDomain done!
+cosine similarity for collab filtering - actScore + eventSimilarity
 
 _________________________________________________
 no GPS hack to get location
@@ -63,6 +64,7 @@ APP
 evaluate scalability
 
 SERVER
+level está a dar exactamente o mesmo......
 schedule computation OR enough new data
 factores extra - popularidade, hierarquia;
 convert external projects into jar dependency!

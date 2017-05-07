@@ -19,20 +19,15 @@ public class SimilarityManager {
 
 	private Map<String, UserProfile> id_userProfile;
 	private int level;
-	private int COMPARING_DISTANCE_THRESHOLD;
-	private int MATCHING_MAX_SEQ_LENGTH;
-	private long TRANSITION_TIME_THRESHOLD;
 	private double SEQ_SCORE_WEIGHT;
 	private double ACT_SCORE_WEIGHT;
+	private boolean COSINE;
 
-	public SimilarityManager(Map<String, UserProfile> id_userProfile, int level, int COMPARING_DISTANCE_THRESHOLD,
-			int MATCHING_MAX_SEQ_LENGTH, long TRANSITION_TIME_THRESHOLD, double SEQ_SCORE_WEIGHT,
-			double ACT_SCORE_WEIGHT) {
+	public SimilarityManager(Map<String, UserProfile> id_userProfile, boolean cosine, int level,
+			double SEQ_SCORE_WEIGHT, double ACT_SCORE_WEIGHT) {
 		this.id_userProfile = id_userProfile;
+		this.COSINE = cosine;
 		this.level = level;
-		this.COMPARING_DISTANCE_THRESHOLD = COMPARING_DISTANCE_THRESHOLD;
-		this.MATCHING_MAX_SEQ_LENGTH = MATCHING_MAX_SEQ_LENGTH;
-		this.TRANSITION_TIME_THRESHOLD = TRANSITION_TIME_THRESHOLD;
 		this.SEQ_SCORE_WEIGHT = SEQ_SCORE_WEIGHT;
 		this.ACT_SCORE_WEIGHT = ACT_SCORE_WEIGHT;
 	}
@@ -51,44 +46,63 @@ public class SimilarityManager {
 		}
 		return id_userProfile;
 	}
-	
+
 	private double collaborativeFilteringEventPercentage(Map<EventCategory, Double> map1,
 			Map<EventCategory, Double> map2) {
-		double score = 0d;
-		// somar diferencas
-		for (Map.Entry<EventCategory, Double> entry : map1.entrySet()) {
-			if (map2.containsKey(entry.getKey())) {
-				double aux = map2.get(entry.getKey());
-				score += Math.abs(aux - entry.getValue());
+
+		if (COSINE) {
+			List<Double> eventsA = map1.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(x -> x.getValue())
+					.collect(Collectors.toList());
+
+			List<Double> eventsB = map2.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(x -> x.getValue())
+					.collect(Collectors.toList());
+
+			double dotProduct = dotProduct(eventsA, eventsB);
+			double magnitudeA = magnitude(eventsA);
+			double magnitudeB = magnitude(eventsB);
+			return dotProduct / (magnitudeA * magnitudeB);
+		} else {
+			double score = 0d;
+			// somar diferencas
+			for (Map.Entry<EventCategory, Double> entry : map1.entrySet()) {
+				if (map2.containsKey(entry.getKey())) {
+					double aux = map2.get(entry.getKey());
+					score += Math.abs(aux - entry.getValue());
+				}
 			}
+			// passar de range [0-2] para [0-1]
+			score = normalizeScoreToNewLimits(score, 0, 2, 0, 1);
+			// passar para prct de igualdade
+			score = 1 - score;
+			return score;
 		}
-		// passar de range [0-2] para [0-1]
-		score = normalizeScoreToNewLimits(score, 0, 2, 0, 1);
-		// passar para prct de igualdade
-		score = 1 - score;
-		return score;
 	}
-	
-	public Map<String, UserProfile> calculateSimilaritiesFromLocations() {
+
+	public Map<String, UserProfile> calculateSimilaritiesFromLocations(int COMPARING_DISTANCE_THRESHOLD,
+			int MATCHING_MAX_SEQ_LENGTH, long TRANSITION_TIME_THRESHOLD) {
 		List<UserProfile> usersProfiles = new ArrayList<>(id_userProfile.values());
 
-		// calculate seqScore for each user pair
-		for (int i = 0; i < usersProfiles.size(); i++) {
-			for (int j = 0; j < usersProfiles.size(); j++) {
-				if (i != j && j > i) {
-					UserProfile p1 = usersProfiles.get(i);
-					UserProfile p2 = usersProfiles.get(j);
-					if (usersCloseEnough(p1.getGraphByLevel(level), p2.getGraphByLevel(level))) {
-						double seqScore = getUserSimilaritySequences(p1, p2, level);
-						p1.addSimilarityScore(p2.userId, seqScore);
-						p2.addSimilarityScore(p1.userId, seqScore);
+		if (this.SEQ_SCORE_WEIGHT > 0) {
+			// calculate seqScore for each user pair
+			for (int i = 0; i < usersProfiles.size(); i++) {
+				for (int j = 0; j < usersProfiles.size(); j++) {
+					if (i != j && j > i) {
+						UserProfile p1 = usersProfiles.get(i);
+						UserProfile p2 = usersProfiles.get(j);
+						if (usersCloseEnough(p1.getGraphByLevel(level), p2.getGraphByLevel(level),
+								COMPARING_DISTANCE_THRESHOLD)) {
+							double seqScore = getUserSimilaritySequences(p1, p2, level, MATCHING_MAX_SEQ_LENGTH,
+									TRANSITION_TIME_THRESHOLD);
+							p1.addSimilarityScore(p2.userId, seqScore);
+							p2.addSimilarityScore(p1.userId, seqScore);
+						}
 					}
 				}
 			}
-		}
-		// tranform seqScore [0-1]
-		for (UserProfile profile : usersProfiles) {
-			profile.normalizeSimilarityScores();
+			// tranform seqScore [0-1]
+			for (UserProfile profile : usersProfiles) {
+				profile.normalizeSimilarityScores();
+			}
 		}
 		// take into account activity Score
 		for (int i = 0; i < usersProfiles.size(); i++) {
@@ -113,7 +127,7 @@ public class SimilarityManager {
 		return id_userProfile;
 	}
 
-	private boolean usersCloseEnough(Graph g1, Graph g2) {
+	private boolean usersCloseEnough(Graph g1, Graph g2, int COMPARING_DISTANCE_THRESHOLD) {
 		return distanceBetween(g1.mCluster.getmean().get(0), g2.mCluster.getmean().get(0), g1.mCluster.getmean().get(1),
 				g2.mCluster.getmean().get(1)) < COMPARING_DISTANCE_THRESHOLD;
 	}
@@ -137,7 +151,8 @@ public class SimilarityManager {
 	// [START SEQUENCE MATCHING]
 	//
 
-	private double getUserSimilaritySequences(UserProfile profileA, UserProfile profileB, int level) {
+	private double getUserSimilaritySequences(UserProfile profileA, UserProfile profileB, int level,
+			int MATCHING_MAX_SEQ_LENGTH, long TRANSITION_TIME_THRESHOLD) {
 		if (!profileA.userId.equals(profileB.userId)) {
 			Graph graphA = profileA.getGraphByLevel(level);
 			Graph graphB = profileB.getGraphByLevel(level);
@@ -163,7 +178,7 @@ public class SimilarityManager {
 	}
 
 	// returns set of maximum length similar sequences
-	private static Set<Sequence> sequenceMatching(Sequence seqA, Sequence seqB, int matchingMaxSeqLength,
+	private Set<Sequence> sequenceMatching(Sequence seqA, Sequence seqB, int matchingMaxSeqLength,
 			long transitionTimeThreshold) {
 
 		int step = 1;
@@ -197,7 +212,7 @@ public class SimilarityManager {
 
 	}
 
-	private static Set<SequenceAuxiliar> add1LengthSequences(Sequence a, Sequence b) {
+	private Set<SequenceAuxiliar> add1LengthSequences(Sequence a, Sequence b) {
 		Set<SequenceAuxiliar> toReturn = new HashSet<SequenceAuxiliar>();
 
 		for (int i = 0; i < a.getClusters().size(); i++) {
@@ -215,7 +230,7 @@ public class SimilarityManager {
 		return toReturn;
 	}
 
-	private static Set<SequenceAuxiliar> pruneSequences(Set<SequenceAuxiliar> sequenceSet) {
+	private Set<SequenceAuxiliar> pruneSequences(Set<SequenceAuxiliar> sequenceSet) {
 		if (sequenceSet.size() > 0) {
 			int maxLength = sequenceSet.iterator().next().mVertexes.size();
 			for (SequenceAuxiliar seq : sequenceSet) {
@@ -227,7 +242,7 @@ public class SimilarityManager {
 		return sequenceSet;
 	}
 
-	private static Set<SequenceAuxiliar> extendSequence(Set<SequenceAuxiliar> set, SequenceAuxiliar seq,
+	private Set<SequenceAuxiliar> extendSequence(Set<SequenceAuxiliar> set, SequenceAuxiliar seq,
 			long transitionTimeThreshold, Sequence a, Sequence b) {
 
 		Set<SequenceAuxiliar> toReturn = new HashSet<SequenceAuxiliar>();
@@ -317,11 +332,11 @@ public class SimilarityManager {
 
 	}
 
-	private static boolean shareIndexes(AuxiliarVertex v1, AuxiliarVertex v2) {
+	private boolean shareIndexes(AuxiliarVertex v1, AuxiliarVertex v2) {
 		return v1.index1 == v2.index1 || v1.index2 == v2.index2;
 	}
 
-	private static boolean consequentIndexes(AuxiliarVertex v1, AuxiliarVertex v2) {
+	private boolean consequentIndexes(AuxiliarVertex v1, AuxiliarVertex v2) {
 		return v1.index1 <= v2.index1 && v1.index2 <= v2.index2;
 	}
 
@@ -343,27 +358,51 @@ public class SimilarityManager {
 		return 0;
 	}
 
-	private static double collaborativeFilteringClusterPercentage(Graph graphA, Graph graphB) {
-		double score = 0;
-
+	private double collaborativeFilteringClusterPercentage(Graph graphA, Graph graphB) {
 		Map<Integer, Double> percentageA = graphA.cluster_percentage;
 		Map<Integer, Double> percentageB = graphB.cluster_percentage;
 
-		// somar diferencas
-		for (Map.Entry<Integer, Double> entry : percentageA.entrySet()) {
-			if (percentageB.containsKey(entry.getKey())) {
-				double aux = percentageB.get(entry.getKey());
-				score += Math.abs(aux - entry.getValue());
+		if (COSINE) {
+			List<Double> actA = percentageA.entrySet().stream().sorted(Map.Entry.comparingByKey())
+					.map(x -> x.getValue()).collect(Collectors.toList());
+
+			List<Double> actB = percentageB.entrySet().stream().sorted(Map.Entry.comparingByKey())
+					.map(x -> x.getValue()).collect(Collectors.toList());
+
+			double dotProduct = dotProduct(actA, actB);
+			double magnitudeA = magnitude(actA);
+			double magnitudeB = magnitude(actB);
+			return dotProduct / (magnitudeA * magnitudeB);
+		} else {
+			double score = 0;
+			// somar diferencas
+			for (Map.Entry<Integer, Double> entry : percentageA.entrySet()) {
+				if (percentageB.containsKey(entry.getKey())) {
+					double aux = percentageB.get(entry.getKey());
+					score += Math.abs(aux - entry.getValue());
+				}
 			}
+			// passar de range [0-2] para [0-1]
+			score = normalizeScoreToNewLimits(score, 0, 2, 0, 1);
+			// passar para prct de igualdade
+			score = 1 - score;
+			return score;
 		}
-		// passar de range [0-2] para [0-1]
-		score = normalizeScoreToNewLimits(score, 0, 2, 0, 1);
-		// passar para prct de igualdade
-		score = 1 - score;
-		return score;
 	}
 
-	private static double normalizeScoreToNewLimits(double score, int oldMin, int oldMax, int newMin, int newMax) {
+	private double dotProduct(List<Double> x, List<Double> y) {
+		double dotProduct = 0;
+		for (int i = 0; i < x.size(); i++) {
+			dotProduct += (x.get(i) * y.get(i));
+		}
+		return dotProduct;
+	}
+
+	private double magnitude(List<Double> x) {
+		return Math.sqrt(dotProduct(x, x));
+	}
+
+	private double normalizeScoreToNewLimits(double score, int oldMin, int oldMax, int newMin, int newMax) {
 		if (score > 0) {
 			return ((score - oldMin) / (oldMax - oldMin)) * (newMax - newMin) + newMin;
 		} else {

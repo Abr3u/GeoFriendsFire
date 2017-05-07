@@ -53,6 +53,7 @@ public class GeoServer {
 	private static final double ACT_SCORE_WEIGHT = 0.75;
 	private static final double SEQ_SCORE_WEIGHT = 0.25;
 	private static final double SIMILARITY_THRESHOLD = 0.2;
+	private static final boolean COSINE_MEASURE = true;
 
 	// workflow flags
 	private static final boolean FIREBASE = false;
@@ -62,6 +63,12 @@ public class GeoServer {
 	private static long mTotalCheckIns = 130425;// newYork CI's
 
 	public static void main(String[] args) {
+		long initTime = System.currentTimeMillis();
+
+		System.out.println("Firebase " + FIREBASE + " // Clustering " + CLUSTERING_WORKFLOW + " // eventSimilarity "
+				+ EVENT_SIMILARITY_WORKFLOW);
+		System.out.println("actScore " + ACT_SCORE_WEIGHT + " // seqScore " + SEQ_SCORE_WEIGHT+" // cosine "+COSINE_MEASURE);
+		System.out.println("level " + LEVEL + " // threshold " + SIMILARITY_THRESHOLD);
 
 		FileManager mFileManager = new FileManager();
 		Map<String, UserProfile> id_userProfile = new HashMap<>();
@@ -90,8 +97,7 @@ public class GeoServer {
 		if (EVENT_SIMILARITY_WORKFLOW) {
 			try {
 				id_userProfile = FirebaseHelper.populateUserEventsFromFirebase(id_userProfile);
-				SimilarityManager similarityManager = new SimilarityManager(id_userProfile, LEVEL,
-						COMPARING_DISTANCE_THRESHOLD, MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD,
+				SimilarityManager similarityManager = new SimilarityManager(id_userProfile, COSINE_MEASURE, LEVEL,
 						SEQ_SCORE_WEIGHT, ACT_SCORE_WEIGHT);
 				id_userProfile = similarityManager.calculateSimilaritiesFromEvents();
 			} catch (FirebaseException | UnsupportedEncodingException e) {
@@ -102,27 +108,49 @@ public class GeoServer {
 					FIREBASE, LEVEL, NUM_CLUSTERS);
 			id_userProfile = checkInsManager.populateUsersCheckIns();
 
-			SimilarityManager similarityManager = new SimilarityManager(id_userProfile, LEVEL,
-					COMPARING_DISTANCE_THRESHOLD, MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD, SEQ_SCORE_WEIGHT,
-					ACT_SCORE_WEIGHT);
-			id_userProfile = similarityManager.calculateSimilaritiesFromLocations();
+			SimilarityManager similarityManager = new SimilarityManager(id_userProfile, COSINE_MEASURE, LEVEL,
+					SEQ_SCORE_WEIGHT, ACT_SCORE_WEIGHT);
+			id_userProfile = similarityManager.calculateSimilaritiesFromLocations(COMPARING_DISTANCE_THRESHOLD,
+					MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD);
 		}
 
 		int totalUsers = id_userProfile.size();
-		String friendsPath = "friendsOf" + totalUsers + "Users.csv";
-		String foundPath = "foundOf" + totalUsers + "Users.csv";
-		String foundPrctPath = "foundPRCTOf" + totalUsers + "Users.csv";
+		String friendsPath = "level" + LEVEL + "friendsOf" + totalUsers + "Users.csv";
+		String foundPath = "level" + LEVEL + "foundOf" + totalUsers + "Users.csv";
+		String foundPrctPath = "level" + LEVEL + "foundPRCTOf" + totalUsers + "Users.csv";
 		List<UserProfile> profiles = new ArrayList<>(id_userProfile.values());
 
-		//writeResultsFirebase(profiles);
+		// writeResultsFirebase(profiles);
 		writeResultsLocalStorage(mFileManager, profiles, friendsPath, foundPath, foundPrctPath);
 		evaluateResults(mFileManager, friendsPath, foundPath);
 
+		long endTime = System.currentTimeMillis();
+		long time = (endTime - initTime) / 1000 / 60;
+		System.out.println("Took " + time + " minutes");
+
+	}
+
+	private static double dotProduct(List<Double> x, List<Double> y) {
+		double dotProduct = 0;
+		for (int i = 0; i < x.size(); i++) {
+			dotProduct += (x.get(i) * y.get(i));
+		}
+		return dotProduct;
+	}
+
+	private static double magnitude(List<Double> x) {
+		return Math.sqrt(dotProduct(x, x));
 	}
 
 	private static void writeResultsFirebase(List<UserProfile> profiles) {
 		try {
-			FirebaseHelper.writeNewFriendsFirebase(profiles,true, 5, 10);//limited so we dont surpass firebase quotas!!
+			FirebaseHelper.writeNewFriendsFirebase(profiles, true, 5, 10);// limited
+																			// so
+																			// we
+																			// dont
+																			// surpass
+																			// firebase
+																			// quotas!!
 		} catch (FirebaseException | JacksonUtilityException | UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
