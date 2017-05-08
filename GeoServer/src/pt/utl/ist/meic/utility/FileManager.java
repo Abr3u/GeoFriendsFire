@@ -776,8 +776,8 @@ public class FileManager {
 		// System.out.println("PRECISION");
 		// System.out.println("total found "+totalFound);
 		// System.out.println("total suggested "+totalSuggested);
-		double recall = totalFound / totalSuggested;
-		return recall;
+		double precision = totalFound / totalSuggested;
+		return precision;
 	}
 
 	public double calculateRecall(String foundCSV) throws IOException {

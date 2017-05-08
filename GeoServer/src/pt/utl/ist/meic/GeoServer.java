@@ -2,15 +2,10 @@ package pt.utl.ist.meic;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceCosine;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
 import ca.pfv.spmf.algorithms.clustering.kmeans.AlgoKMeans;
@@ -18,20 +13,11 @@ import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
 import ca.pfv.spmf.patterns.cluster.DoubleArray;
 import net.thegreshams.firebase4j.error.FirebaseException;
 import net.thegreshams.firebase4j.error.JacksonUtilityException;
-import pt.utl.ist.meic.domain.AuxiliarVertex;
-import pt.utl.ist.meic.domain.CheckIn;
-import pt.utl.ist.meic.domain.Graph;
-import pt.utl.ist.meic.domain.Sequence;
-import pt.utl.ist.meic.domain.SequenceAuxiliar;
 import pt.utl.ist.meic.domain.UserProfile;
-import pt.utl.ist.meic.domain.VertexInfo;
 import pt.utl.ist.meic.domain.managers.CheckInsManager;
 import pt.utl.ist.meic.domain.managers.SimilarityManager;
 import pt.utl.ist.meic.domain.managers.UserProfilesManager;
 import pt.utl.ist.meic.firebase.FirebaseHelper;
-import pt.utl.ist.meic.firebase.models.Event;
-import pt.utl.ist.meic.firebase.models.EventCategory;
-import pt.utl.ist.meic.firebase.models.User;
 import pt.utl.ist.meic.utility.FileManager;
 
 public class GeoServer {
@@ -52,7 +38,7 @@ public class GeoServer {
 
 	private static final double ACT_SCORE_WEIGHT = 0.75;
 	private static final double SEQ_SCORE_WEIGHT = 0.25;
-	private static final double SIMILARITY_THRESHOLD = 0.2;
+	private static final double SIMILARITY_THRESHOLD = 0.8;
 	private static final boolean COSINE_MEASURE = true;
 
 	// workflow flags
@@ -128,18 +114,6 @@ public class GeoServer {
 		long time = (endTime - initTime) / 1000 / 60;
 		System.out.println("Took " + time + " minutes");
 
-	}
-
-	private static double dotProduct(List<Double> x, List<Double> y) {
-		double dotProduct = 0;
-		for (int i = 0; i < x.size(); i++) {
-			dotProduct += (x.get(i) * y.get(i));
-		}
-		return dotProduct;
-	}
-
-	private static double magnitude(List<Double> x) {
-		return Math.sqrt(dotProduct(x, x));
 	}
 
 	private static void writeResultsFirebase(List<UserProfile> profiles) {

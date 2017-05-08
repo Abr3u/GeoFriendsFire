@@ -45,7 +45,8 @@ se nao tiver GPS no inicio, done!
 signOut done!
 sorted myEvents done!
 syncronize events while monitoring resiDomain done!
-cosine similarity for collab filtering - actScore + eventSimilarity
+cosine similarity for collab filtering done! used in actScore & eventSimilarity
+trasform server dependencies into jar libraries done! -> clustering & firebase4j
 
 _________________________________________________
 no GPS hack to get location
@@ -67,7 +68,6 @@ SERVER
 level está a dar exactamente o mesmo......
 schedule computation OR enough new data
 factores extra - popularidade, hierarquia;
-convert external projects into jar dependency!
 
 ver ndcg
 
