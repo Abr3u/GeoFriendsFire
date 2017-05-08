@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceCosine;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
 import ca.pfv.spmf.algorithms.clustering.kmeans.AlgoKMeans;
@@ -15,6 +18,7 @@ import net.thegreshams.firebase4j.error.FirebaseException;
 import net.thegreshams.firebase4j.error.JacksonUtilityException;
 import pt.utl.ist.meic.domain.UserProfile;
 import pt.utl.ist.meic.domain.managers.CheckInsManager;
+import pt.utl.ist.meic.domain.managers.EvaluationManager;
 import pt.utl.ist.meic.domain.managers.SimilarityManager;
 import pt.utl.ist.meic.domain.managers.UserProfilesManager;
 import pt.utl.ist.meic.firebase.FirebaseHelper;
@@ -36,8 +40,8 @@ public class GeoServer {
 	private static final long TRANSITION_TIME_THRESHOLD = 2 * 60 * 60 * 1000;// 2
 																				// horas
 
-	private static final double ACT_SCORE_WEIGHT = 0.75;
-	private static final double SEQ_SCORE_WEIGHT = 0.25;
+	private static final double ACT_SCORE_WEIGHT = 1.0;
+	private static final double SEQ_SCORE_WEIGHT = 0.0;
 	private static final double SIMILARITY_THRESHOLD = 0.8;
 	private static final boolean COSINE_MEASURE = true;
 
@@ -53,7 +57,8 @@ public class GeoServer {
 
 		System.out.println("Firebase " + FIREBASE + " // Clustering " + CLUSTERING_WORKFLOW + " // eventSimilarity "
 				+ EVENT_SIMILARITY_WORKFLOW);
-		System.out.println("actScore " + ACT_SCORE_WEIGHT + " // seqScore " + SEQ_SCORE_WEIGHT+" // cosine "+COSINE_MEASURE);
+		System.out.println(
+				"actScore " + ACT_SCORE_WEIGHT + " // seqScore " + SEQ_SCORE_WEIGHT + " // cosine " + COSINE_MEASURE);
 		System.out.println("level " + LEVEL + " // threshold " + SIMILARITY_THRESHOLD);
 
 		FileManager mFileManager = new FileManager();
@@ -100,22 +105,21 @@ public class GeoServer {
 					MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD);
 		}
 
-		int totalUsers = id_userProfile.size();
-		String friendsPath = "level" + LEVEL + "friendsOf" + totalUsers + "Users.csv";
-		String foundPath = "level" + LEVEL + "foundOf" + totalUsers + "Users.csv";
-		String foundPrctPath = "level" + LEVEL + "foundPRCTOf" + totalUsers + "Users.csv";
 		List<UserProfile> profiles = new ArrayList<>(id_userProfile.values());
 
 		// writeResultsFirebase(profiles);
-		writeResultsLocalStorage(mFileManager, profiles, friendsPath, foundPath, foundPrctPath);
-		evaluateResults(mFileManager, friendsPath, foundPath);
-
+		//writeResultsLocalStorage(mFileManager, profiles);
+		if(!FIREBASE){
+			EvaluationManager evaluationManager = new EvaluationManager(profiles, SIMILARITY_THRESHOLD);
+			evaluationManager.evaluateResults();
+		}
+		
 		long endTime = System.currentTimeMillis();
 		long time = (endTime - initTime) / 1000 / 60;
 		System.out.println("Took " + time + " minutes");
 
 	}
-
+	
 	private static void writeResultsFirebase(List<UserProfile> profiles) {
 		try {
 			FirebaseHelper.writeNewFriendsFirebase(profiles, true, 5, 10);// limited
@@ -130,8 +134,13 @@ public class GeoServer {
 		}
 	}
 
-	private static void writeResultsLocalStorage(FileManager mFileManager, List<UserProfile> profiles,
-			String friendsPath, String foundPath, String foundPrctPath) {
+	private static void writeResultsLocalStorage(FileManager mFileManager, List<UserProfile> profiles) {
+		
+		int totalUsers = profiles.size();
+		String friendsPath = "level" + LEVEL + "friendsOf" + totalUsers + "Users.csv";
+		String foundPath = "level" + LEVEL + "foundOf" + totalUsers + "Users.csv";
+		String foundPrctPath = "level" + LEVEL + "foundPRCTOf" + totalUsers + "Users.csv";
+		
 		try {
 			mFileManager.createCsvSimilarities(profiles, friendsPath, SIMILARITY_THRESHOLD);
 			mFileManager.createFoundCSV(friendsPath, foundPath);
@@ -140,29 +149,6 @@ public class GeoServer {
 			e.printStackTrace();
 		}
 
-	}
-
-	private static void evaluateResults(FileManager mFileManager, String friendsPath, String foundPath) {
-		try {
-			System.out.println("Precision " + mFileManager.calculatePrecision(friendsPath, foundPath));
-			System.out.println("Recall " + mFileManager.calculateRecall(foundPath));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		// id_userProfile.values().stream().forEach(x -> {
-		// try {
-		// mFileManager.calculateAveragePrecision(x, friendsPath);
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-		// });
-		// System.out.println(
-		// "MAP " +
-		// id_userProfile.values().stream().mapToDouble(UserProfile::getAveragePrecision).sum()
-		// / id_userProfile.values().size());
-		//
 	}
 
 	private static Map<Integer, List<ClusterWithMean>> populateLevelClustersMap() {

@@ -670,6 +670,22 @@ public class FileManager {
 
 	}
 
+	public List<String> getRealFriendsFromGowalla(String username) throws IOException{
+		
+		List<String> realFriends = new ArrayList<>();
+		
+		Reader in = new FileReader(pathNyNyRelevantFriends);
+		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
+		for (CSVRecord record : records) {
+			String key = record.get(0);
+			String value = record.get(1);
+			if (key.equals(username)) {
+				realFriends.add(value);
+			}
+		}
+		return realFriends;
+	}
+	
 	// METRICS
 
 	public void createFoundCSV(String friendsPath, String foundPath) throws IOException {

@@ -57,6 +57,7 @@ public class UserProfilesManager {
 		Set<String> idList = fileManager.getNyNyIdListFromFile();
 		for (String id : idList) {
 			UserProfile profile = new UserProfile(id);
+			profile.loadRealFriendsFromGowalla(fileManager);
 			id_userProfile.put(id, profile);
 		}
 		return id_userProfile;

@@ -63,6 +63,7 @@ alterar os minDistance e minTime thresholds quando tem menos de X bateria.
 
 APP
 evaluate scalability
+geofire java client;
 
 SERVER
 level está a dar exactamente o mesmo......
