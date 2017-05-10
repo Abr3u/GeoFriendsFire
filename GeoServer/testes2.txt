@@ -16,6 +16,7 @@ Recall 0.07415007866475135
 LEVEL 0 + cosine + only actScore (2mins)
 Precision 0.0017937657517276546
 Recall 0.5178192762842876
+MAP 0.004771587724116562
 
 ______________________________________
 finalScore > 0.5

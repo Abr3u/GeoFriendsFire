@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import ca.pfv.spmf.patterns.cluster.Cluster;
 import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
 import net.thegreshams.firebase4j.error.FirebaseException;
 import net.thegreshams.firebase4j.error.JacksonUtilityException;
@@ -26,6 +27,42 @@ import pt.utl.ist.meic.firebase.models.User;
 public class FirebaseHelper {
 
 	private static final String FIREBASE_URL = "https://geofriendsfire.firebaseio.com";
+
+	public static int getStoredLocationsSizeFromFirebase()throws FirebaseException,UnsupportedEncodingException
+	{
+		Firebase firebase = new Firebase(FIREBASE_URL + "/meta");
+
+		FirebaseResponse response = firebase.get();
+		return (int) response.getBody().get("totalLocations");
+	}
+	
+	public static Long getLastUpdatedFromFirebase()throws FirebaseException,UnsupportedEncodingException
+	{
+		Firebase firebase = new Firebase(FIREBASE_URL + "/meta");
+
+		FirebaseResponse response = firebase.get();
+		return Long.parseLong(response.getBody().get("lastUpdated").toString());
+	}
+
+	public static long getCurrentLocationsSizeFromFirebase()
+			throws FirebaseException, UnsupportedEncodingException {
+		List<User> users = getUserListFromFirebase();
+		
+		long totalLocations = 0;
+		for (User u : users) {
+			Firebase firebase;
+			try {
+				firebase = new Firebase(FIREBASE_URL + "/locations/" + u.id);
+				firebase.addQuery("shallow", "true");
+				FirebaseResponse response = firebase.get();
+				int locations = response.getBody().size();
+				totalLocations += locations;
+			} catch (FirebaseException | UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		}
+		return totalLocations;
+	}
 
 	public static Map<String, UserProfile> populateUserEventsFromFirebase(Map<String, UserProfile> profiles)
 			throws UnsupportedEncodingException, FirebaseException {
@@ -130,12 +167,12 @@ public class FirebaseHelper {
 		return new CheckIn(df.parse(time), new DataPoint(latitude, longitude));
 	}
 
-	public static void writeNewClustersFirebase(List<ClusterWithMean> clusters, int level, long totalCheckIns)
+	public static void writeNewClustersFirebaseKMEANS(List<ClusterWithMean> clusters, int level, long totalCheckIns)
 			throws FirebaseException, JacksonUtilityException, UnsupportedEncodingException {
 
-		deleteClustersFirebase(level);
+		deleteClustersFirebaseKMEANS(level);
 
-		Firebase firebase = new Firebase(FIREBASE_URL + "/clusters" + level);
+		Firebase firebase = new Firebase(FIREBASE_URL + "/clustersKMEANS" + level);
 
 		for (int i = 0; i < clusters.size(); i++) {
 			// "PUT cluster to /clusters
@@ -151,9 +188,35 @@ public class FirebaseHelper {
 
 	}
 
-	private static void deleteClustersFirebase(int level) throws FirebaseException, UnsupportedEncodingException {
+	private static void deleteClustersFirebaseKMEANS(int level) throws FirebaseException, UnsupportedEncodingException {
 		Firebase firebase = new Firebase(FIREBASE_URL);
-		FirebaseResponse response = firebase.delete("clusters" + level);
+		FirebaseResponse response = firebase.delete("clustersKMEANS" + level);
+		System.out.println(response.getBody().toString());
+	}
+
+	public static void writeNewClustersFirebaseOPTICS(List<Cluster> clusters, int level, long totalCheckIns)
+			throws FirebaseException, JacksonUtilityException, UnsupportedEncodingException {
+
+		deleteClustersFirebaseOPTICS(level);
+
+		Firebase firebase = new Firebase(FIREBASE_URL + "/clustersOPTICS" + level);
+
+		for (int i = 0; i < clusters.size(); i++) {
+			// "PUT cluster to /clusters
+			Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
+			dataMap.put("size", clusters.get(i).getVectors().size());
+			dataMap.put("sizePerc", new Double(clusters.get(i).getVectors().size()) / totalCheckIns);
+
+			FirebaseResponse response = firebase.put("cluster" + i, dataMap);
+			System.out.println("\n\nResult of PUT cluster:\n" + response.getRawBody().toString());
+			System.out.println("\n");
+		}
+
+	}
+
+	private static void deleteClustersFirebaseOPTICS(int level) throws FirebaseException, UnsupportedEncodingException {
+		Firebase firebase = new Firebase(FIREBASE_URL);
+		FirebaseResponse response = firebase.delete("clustersOPTICS" + level);
 		System.out.println(response.getBody().toString());
 	}
 

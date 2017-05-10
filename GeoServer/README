@@ -66,9 +66,13 @@ evaluate scalability
 geofire java client;
 
 SERVER
-level está a dar exactamente o mesmo......
+hierarchical clustering em vez de Kmeans
 schedule computation OR enough new data
 factores extra - popularidade, hierarquia;
+
+amigos adicionados por sugestao / amigos adicionados por iniciativa propria
+usar collab filtering para sugerir amigos em comum
+level está a dar exactamente o mesmo......
 
 ver ndcg
 

@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,6 +16,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,9 +29,11 @@ import java.util.stream.Stream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
+import net.thegreshams.firebase4j.error.FirebaseException;
 import pt.utl.ist.meic.domain.CheckIn;
 import pt.utl.ist.meic.domain.DataPoint;
 import pt.utl.ist.meic.domain.UserProfile;
+import pt.utl.ist.meic.firebase.FirebaseHelper;
 
 public class FileManager {
 
@@ -55,8 +59,8 @@ public class FileManager {
 
 	private List<CheckIn> userCheckIns;
 
-	//[Begin] userIdsNyNy
-	
+	// [Begin] userIdsNyNy
+
 	public void createUserIdsNyNy() throws IOException {
 		Set<String> userIdsNy = getUserIdsCheckInsNy();
 		System.out.println("Ny " + userIdsNy.size());
@@ -122,19 +126,19 @@ public class FileManager {
 		return toReturn;
 	}
 
-	//[End] userIdsNyNy
-	
-	//[Begin] NyNyRelevantFriends & NyNyRelevantFriendsCount
-	
+	// [End] userIdsNyNy
+
+	// [Begin] NyNyRelevantFriends & NyNyRelevantFriendsCount
+
 	public void createNyNyRelevantFriendsAndCount(Set<String> userIdsNy) throws IOException {
-		//NyNyRelevantFriends.csv
+		// NyNyRelevantFriends.csv
 		Map<String, List<String>> relevant_user_friend = getRelevantFriends(userIdsNy);
 		createNyNyRelevantCSV(relevant_user_friend);
-		
-		//NyNyFriendCount.csv
+
+		// NyNyFriendCount.csv
 		Map<String, Integer> relevant_user_friend_count = countNumberFriends(relevant_user_friend);
 		createFriendCountCSV(relevant_user_friend_count);
-		
+
 	}
 
 	private void createFriendCountCSV(Map<String, Integer> relevant_user_friend_count) {
@@ -170,9 +174,8 @@ public class FileManager {
 	}
 
 	private Map<String, Integer> countNumberFriends(Map<String, List<String>> relevant_user_friend) {
-		Map<String,Integer> relevant_user_friend_count = new HashMap<String,Integer>();
-		relevant_user_friend.entrySet().stream()
-		.forEach(x -> {
+		Map<String, Integer> relevant_user_friend_count = new HashMap<String, Integer>();
+		relevant_user_friend.entrySet().stream().forEach(x -> {
 			relevant_user_friend_count.put(x.getKey(), x.getValue().size());
 		});
 		return relevant_user_friend_count;
@@ -187,7 +190,7 @@ public class FileManager {
 			// Write a new point object to the CSV file
 			for (Map.Entry<String, List<String>> entry : relevant_user_friend.entrySet()) {
 				String user = entry.getKey();
-				for(String s : entry.getValue()){
+				for (String s : entry.getValue()) {
 					fileWriter.append(user);
 					fileWriter.append(DELIMITER);
 					fileWriter.append(s);
@@ -213,7 +216,8 @@ public class FileManager {
 		}
 	}
 
-	private Map<String, List<String>> getRelevantFriends(Set<String> userIdsNy) throws FileNotFoundException, IOException {
+	private Map<String, List<String>> getRelevantFriends(Set<String> userIdsNy)
+			throws FileNotFoundException, IOException {
 		Reader in = new FileReader(pathGowallaFriends);
 
 		Map<String, List<String>> relevant_user_friend = new HashMap<String, List<String>>();
@@ -238,8 +242,8 @@ public class FileManager {
 		return relevant_user_friend;
 	}
 
-	//[End] userIdsNyNy NyNyRelevantFriends & NyNyRelevantFriendsCount
-	
+	// [End] userIdsNyNy NyNyRelevantFriends & NyNyRelevantFriendsCount
+
 	/*
 	 * 
 	 * STABLE
@@ -670,10 +674,10 @@ public class FileManager {
 
 	}
 
-	public List<String> getRealFriendsFromGowalla(String username) throws IOException{
-		
+	public List<String> getRealFriendsFromGowalla(String username) throws IOException {
+
 		List<String> realFriends = new ArrayList<>();
-		
+
 		Reader in = new FileReader(pathNyNyRelevantFriends);
 		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
 		for (CSVRecord record : records) {
@@ -685,7 +689,7 @@ public class FileManager {
 		}
 		return realFriends;
 	}
-	
+
 	// METRICS
 
 	public void createFoundCSV(String friendsPath, String foundPath) throws IOException {
@@ -858,5 +862,32 @@ public class FileManager {
 		}
 	}
 
+	public void createCSVFirebaseLocations(Map<String, UserProfile> id_userProfile, String path)
+			throws FirebaseException, IOException {
+		FileWriter fileWriter = new FileWriter(path);
+		for (UserProfile up : id_userProfile.values()) {
+			List<CheckIn> userCheckIns = FirebaseHelper.getUserCheckIns(up.userId);
+			for (CheckIn ci : userCheckIns) {
+				try {
+					fileWriter.append(String.valueOf(ci.getDataPoint().getLatitude()));
+					fileWriter.append(DELIMITER);
+					fileWriter.append(String.valueOf(ci.getDataPoint().getLongitude()));
+					fileWriter.append(NEW_LINE_SEPARATOR);
+
+				} catch (Exception e) {
+					System.out.println("Error in CsvFileWriter !!!");
+					e.printStackTrace();
+				}
+			}
+		}
+		try {
+			fileWriter.flush();
+			fileWriter.close();
+			System.out.println("created CSV FIREBASE successfully");
+		} catch (IOException e) {
+			System.out.println("Error while flushing/closing fileWriter !!!");
+			e.printStackTrace();
+		}
+	}
 
 }
