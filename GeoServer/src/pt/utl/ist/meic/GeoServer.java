@@ -83,14 +83,6 @@ public class GeoServer {
 		Map<String, UserProfile> id_userProfile = new HashMap<>();
 		Map<Integer, List<ClusterWithMean>> level_clusters_map = new HashMap<>();
 		Map<Integer, List<Cluster>> level_clusters_map_optics = new HashMap<>();
-
-		if(true){
-			try {
-				mFileManager.createNyCheckins();
-			} catch (IOException | ParseException e) {
-			}
-			return;
-		}
 		
 		// cluster based on gowalla data
 		if (CLUSTER_GOWALLA) {
