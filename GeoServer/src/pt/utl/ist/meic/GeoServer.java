@@ -102,7 +102,7 @@ public class GeoServer {
 		if(EVALUATE_SCALABILITY){
 			try {
 				boolean realVersion = true;
-				int trajectorySize = 10;
+				int trajectorySize = 50;
 				String info = "Evaluating ";
 				info += (realVersion) ? "REAL version, " : "BAD version, ";
 				info += "with trajectorySize of "+trajectorySize;
