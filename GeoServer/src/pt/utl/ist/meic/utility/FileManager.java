@@ -40,8 +40,9 @@ public class FileManager {
 	private static final String DELIMITER = ",";
 	private static final String NEW_LINE_SEPARATOR = "\n";
 
-	private static final String pathGlobalCSV = "C:/Users/ricar/Desktop/dataset/Gowalla_totalCheckins.csv";
-	private static final String pathNewYorkCSV = "C:/Users/ricar/Desktop/dataset/newYork.csv";// user
+	private static final String pathGlobalCSV = "C:/Android/GeoFriendsFire/GeoServer/dataset/Gowalla_totalCheckins.csv";
+	private static final String pathNewYorkClusterCSV = "C:/Android/GeoFriendsFire/GeoServer/dataset/newYorkCluster.csv";//checkIns
+	private static final String pathNewYorkCSV = "C:/Android/GeoFriendsFire/GeoServer/dataset/newYork.csv";// user
 																								// e
 																								// datas
 
@@ -370,6 +371,61 @@ public class FileManager {
 
 		}
 		System.out.println("createCSVnewYork --- END");
+
+	}
+	
+	public void createNyCheckinsForClustering() throws IOException, ParseException {
+		// creating newYork.csv from global
+		System.out.println("createNyCheckinsClustering");
+		int checkIncounter = 0;
+		Reader in = new FileReader(pathGlobalCSV);
+		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
+
+		List<DataPoint> list = new ArrayList<DataPoint>();
+
+		for (CSVRecord record : records) {
+			// Filter checkIns outside the range and not belonging to the user
+			Double latitude = Double.parseDouble(record.get(2));
+			Double longitude = Double.parseDouble(record.get(3));
+
+			if (latitude >= LOW_LATI && latitude <= HIGH_LATI && longitude >= LOW_LONGI && longitude <= HIGH_LONGI) {
+				checkIncounter = 0;
+				list.add(new DataPoint(latitude, longitude));
+			}
+		}
+		System.out.println(list.size() + " checkIns");
+		// BEGIN
+
+		FileWriter fileWriter = null;
+
+		try {
+			fileWriter = new FileWriter(pathNewYorkClusterCSV);
+
+			// Write a new point object to the CSV file
+			for (DataPoint point : list) {
+				fileWriter.append(String.valueOf(point.getLatitude()));
+				fileWriter.append(DELIMITER);
+				fileWriter.append(String.valueOf(point.getLongitude()));
+				fileWriter.append(NEW_LINE_SEPARATOR);
+			}
+
+			System.out.println("CSV file was created successfully !!!");
+
+		} catch (Exception e) {
+			System.out.println("Error in CsvFileWriter !!!");
+			e.printStackTrace();
+		} finally {
+
+			try {
+				fileWriter.flush();
+				fileWriter.close();
+			} catch (IOException e) {
+				System.out.println("Error while flushing/closing fileWriter !!!");
+				e.printStackTrace();
+			}
+
+		}
+		System.out.println("createCSVnewYorkClustering --- END");
 
 	}
 

@@ -20,6 +20,7 @@ import net.thegreshams.firebase4j.service.Firebase;
 import pt.utl.ist.meic.domain.CheckIn;
 import pt.utl.ist.meic.domain.DataPoint;
 import pt.utl.ist.meic.domain.UserProfile;
+import pt.utl.ist.meic.firebase.models.EvaluationMetrics;
 import pt.utl.ist.meic.firebase.models.Event;
 import pt.utl.ist.meic.firebase.models.EventCategory;
 import pt.utl.ist.meic.firebase.models.User;
@@ -28,6 +29,37 @@ public class FirebaseHelper {
 
 	private static final String FIREBASE_URL = "https://geofriendsfire.firebaseio.com";
 
+	
+	public static List<EvaluationMetrics> getEvaluationMetricsFromFirebase(boolean real,int trajectorySize) throws FirebaseException, UnsupportedEncodingException{
+		List<EvaluationMetrics> toReturn = new ArrayList<>();
+
+		String ref = FIREBASE_URL + "/networkEvaluator";
+		ref += (real) ? "/real" : "/BAD";
+		ref += "/"+trajectorySize;
+		
+		Firebase firebase = new Firebase(ref);
+
+		FirebaseResponse response = firebase.get();
+		response.getBody().entrySet().stream().forEach(x -> {
+			toReturn.add(parseMetrics(x));
+		});
+
+		return toReturn;
+	}
+	
+	private static EvaluationMetrics parseMetrics(Map.Entry<String, Object> x) {
+		String metricsValues = x.getValue().toString();
+		String[] aux = metricsValues.split(",");
+		String bytesSpentStr = aux[0].split("=")[1];
+		String updatesStr = aux[1].split("=")[1];
+		updatesStr = updatesStr.substring(0, updatesStr.length() - 1);
+		
+		long bytesSpent = Long.parseLong(bytesSpentStr);
+		int updates = Integer.parseInt(updatesStr);
+		
+		return new EvaluationMetrics(bytesSpent, updates);
+	}
+	
 	public static int getStoredLocationsSizeFromFirebase()throws FirebaseException,UnsupportedEncodingException
 	{
 		Firebase firebase = new Firebase(FIREBASE_URL + "/meta");

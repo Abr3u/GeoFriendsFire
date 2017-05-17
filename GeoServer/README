@@ -47,6 +47,8 @@ sorted myEvents done!
 syncronize events while monitoring resiDomain done!
 cosine similarity for collab filtering done! used in actScore & eventSimilarity
 trasform server dependencies into jar libraries done! -> clustering & firebase4j
+4 different server workflows done!
+new data + time passed clustering thresholds done!
 
 _________________________________________________
 no GPS hack to get location
@@ -62,23 +64,32 @@ alterar os minDistance e minTime thresholds quando tem menos de X bateria.
 
 
 APP
+bounding boxes - so fazer fetch quando estou a uma distancia perto o suficiente
 evaluate scalability
 geofire java client;
 
 SERVER
+Mining User Similarity Based on Location History - ver evaluation settings/discussion!! - hierarchical clustering OPTICS / stay points
 hierarchical clustering em vez de Kmeans
-schedule computation OR enough new data
 factores extra - popularidade, hierarquia;
-
-amigos adicionados por sugestao / amigos adicionados por iniciativa propria
-usar collab filtering para sugerir amigos em comum
-level está a dar exactamente o mesmo......
 
 ver ndcg
 
 escrever event recommendation - geofire, geohash, bounding boxes
 		friend recommendation - como filtro o dataset - folha. qual o workflow depois de ter os dados de location
 
+		
+		
+EVALUATION
+
+tamanho da trajectoria x number of location updates
+testar 50 vezes e fazer a media - dizer que sao 50 clientes??
+
+number clients x number of location updates
+
+\item calculate the average number of location updates while varying the number of clients;
+  \item calculate the average number of location updates while varying the number of events.
+		
 After:
 melhorar performance so ir buscar meta data nos nearby, ir buscar conteudo do evento quando está mesmo perto do evento (por exemplo se for imagem)
 melhorar performance da app com hashMap(locationHash,eventos) com STD raio para location e workload para eventos

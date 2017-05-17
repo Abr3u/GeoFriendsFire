@@ -5,15 +5,22 @@ finalScore = 0.25seq + 0.75act
 ______________________________________
 finalScore > 0.8
 
-LEVEL 0 + diff %
-Precision 0.004723706028843977
-Recall 0.026403994801285996
-
-LEVEL 0 + cosine (8mins)
-Precision 0.0037404009889288963
+LEVEL 0 (11mins)
+Precision 0.0037403945357114515
 Recall 0.07415007866475135
+MAP 0.012233014323741919
 
-LEVEL 0 + cosine + only actScore (2mins)
+LEVEL 1 (9mins)
+Precision 0.0037403945357114515
+Recall 0.07415007866475135
+MAP 0.012233014323741919
+
+LEVEL 2 (8mins)
+Precision 0.0035173521717311194
+Recall 0.08102469389151104
+MAP 0.01361838213546288
+
+LEVEL 0 only actScore (2mins)
 Precision 0.0017937657517276546
 Recall 0.5178192762842876
 MAP 0.004771587724116562
@@ -21,29 +28,21 @@ MAP 0.004771587724116562
 ______________________________________
 finalScore > 0.5
 
-LEVEL 0 + diff %
-Precision 0.0018960585201528428
-Recall 0.46586633832683494
-
-LEVEL 0 + cosine (10mins)
+LEVEL 0 (10mins)
 Precision 0.0017277110931501745
 Recall 0.6635542786784322
 
-LEVEL 0 + cosine + only actScore (2mins)
+LEVEL 0 only actScore (2mins)
 Precision 0.001673061050605446
 Recall 0.7382173883302552
 ______________________________________
 finalScore > 0.2
 
-LEVEL 0 + diff %
-Precision 0.0016909167330813174
-Recall 0.7019974006429989
-
-LEVEL 0 + cosine (8mins)
+LEVEL 0 (8mins)
 Precision 0.0016133384044129445
 Recall 0.8587454682262808
 
-LEVEL 0 + cosine + only actScore (2mins)
+LEVEL 0 only actScore (2mins)
 Precision 0.0015940955267859326
 Recall 0.8782406457350024
 

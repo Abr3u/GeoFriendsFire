@@ -21,12 +21,10 @@ public class SimilarityManager {
 	private int level;
 	private double SEQ_SCORE_WEIGHT;
 	private double ACT_SCORE_WEIGHT;
-	private boolean COSINE;
 
-	public SimilarityManager(Map<String, UserProfile> id_userProfile, boolean cosine, int level,
-			double SEQ_SCORE_WEIGHT, double ACT_SCORE_WEIGHT) {
+	public SimilarityManager(Map<String, UserProfile> id_userProfile, int level, double SEQ_SCORE_WEIGHT,
+			double ACT_SCORE_WEIGHT) {
 		this.id_userProfile = id_userProfile;
-		this.COSINE = cosine;
 		this.level = level;
 		this.SEQ_SCORE_WEIGHT = SEQ_SCORE_WEIGHT;
 		this.ACT_SCORE_WEIGHT = ACT_SCORE_WEIGHT;
@@ -49,33 +47,17 @@ public class SimilarityManager {
 
 	private double collaborativeFilteringEventPercentage(Map<EventCategory, Double> map1,
 			Map<EventCategory, Double> map2) {
+		List<Double> eventsA = map1.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(x -> x.getValue())
+				.collect(Collectors.toList());
 
-		if (COSINE) {
-			List<Double> eventsA = map1.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(x -> x.getValue())
-					.collect(Collectors.toList());
+		List<Double> eventsB = map2.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(x -> x.getValue())
+				.collect(Collectors.toList());
 
-			List<Double> eventsB = map2.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(x -> x.getValue())
-					.collect(Collectors.toList());
+		double dotProduct = dotProduct(eventsA, eventsB);
+		double magnitudeA = magnitude(eventsA);
+		double magnitudeB = magnitude(eventsB);
+		return dotProduct / (magnitudeA * magnitudeB);
 
-			double dotProduct = dotProduct(eventsA, eventsB);
-			double magnitudeA = magnitude(eventsA);
-			double magnitudeB = magnitude(eventsB);
-			return dotProduct / (magnitudeA * magnitudeB);
-		} else {
-			double score = 0d;
-			// somar diferencas
-			for (Map.Entry<EventCategory, Double> entry : map1.entrySet()) {
-				if (map2.containsKey(entry.getKey())) {
-					double aux = map2.get(entry.getKey());
-					score += Math.abs(aux - entry.getValue());
-				}
-			}
-			// passar de range [0-2] para [0-1]
-			score = normalizeScoreToNewLimits(score, 0, 2, 0, 1);
-			// passar para prct de igualdade
-			score = 1 - score;
-			return score;
-		}
 	}
 
 	public Map<String, UserProfile> calculateSimilaritiesFromLocations(int COMPARING_DISTANCE_THRESHOLD,
@@ -104,26 +86,29 @@ public class SimilarityManager {
 				profile.normalizeSimilarityScores();
 			}
 		}
-		// take into account activity Score
-		for (int i = 0; i < usersProfiles.size(); i++) {
-			for (int j = 0; j < usersProfiles.size(); j++) {
-				if (i != j && j > i) {
-					UserProfile p1 = usersProfiles.get(i);
-					UserProfile p2 = usersProfiles.get(j);
-					double finalScore;
-					double actScore = getUserSimilarityClusterActivity(p1, p2, level);
-					// System.out.println("actScore "+actScore);
+		if(this.ACT_SCORE_WEIGHT > 0){
+			// take into account activity Score
+			for (int i = 0; i < usersProfiles.size(); i++) {
+				for (int j = 0; j < usersProfiles.size(); j++) {
+					if (i != j && j > i) {
+						UserProfile p1 = usersProfiles.get(i);
+						UserProfile p2 = usersProfiles.get(j);
+						double finalScore;
+						double actScore = getUserSimilarityClusterActivity(p1, p2, level);
+						// System.out.println("actScore "+actScore);
 
-					double seqScore1 = p1.getSimilarityScore(p2.userId);
-					finalScore = calculateFinalScore(seqScore1, actScore);
-					p1.addSimilarityScore(p2.userId, finalScore);
+						double seqScore1 = p1.getSimilarityScore(p2.userId);
+						finalScore = calculateFinalScore(seqScore1, actScore);
+						p1.addSimilarityScore(p2.userId, finalScore);
 
-					double seqScore2 = p2.getSimilarityScore(p1.userId);
-					finalScore = calculateFinalScore(seqScore2, actScore);
-					p2.addSimilarityScore(p1.userId, finalScore);
+						double seqScore2 = p2.getSimilarityScore(p1.userId);
+						finalScore = calculateFinalScore(seqScore2, actScore);
+						p2.addSimilarityScore(p1.userId, finalScore);
+					}
 				}
 			}
 		}
+		
 		return id_userProfile;
 	}
 
@@ -362,32 +347,16 @@ public class SimilarityManager {
 		Map<Integer, Double> percentageA = graphA.cluster_percentage;
 		Map<Integer, Double> percentageB = graphB.cluster_percentage;
 
-		if (COSINE) {
-			List<Double> actA = percentageA.entrySet().stream().sorted(Map.Entry.comparingByKey())
-					.map(x -> x.getValue()).collect(Collectors.toList());
+		List<Double> actA = percentageA.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(x -> x.getValue())
+				.collect(Collectors.toList());
 
-			List<Double> actB = percentageB.entrySet().stream().sorted(Map.Entry.comparingByKey())
-					.map(x -> x.getValue()).collect(Collectors.toList());
+		List<Double> actB = percentageB.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(x -> x.getValue())
+				.collect(Collectors.toList());
 
-			double dotProduct = dotProduct(actA, actB);
-			double magnitudeA = magnitude(actA);
-			double magnitudeB = magnitude(actB);
-			return dotProduct / (magnitudeA * magnitudeB);
-		} else {
-			double score = 0;
-			// somar diferencas
-			for (Map.Entry<Integer, Double> entry : percentageA.entrySet()) {
-				if (percentageB.containsKey(entry.getKey())) {
-					double aux = percentageB.get(entry.getKey());
-					score += Math.abs(aux - entry.getValue());
-				}
-			}
-			// passar de range [0-2] para [0-1]
-			score = normalizeScoreToNewLimits(score, 0, 2, 0, 1);
-			// passar para prct de igualdade
-			score = 1 - score;
-			return score;
-		}
+		double dotProduct = dotProduct(actA, actB);
+		double magnitudeA = magnitude(actA);
+		double magnitudeB = magnitude(actB);
+		return dotProduct / (magnitudeA * magnitudeB);
 	}
 
 	private double dotProduct(List<Double> x, List<Double> y) {
@@ -400,14 +369,6 @@ public class SimilarityManager {
 
 	private double magnitude(List<Double> x) {
 		return Math.sqrt(dotProduct(x, x));
-	}
-
-	private double normalizeScoreToNewLimits(double score, int oldMin, int oldMax, int newMin, int newMax) {
-		if (score > 0) {
-			return ((score - oldMin) / (oldMax - oldMin)) * (newMax - newMin) + newMin;
-		} else {
-			return 0;
-		}
 	}
 
 	//
