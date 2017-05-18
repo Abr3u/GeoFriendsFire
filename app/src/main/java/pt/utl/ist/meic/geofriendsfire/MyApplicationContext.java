@@ -15,8 +15,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.leakcanary.LeakCanary;
-import com.squareup.leakcanary.RefWatcher;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -44,7 +42,6 @@ public class MyApplicationContext extends Application{
     public static final String FIND_IP_BASE_URL = "http://ident.me";
     public static final String FIND_LOCATION_BASE_URL = "http://freegeoip.net";
 
-    private RefWatcher refWatcher;
     private static MyApplicationContext instance;
     private static LocationTrackingService mLocationTrackingService;
     private static EventsNearbyService mEventsNearbyService;
@@ -58,13 +55,7 @@ public class MyApplicationContext extends Application{
     @Override
     public void onCreate() {
         super.onCreate();
-        if (LeakCanary.isInAnalyzerProcess(this)) {
-            // This process is dedicated to LeakCanary for heap analysis.
-            // You should not init your app in this process.
-            return;
-        }
         instance = (MyApplicationContext) getApplicationContext();
-        refWatcher = LeakCanary.install(this);
 
         maximumWorkLoad = 2;
         furthestEvent = 5;
@@ -215,10 +206,6 @@ public class MyApplicationContext extends Application{
 
     public static EventsNearbyService getEventsNearbyServiceInstance(){
         return mEventsNearbyService;
-    }
-
-    public RefWatcher getRefWatcher() {
-        return refWatcher;
     }
 
     public void setFirebaseUser(FirebaseUser firebaseUser) {

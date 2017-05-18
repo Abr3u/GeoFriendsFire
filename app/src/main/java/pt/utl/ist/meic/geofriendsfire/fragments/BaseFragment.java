@@ -10,12 +10,10 @@ import android.support.v4.app.Fragment;
 import android.view.View;
 import android.widget.TextView;
 
-import com.squareup.leakcanary.RefWatcher;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.processors.PublishProcessor;
-import pt.utl.ist.meic.geofriendsfire.MyApplicationContext;
 
 public class BaseFragment
         extends Fragment {
@@ -64,8 +62,6 @@ public class BaseFragment
     @Override
     public void onDestroy() {
         super.onDestroy();
-        RefWatcher refWatcher = MyApplicationContext.getInstance().getRefWatcher();
-        refWatcher.watch(this);
     }
 
     private void listenToNetworkConnectivity() {
