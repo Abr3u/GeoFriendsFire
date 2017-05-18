@@ -58,8 +58,13 @@ public class SettingsActivity extends AppCompatActivity {
         workloadSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                workloadText.setText(getResources().getString(R.string.preferredWorkloadHolder) + i);
-                newWorkload = i;
+                if(i == 0){
+                    workloadText.setText(getResources().getString(R.string.preferredWorkloadHolder) + 1);
+                    newWorkload = 1;
+                }else{
+                    workloadText.setText(getResources().getString(R.string.preferredWorkloadHolder) + i);
+                    newWorkload = i;
+                }
             }
 
             @Override
@@ -76,8 +81,13 @@ public class SettingsActivity extends AppCompatActivity {
         furthestSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                furthestText.setText(getResources().getString(R.string.furthestRangeHolder) + i + " kms away");
-                newFurthest = i;
+                if(i==0){
+                    furthestText.setText(getResources().getString(R.string.furthestRangeHolder) + 1 + " kms away");
+                    newFurthest = 1;
+                }else{
+                    furthestText.setText(getResources().getString(R.string.furthestRangeHolder) + i + " kms away");
+                    newFurthest = i;
+                }
             }
 
             @Override

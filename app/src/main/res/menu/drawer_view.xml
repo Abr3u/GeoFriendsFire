@@ -17,9 +17,6 @@
         <item
             android:id="@+id/nav_settings"
             android:title="Settings" />
-        <item
-            android:id="@+id/nav_load_route"
-            android:title="Emulate Route" />
     </group>
 
 </menu>

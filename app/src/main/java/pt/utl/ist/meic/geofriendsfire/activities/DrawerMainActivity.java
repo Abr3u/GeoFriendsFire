@@ -252,14 +252,6 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
                                 setupViewPagerMessages();
                                 mDrawerLayout.closeDrawers();
                                 return true;
-                            case R.id.nav_load_route:
-                                try {
-                                    MyApplicationContext.getLocationsServiceInstance().loadRoute();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                                mDrawerLayout.closeDrawers();
-                                return true;
                             default:
                                 mDrawerLayout.closeDrawers();
                                 return true;
