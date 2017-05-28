@@ -49,6 +49,7 @@ cosine similarity for collab filtering done! used in actScore & eventSimilarity
 trasform server dependencies into jar libraries done! -> clustering & firebase4j
 4 different server workflows done!
 new data + time passed clustering thresholds done!
+populateFakeEvents done!
 
 _________________________________________________
 no GPS hack to get location
@@ -59,7 +60,7 @@ get location from public IP -> freegeoip.net/json/176.78.76.198
 
 ______________________________________________________________
 Tomorrow:
-mean reciprocal rank
+mean reciprocal rank - slides medidas
 
 perfis de utilização de bateria para o location tracking service.
 alterar os minDistance e minTime thresholds quando tem menos de X bateria.
@@ -67,7 +68,7 @@ alterar os minDistance e minTime thresholds quando tem menos de X bateria.
 
 APP
 bounding boxes - so fazer fetch quando estou a uma distancia perto o suficiente
-evaluate scalability
+evaluate scalability - changing number of events;
 
 SERVER
 Mining User Similarity Based on Location History - ver evaluation settings/discussion!! - hierarchical clustering OPTICS / stay points

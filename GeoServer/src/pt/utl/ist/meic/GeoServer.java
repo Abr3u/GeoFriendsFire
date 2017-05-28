@@ -98,7 +98,7 @@ public class GeoServer {
 			System.out.println("long range " + perpendicularDistance2);
 			
 			try {
-				FirebaseHelper.populateFakeEventsToFirebase(10);
+				FirebaseHelper.populateFakeEventsToFirebase(40);
 			} catch (UnsupportedEncodingException | FirebaseException | JacksonUtilityException e) {
 				e.printStackTrace();
 			}

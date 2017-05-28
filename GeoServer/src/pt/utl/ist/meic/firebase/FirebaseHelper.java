@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.SynchronousQueue;
 import java.util.Random;
 
 import org.codehaus.jackson.map.introspect.BasicClassIntrospector.GetterMethodFilter;
@@ -327,10 +328,10 @@ public class FirebaseHelper {
 			fakeEventLocation.put("l", Arrays.asList(location.get("lati"), location.get("longi")));
 			
 			//push to firebase with the corresponding event key
-			FirebaseResponse responseLocation = firebaseLocationsRef.put(eventKey,fakeEventLocation);
-			System.out.println("Response "+responseLocation.getRawBody().toString());
-			
+			firebaseLocationsRef.put(eventKey,fakeEventLocation);
 		}
+		
+		System.out.println("Finished populating fake Events");
 	}
 	
 	private static Map<String,Double> getRandomLocationTestingArea() {
