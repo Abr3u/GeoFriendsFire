@@ -68,7 +68,7 @@ public class GeoServer {
 	private static final boolean EVALUATE_LOCATIONS = false;
 	private static final boolean EVALUATE_EVENTS = false;
 	private static final boolean EVALUATE_SCALABILITY = true;
-	private static final boolean TEST = false;
+	private static final boolean TEST = true;
 	private static boolean FIREBASE;
 
 	// debug
@@ -96,6 +96,12 @@ public class GeoServer {
 			double perpendicularDistance2 = Math.abs(c - d);
 			System.out.println("lat range " + perpendicularDistance);
 			System.out.println("long range " + perpendicularDistance2);
+			
+			try {
+				FirebaseHelper.populateFakeEventsToFirebase(10);
+			} catch (UnsupportedEncodingException | FirebaseException | JacksonUtilityException e) {
+				e.printStackTrace();
+			}
 			return;
 		}
 		

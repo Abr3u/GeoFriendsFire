@@ -5,11 +5,16 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
+
+import org.codehaus.jackson.map.introspect.BasicClassIntrospector.GetterMethodFilter;
 
 import ca.pfv.spmf.patterns.cluster.Cluster;
 import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
@@ -24,19 +29,20 @@ import pt.utl.ist.meic.firebase.models.EvaluationMetrics;
 import pt.utl.ist.meic.firebase.models.Event;
 import pt.utl.ist.meic.firebase.models.EventCategory;
 import pt.utl.ist.meic.firebase.models.User;
+import pt.utl.ist.meic.utility.GeoHash;
 
 public class FirebaseHelper {
 
 	private static final String FIREBASE_URL = "https://geofriendsfire.firebaseio.com";
 
-	
-	public static List<EvaluationMetrics> getEvaluationMetricsFromFirebase(boolean real,int trajectorySize) throws FirebaseException, UnsupportedEncodingException{
+	public static List<EvaluationMetrics> getEvaluationMetricsFromFirebase(boolean real, int trajectorySize)
+			throws FirebaseException, UnsupportedEncodingException {
 		List<EvaluationMetrics> toReturn = new ArrayList<>();
 
 		String ref = FIREBASE_URL + "/networkEvaluator";
 		ref += (real) ? "/real" : "/BAD";
-		ref += "/"+trajectorySize;
-		
+		ref += "/" + trajectorySize;
+
 		Firebase firebase = new Firebase(ref);
 
 		FirebaseResponse response = firebase.get();
@@ -46,40 +52,37 @@ public class FirebaseHelper {
 
 		return toReturn;
 	}
-	
+
 	private static EvaluationMetrics parseMetrics(Map.Entry<String, Object> x) {
 		String metricsValues = x.getValue().toString();
 		String[] aux = metricsValues.split(",");
 		String bytesSpentStr = aux[0].split("=")[1];
 		String updatesStr = aux[1].split("=")[1];
 		updatesStr = updatesStr.substring(0, updatesStr.length() - 1);
-		
+
 		long bytesSpent = Long.parseLong(bytesSpentStr);
 		int updates = Integer.parseInt(updatesStr);
-		
+
 		return new EvaluationMetrics(bytesSpent, updates);
 	}
-	
-	public static int getStoredLocationsSizeFromFirebase()throws FirebaseException,UnsupportedEncodingException
-	{
+
+	public static int getStoredLocationsSizeFromFirebase() throws FirebaseException, UnsupportedEncodingException {
 		Firebase firebase = new Firebase(FIREBASE_URL + "/meta");
 
 		FirebaseResponse response = firebase.get();
 		return (int) response.getBody().get("totalLocations");
 	}
-	
-	public static Long getLastUpdatedFromFirebase()throws FirebaseException,UnsupportedEncodingException
-	{
+
+	public static Long getLastUpdatedFromFirebase() throws FirebaseException, UnsupportedEncodingException {
 		Firebase firebase = new Firebase(FIREBASE_URL + "/meta");
 
 		FirebaseResponse response = firebase.get();
 		return Long.parseLong(response.getBody().get("lastUpdated").toString());
 	}
 
-	public static long getCurrentLocationsSizeFromFirebase()
-			throws FirebaseException, UnsupportedEncodingException {
+	public static long getCurrentLocationsSizeFromFirebase() throws FirebaseException, UnsupportedEncodingException {
 		List<User> users = getUserListFromFirebase();
-		
+
 		long totalLocations = 0;
 		for (User u : users) {
 			Firebase firebase;
@@ -295,5 +298,68 @@ public class FirebaseHelper {
 		FirebaseResponse response = firebase.delete("friends");
 		System.out.println(response.getBody().toString());
 	}
+
+	public static void populateFakeEventsToFirebase(int numberOfEvents) throws FirebaseException, UnsupportedEncodingException, JacksonUtilityException {
+		Firebase firebaseEventsRef = new Firebase(FIREBASE_URL + "/fakeEvents");
+		Firebase firebaseLocationsRef = new Firebase(FIREBASE_URL + "/fakeEventsLocations");
+		
+		String authorName = "Bob";
+		String authorId = "bobKey";
+		EventCategory category = EventCategory.Sports;
+		String description = "testDescription #";
+		SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        String creationDate = df.format(new Date());
+        
+		for(int i = 0;i<numberOfEvents;i++){
+			//create fake event
+			Event fake = new Event(""+i,authorId,authorName,category,creationDate,description+i);
+			//push to firebase
+			FirebaseResponse responseEvent = firebaseEventsRef.post(fake.toMap());
+			String eventKey = (String) responseEvent.getBody().get("name");
+			System.out.println("Event Key "+eventKey);
+			
+			//create fake location
+			Map<String,Double> location = getRandomLocationTestingArea();
+			GeoHash geoHash = new GeoHash(location.get("lati"),location.get("longi"));
+			
+			Map<String, Object> fakeEventLocation = new HashMap<String, Object>();
+			fakeEventLocation.put("g", geoHash.getGeoHashString());
+			fakeEventLocation.put("l", Arrays.asList(location.get("lati"), location.get("longi")));
+			
+			//push to firebase with the corresponding event key
+			FirebaseResponse responseLocation = firebaseLocationsRef.put(eventKey,fakeEventLocation);
+			System.out.println("Response "+responseLocation.getRawBody().toString());
+			
+		}
+	}
+	
+	private static Map<String,Double> getRandomLocationTestingArea() {
+        Random random = new Random();
+        Map<String,Double> testingAreaLimits = getTestingAreaLimits();
+        
+        double maxLati = testingAreaLimits.get("top");
+        double minLati = testingAreaLimits.get("bot");
+        double maxLongi = testingAreaLimits.get("right");
+        double minLongi = testingAreaLimits.get("left");
+        
+        double lati = minLati + (maxLati - minLati) * random.nextDouble();
+        double longi = minLongi + (maxLongi - minLongi) * random.nextDouble();
+        
+        Map<String,Double> toReturn = new HashMap<String,Double>(){{
+        	this.put("lati",lati);
+        	this.put("longi", longi);
+        }};
+        
+        return toReturn;
+    }
+	
+	private static Map<String,Double> getTestingAreaLimits(){
+        return new HashMap<String,Double>(){{
+            put("bot",38.689615);
+            put("top",38.741777);
+            put("left",-9.484146);
+            put("right",-9.388799);
+        }};
+    }
 
 }

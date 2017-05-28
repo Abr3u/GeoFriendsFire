@@ -59,6 +59,8 @@ get location from public IP -> freegeoip.net/json/176.78.76.198
 
 ______________________________________________________________
 Tomorrow:
+mean reciprocal rank
+
 perfis de utilização de bateria para o location tracking service.
 alterar os minDistance e minTime thresholds quando tem menos de X bateria.
 
@@ -66,7 +68,6 @@ alterar os minDistance e minTime thresholds quando tem menos de X bateria.
 APP
 bounding boxes - so fazer fetch quando estou a uma distancia perto o suficiente
 evaluate scalability
-geofire java client;
 
 SERVER
 Mining User Similarity Based on Location History - ver evaluation settings/discussion!! - hierarchical clustering OPTICS / stay points

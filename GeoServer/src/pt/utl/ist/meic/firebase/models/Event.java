@@ -1,5 +1,8 @@
 package pt.utl.ist.meic.firebase.models;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Event {
 	
 	public String id;
@@ -25,5 +28,15 @@ public class Event {
 		return "Event [id=" + id + ", authorId=" + authorId + ", authorName=" + authorName + ", category=" + category
 				+ ", creationDate=" + creationDate + ", description=" + description + "]";
 	}
+	
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("authorId", this.authorId);
+        result.put("authorName", this.authorName);
+        result.put("description", this.description);
+        result.put("category", this.category);
+        result.put("creationDate",this.creationDate);
+        return result;
+    }
 
 }

@@ -24,7 +24,7 @@ public class Graph {
 
 	public Map<Integer, Double> cluster_percentage;
 	
-	public ClusterWithMean mCluster;
+	public ClusterWithMean mCluster;//cluster with highest activity
 
  	public Graph(int numClusters) {
 		vertexes = new ArrayList<VertexInfo>();

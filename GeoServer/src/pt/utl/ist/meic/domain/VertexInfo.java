@@ -37,8 +37,8 @@ public class VertexInfo {
 		return "[" + convertId(cluster.mId) + "]";
 	}
 
-	private String convertId(int lastId) {
-		switch (lastId) {
+	private String convertId(int id) {
+		switch (id) {
 		case 0:
 			return "A";
 		case 1:
