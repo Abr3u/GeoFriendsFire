@@ -67,7 +67,7 @@ public class GeoServer {
 	private static final boolean CLUSTER_FIREBASE = false;
 	private static final boolean EVALUATE_LOCATIONS = false;
 	private static final boolean EVALUATE_EVENTS = false;
-	private static final boolean EVALUATE_SCALABILITY = true;
+	private static final boolean EVALUATE_SCALABILITY = false;
 	private static final boolean TEST = true;
 	private static boolean FIREBASE;
 
@@ -88,20 +88,7 @@ public class GeoServer {
 		Map<Integer, List<Cluster>> level_clusters_map_optics = new HashMap<>();
 
 		if (TEST) {
-			double a = 40.543155;
-			double b = 40.904894;
-			double c = -74.056834;
-			double d = -73.726044;
-			double perpendicularDistance = Math.abs(a - b);
-			double perpendicularDistance2 = Math.abs(c - d);
-			System.out.println("lat range " + perpendicularDistance);
-			System.out.println("long range " + perpendicularDistance2);
-			
-			try {
-				FirebaseHelper.populateFakeEventsToFirebase(40);
-			} catch (UnsupportedEncodingException | FirebaseException | JacksonUtilityException e) {
-				e.printStackTrace();
-			}
+			testStuff();
 			return;
 		}
 		
@@ -215,6 +202,11 @@ public class GeoServer {
 
 	}
 
+	public static void testStuff(){
+		
+	}
+	
+	
 	private static Map<Integer, List<ClusterWithMean>> clusterLocationsKMEANS(String path) {
 		Map<Integer, List<ClusterWithMean>> level_clusters_map = new HashMap<>();
 

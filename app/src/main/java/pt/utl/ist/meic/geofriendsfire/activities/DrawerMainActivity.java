@@ -1,10 +1,13 @@
 package pt.utl.ist.meic.geofriendsfire.activities;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -105,6 +108,9 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         mTabLayout.setupWithViewPager(mViewPager);
         mTabLayout.setVisibility(View.GONE);
 
+		checkGPS();
+		
+		
         if (savedInstanceState != null) {
             recoverSavedState(savedInstanceState);
         } else {
@@ -112,6 +118,48 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
         }
     }
 
+	private void checkGPS() {
+        LocationManager mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+
+        boolean isGpsEnabled = mLocationManager
+                .isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+        if(!isGpsEnabled){
+            showSettingsAlert();
+        }
+    }
+
+    private void showSettingsAlert() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // Setting Dialog Title
+        builder.setTitle("GPS settings");
+
+        // Setting Dialog Message
+        builder.setMessage("GPS is not enabled. Do you want to go to settings menu?");
+
+        // On pressing Settings button
+        builder.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        });
+
+        // on pressing cancel button
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        // Showing Alert Message
+        dialog.show();
+    }
+	
+	
     private void recoverSavedState(Bundle savedInstanceState) {
         int savedFrag = Parcels.unwrap(savedInstanceState.getParcelable(PARCEL_FRAGMENT));
         switch (savedFrag) {

@@ -198,41 +198,8 @@ public class LocationTrackingService extends Service {
         } else if (isNetworkEnabled) {
             mLastKnowLocation = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             Log.d("ggg", "Got Location from net " + mLastKnowLocation.toString());
-        } else {
-            showSettingsAlert();
         }
 
-    }
-
-    private void showSettingsAlert() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        // Setting Dialog Title
-        builder.setTitle("GPS settings");
-
-        // Setting Dialog Message
-        builder.setMessage("GPS is not enabled. Do you want to go to settings menu?");
-
-        // On pressing Settings button
-        builder.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                LocationTrackingService.this.startActivity(intent);
-            }
-        });
-
-        // on pressing cancel button
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-
-        AlertDialog dialog = builder.create();
-        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-        // Showing Alert Message
-        dialog.show();
     }
 
     @Override

@@ -50,6 +50,7 @@ trasform server dependencies into jar libraries done! -> clustering & firebase4j
 4 different server workflows done!
 new data + time passed clustering thresholds done!
 populateFakeEvents done!
+MRR done! - needs runs with diff simm settings
 
 _________________________________________________
 no GPS hack to get location

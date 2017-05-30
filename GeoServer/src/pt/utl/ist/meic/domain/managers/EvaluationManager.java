@@ -5,37 +5,75 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import pt.utl.ist.meic.domain.UserProfile;
+import pt.utl.ist.meic.firebase.models.User;
 
 public class EvaluationManager {
 	
+	private Double mrr;
+	private Double map;
+	private Double recall;
+	private Double precision;
+
 	double SIMILARITY_THRESHOLD;
 	private List<UserProfile> profiles;
 
-	public EvaluationManager(List<UserProfile> profiles,double threshold) {
+	public EvaluationManager(List<UserProfile> profiles, double threshold) {
 		this.profiles = profiles;
 		this.SIMILARITY_THRESHOLD = threshold;
 	}
-	
-	public void evaluateResults(){
+
+	public void evaluateResults() {
 		calculatePrecision(profiles);
 		calculateRecall(profiles);
 		calculateMAP(profiles);
-		calculateNDCG(profiles);
+		calculateMRR(profiles);
+	}
+
+	public double getMRR(){
+		if(this.mrr==null){
+			this.mrr = calculateMRR(this.profiles);
+		}
+		return this.mrr;
 	}
 	
-	private void calculateNDCG(List<UserProfile> profiles) {
-		// TODO Auto-generated method stub
+	private double calculateMRR(List<UserProfile> profiles) {
+
+		double sumFirstFound = 0;
+		List<String> suggested = new ArrayList<String>();
+		List<String> realFriends = new ArrayList<String>();
+
+		for (UserProfile profile : profiles) {
+			System.out.println("User " + profile.userId);
+			double firstFound = 0;
+			realFriends = profile.getRealFriendsList();
+			suggested = profile.getSuggestedFriendsList(SIMILARITY_THRESHOLD).stream().limit(10)
+					.collect(Collectors.toList());
+
+			for (int i = 0; i < suggested.size(); i++) {
+				if (realFriends.contains(suggested.get(i))) {
+					firstFound = 1.0 / (i + 1.0);
+					sumFirstFound += firstFound;
+					System.out.println("first found " + firstFound);
+					System.out.println("sum " + sumFirstFound);
+					break;
+				}
+			}
+		}
+
+		double mrr = sumFirstFound / profiles.size();
+		this.mrr = mrr;
+		System.out.println("MRR  " + mrr);
+		return mrr;
 
 	}
 
-	private void calculateMAP(List<UserProfile> profiles) {
+	private double calculateMAP(List<UserProfile> profiles) {
 		List<String> top10 = new ArrayList<>();
 		List<String> realFriends = new ArrayList<>();
-		List<Double> precisions = new ArrayList<>();
 
 		for (UserProfile profile : profiles) {
 			double found = 0;
-			precisions = new ArrayList<Double>();
+			double sumPrecisions = 0;
 			realFriends = profile.getRealFriendsList();
 			top10 = profile.getSuggestedFriendsList(SIMILARITY_THRESHOLD).stream().limit(10)
 					.collect(Collectors.toList());
@@ -43,41 +81,47 @@ public class EvaluationManager {
 				if (realFriends.contains(top10.get(i))) {
 					found++;
 					double precision = found / (i + 1);
-					precisions.add(precision);
+					sumPrecisions += precision;
 				}
 			}
 			if (found == 0) {
 				profile.setAveragePrecision(0);
 			} else {
-				double avgPrecision = precisions.stream().reduce(0.0, Double::sum) / precisions.size();
+				double avgPrecision = sumPrecisions / found;
 				profile.setAveragePrecision(avgPrecision);
 			}
 		}
-		System.out.println("MAP " + profiles.stream().mapToDouble(UserProfile::getAveragePrecision).sum()
-				/ profiles.size());
+
+		double map = profiles.stream().mapToDouble(UserProfile::getAveragePrecision).sum() / profiles.size();
+		this.map = map;
+		System.out.println("MAP " + map);
+		return map;
 	}
 
-	private void calculateRecall(List<UserProfile> profiles) {
+	private double calculateRecall(List<UserProfile> profiles) {
 		double totalFound = 0;
 		double totalFriends = 0;
-		for(UserProfile up : profiles){
+		for (UserProfile up : profiles) {
 			totalFound += up.getTotalFoundList(SIMILARITY_THRESHOLD).size();
 			totalFriends += up.getRealFriendsList().size();
 		}
 		double recall = totalFound / totalFriends;
+		this.recall = recall;
 		System.out.println("Recall " + recall);
+		return recall;
 	}
 
-	private void calculatePrecision(List<UserProfile> profiles) {
+	private double calculatePrecision(List<UserProfile> profiles) {
 		double totalFound = 0;
 		double totalSuggested = 0;
-		for(UserProfile up : profiles){
+		for (UserProfile up : profiles) {
 			totalFound += up.getTotalFoundList(SIMILARITY_THRESHOLD).size();
 			totalSuggested += up.getSuggestedFriendsList(SIMILARITY_THRESHOLD).size();
 		}
 		double precision = totalFound / totalSuggested;
+		this.precision = precision;
 		System.out.println("Precision " + precision);
+		return precision;
 	}
 
-	
 }

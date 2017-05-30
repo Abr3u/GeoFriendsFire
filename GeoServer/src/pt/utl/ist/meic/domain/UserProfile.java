@@ -137,6 +137,11 @@ public class UserProfile {
 		return this.avgPrecision;
 	}
 
+	//TODO: remove!!!
+	public void setRealFriendsList(List<String> realFriends){
+		this.realFriends = realFriends;
+	}
+	
 	public void loadRealFriendsFromGowalla(FileManager fm) {
 		try {
 			this.realFriends = fm.getRealFriendsFromGowalla(userId);
