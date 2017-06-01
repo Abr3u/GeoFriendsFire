@@ -40,11 +40,8 @@ public class GeoServer {
 	private static final int LEVEL = 2;// clusterLevel
 	private static long mTotalCheckIns = 130425;// newYork CI's
 
-	// clustering
-	private static final boolean KMEANS = true;
+	// clustering Kmeans
 	private static final int NUM_CLUSTERS = 2;// kmeans
-	private static final int MIN_POINTS = 2;
-	private static final double EPSILON = 0.1;
 	private static final long NEW_DATA_THRESHOLD = 1000;// new locations
 	private static final long TIME_PASSED_THRESHOLD = 1000 * 60 * 60 * 24 * 30; // 30
 																				// days
@@ -65,10 +62,10 @@ public class GeoServer {
 	// workflow flags
 	private static final boolean CLUSTER_GOWALLA = false;
 	private static final boolean CLUSTER_FIREBASE = false;
-	private static final boolean EVALUATE_LOCATIONS = false;
+	private static final boolean EVALUATE_LOCATIONS = true;
 	private static final boolean EVALUATE_EVENTS = false;
 	private static final boolean EVALUATE_SCALABILITY = false;
-	private static final boolean TEST = true;
+	private static final boolean TEST = false;
 	private static boolean FIREBASE;
 
 	// debug
@@ -116,11 +113,7 @@ public class GeoServer {
 		// cluster based on gowalla data
 		if (CLUSTER_GOWALLA) {
 			FIREBASE = false;
-			if (KMEANS) {
 				level_clusters_map = clusterLocationsKMEANS(pathKmeansNewYorkCSV);
-			} else {
-				level_clusters_map_optics = clusterLocationsDBSCAN(pathKmeansNewYorkCSV);
-			}
 		}
 
 		// use gowalla to evaluate
@@ -143,7 +136,7 @@ public class GeoServer {
 			List<UserProfile> profiles = new ArrayList<>(id_userProfile.values());
 
 			// writeResultsFirebase(profiles);
-			// writeResultsLocalStorage(mFileManager, profiles);
+			writeResultsLocalStorage(mFileManager, profiles);
 			EvaluationManager evaluationManager = new EvaluationManager(profiles, SIMILARITY_THRESHOLD);
 			evaluationManager.evaluateResults();
 		}
@@ -218,19 +211,6 @@ public class GeoServer {
 			e.printStackTrace();
 		}
 		return level_clusters_map;
-	}
-
-	private static Map<Integer, List<Cluster>> clusterLocationsDBSCAN(String path) {
-		Map<Integer, List<Cluster>> level_clusters_map_optics = new HashMap<>();
-
-		try {
-			level_clusters_map_optics = applyDBSCAN(path, DELIMITER);
-			// FirebaseHelper.writeNewClustersFirebaseOPTICS(level_clusters_map_optics.get(LEVEL),
-			// LEVEL, mTotalCheckIns);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return level_clusters_map_optics;
 	}
 
 	private static void writeResultsFirebase(List<UserProfile> profiles) {
@@ -359,27 +339,4 @@ public class GeoServer {
 		return level_clusters_map;
 	}
 
-
-	private static Map<Integer, List<Cluster>> applyDBSCAN(String pathToCSV, String delimiter) throws IOException {
-		Map<Integer, List<Cluster>> level_clusters_map = new HashMap<>();
-
-		// Apply the algorithm
-		AlgoDBSCAN dbscan = new AlgoDBSCAN();
-		System.out.println("applying dbscan");
-		List<Cluster> clusters = dbscan.runAlgorithm(pathToCSV, MIN_POINTS, EPSILON, delimiter);
-		level_clusters_map.put(LEVEL, clusters);
-		dbscan.printStatistics();
-
-		// Print the clusters found by the algorithm
-		// For each cluster:
-		int i = 0;
-		mTotalCheckIns = 0;
-		for (Cluster cluster : clusters) {
-			System.out.println("Cluster " + i++);
-			System.out.println("size -> " + cluster.getVectors().size());
-			mTotalCheckIns += cluster.getVectors().size();
-		}
-		System.out.println("Total CI " + mTotalCheckIns);
-		return level_clusters_map;
-	}
 }

@@ -43,7 +43,6 @@ public class EvaluationManager {
 		List<String> realFriends = new ArrayList<String>();
 
 		for (UserProfile profile : profiles) {
-			System.out.println("User " + profile.userId);
 			double firstFound = 0;
 			realFriends = profile.getRealFriendsList();
 			suggested = profile.getSuggestedFriendsList(SIMILARITY_THRESHOLD).stream().limit(10)
@@ -53,8 +52,6 @@ public class EvaluationManager {
 				if (realFriends.contains(suggested.get(i))) {
 					firstFound = 1.0 / (i + 1.0);
 					sumFirstFound += firstFound;
-					System.out.println("first found " + firstFound);
-					System.out.println("sum " + sumFirstFound);
 					break;
 				}
 			}
