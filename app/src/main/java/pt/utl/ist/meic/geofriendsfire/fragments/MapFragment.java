@@ -213,12 +213,12 @@ public class MapFragment extends BaseFragment implements GoogleMap.OnCameraChang
         currentZoom = cameraPosition.zoom;
         //TODO: change
 
-//        Location mocked = new Location("mocked");
-//        mocked.setLatitude(center.latitude);
-//        mocked.setLongitude(center.longitude);
-//        MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);
-//
-//        this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(center, cameraPosition.zoom));
+        //Location mocked = new Location("mocked");
+        //mocked.setLatitude(center.latitude);
+        //mocked.setLongitude(center.longitude);
+		//MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);
+
+        //this.map.moveCamera(CameraUpdateFactory.newLatLngZoom(center, cameraPosition.zoom));
 
     }
 

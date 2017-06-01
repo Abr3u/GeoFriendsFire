@@ -38,7 +38,7 @@ import pt.utl.ist.meic.geofriendsfire.events.NewLocationEvent;
 public class LocationTrackingService extends Service {
     private static final String TAG = "ooo";
     private static final String LOCATIONS_REF = "/locations/";
-    private static final int LOCATION_AGGREGATION_THRESHOLD = 5;
+    private static final int LOCATION_AGGREGATION_THRESHOLD = 3;
     private static final int LOCATION_INTERVAL = 5 * 1000;//5 secs
     private static final float LOCATION_DISTANCE = 250f;//meters
 
@@ -119,16 +119,6 @@ public class LocationTrackingService extends Service {
         }
     }
 
-    private void sendSingleLocationFirebase(Location loc) {
-        TimeLocation first = new TimeLocation();
-        first.location = loc;
-        first.time = new Date();
-        Map<String, Object> locationValues = first.toMap();
-
-        String uid = MyApplicationContext.getInstance().getFirebaseUser().getUid();
-        mDatabase.child(LOCATIONS_REF + uid).push().setValue(locationValues);
-    }
-
     LocationListener[] mLocationListeners = new LocationListener[]{
             new LocationListener(LocationManager.GPS_PROVIDER),
             new LocationListener(LocationManager.NETWORK_PROVIDER)
@@ -193,11 +183,9 @@ public class LocationTrackingService extends Service {
 
         if (isGpsEnabled) {
             mLastKnowLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            Log.d("ggg", "Got Location from GPS " + mLastKnowLocation.toString());
 
         } else if (isNetworkEnabled) {
             mLastKnowLocation = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            Log.d("ggg", "Got Location from net " + mLastKnowLocation.toString());
         }
 
     }
@@ -219,88 +207,4 @@ public class LocationTrackingService extends Service {
     public Location getLastKnownLocation() {
         return mLastKnowLocation;
     }
-
-    public void setMockedLocation(Location mocked) {
-        if (mLastKnowLocation == null ||
-                mLastKnowLocation.getLatitude() != mocked.getLatitude() ||
-                mLastKnowLocation.getLongitude() != mocked.getLongitude()) {
-            this.mLastKnowLocation = mocked;
-            EventBus.getDefault().post(new NewLocationEvent(mocked));
-        }
-    }
-
-
-    public void loadRoute() throws IOException {
-        new EmulateTrajectoryTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
-    public class EmulateTrajectoryTask extends AsyncTask<Void, Void, Boolean> {
-
-        List<Double> mockedLatitudes;
-
-        List<Double> mockedLongitudes;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mockedLatitudes = new ArrayList<Double>() {{
-                add(38.7022d);
-                add(38.6997d);
-                add(38.6972d);
-                add(38.6954d);
-                add(38.6956d);
-                add(38.6957d);
-                add(38.6930d);
-                add(38.6909d);
-                add(38.6902d);
-                add(38.6926d);
-                add(38.6959d);
-                add(38.6994d);
-                add(38.7037d);
-                add(38.7033d);
-                add(38.7072d);
-
-            }};
-            mockedLongitudes = new ArrayList<Double>() {{
-                add(-9.4757d);
-                add(-9.4678d);
-                add(-9.4626d);
-                add(-9.4577d);
-                add(-9.4494d);
-                add(-9.4428d);
-                add(-9.4343d);
-                add(-9.4292d);
-                add(-9.4249d);
-                add(-9.4208d);
-                add(-9.4201d);
-                add(-9.4178d);
-                add(-9.4067d);
-                add(-9.3988d);
-                add(-9.3967d);
-            }};
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            Location mocked = new Location("mocked");
-            for (int i = 0; i < mockedLatitudes.size(); i++) {
-                try {
-                    Thread.sleep(4000);
-                    mocked.setLatitude(mockedLatitudes.get(i));
-                    mocked.setLongitude(mockedLongitudes.get(i));
-                    MyApplicationContext.getLocationsServiceInstance().setMockedLocation(mocked);
-                } catch (InterruptedException e) {
-                    Log.d("zzz", "interrupted exception");
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            return;
-        }
-    }
-
 }

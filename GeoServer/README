@@ -60,39 +60,6 @@ get IPv6 -> GET https://v6.ident.me/
 get location from public IP -> freegeoip.net/json/176.78.76.198
 
 ______________________________________________________________
-Tomorrow:
-mean reciprocal rank - slides medidas
-
-perfis de utilização de bateria para o location tracking service.
-alterar os minDistance e minTime thresholds quando tem menos de X bateria.
-
-
-APP
-bounding boxes - so fazer fetch quando estou a uma distancia perto o suficiente
-evaluate scalability - changing number of events;
-
-SERVER
-Mining User Similarity Based on Location History - ver evaluation settings/discussion!! - hierarchical clustering OPTICS / stay points
-hierarchical clustering em vez de Kmeans
-factores extra - popularidade, hierarquia;
-
-ver ndcg
-
-escrever event recommendation - geofire, geohash, bounding boxes
-		friend recommendation - como filtro o dataset - folha. qual o workflow depois de ter os dados de location
-
-		
-		
-EVALUATION
-
-tamanho da trajectoria x number of location updates
-testar 50 vezes e fazer a media - dizer que sao 50 clientes??
-
-number clients x number of location updates
-
-\item calculate the average number of location updates while varying the number of clients;
-  \item calculate the average number of location updates while varying the number of events.
-		
 After:
 melhorar performance so ir buscar meta data nos nearby, ir buscar conteudo do evento quando está mesmo perto do evento (por exemplo se for imagem)
 melhorar performance da app com hashMap(locationHash,eventos) com STD raio para location e workload para eventos
@@ -102,25 +69,23 @@ testar todos os screens à grande!!
 BUGS:
 network holder fica atrás da recycler view
 ver os cleanupListeners e memory leaks; todo o lado
-problema de nao ter GPS (no inicio e nao só)
+gps / network adaptability - firebase offline caching??
 
 Extra:
 repensar estrutura de msgs - neste momento escrevo sempre em dois lados a mesma msg (redundancia de dados vs mais uma query)
 ATC simulate shitty internet
-perfil de utilizador;
+perfil de utilizador
 read/unread msgs
-cloudrails, eventbrite APIs
-mudar aspecto dos pins no mapa para icon de categoria
 clustering de markers,
 security rules
 mvvm, mvp
 mostrar ao user os seus clusters?
+cloudrails, eventbrite APIs
 api google maps, directions, places, roads;
 _________________________________________________
 
 Brainstorm
 
-Se activity score for mais baixo que threshold, comparar via eventos criados;
 precision, mean avg precision podem nao ser os melhores indicadores. uma pessoa pode so ter um amigo mas ser muito parecida com outros!!
 por um lado parece que estamos a dar mt "lixo" ou user, mas este "lixo" podem ser novos amigos que sao pessoas mt semelhantes!!!
 
