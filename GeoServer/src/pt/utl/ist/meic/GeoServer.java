@@ -31,6 +31,7 @@ import pt.utl.ist.meic.domain.managers.UserProfilesManager;
 import pt.utl.ist.meic.firebase.FirebaseHelper;
 import pt.utl.ist.meic.firebase.models.EvaluationMetrics;
 import pt.utl.ist.meic.utility.FileManager;
+import test.TestMeasures;
 
 public class GeoServer {
 
@@ -62,10 +63,10 @@ public class GeoServer {
 	// workflow flags
 	private static final boolean CLUSTER_GOWALLA = false;
 	private static final boolean CLUSTER_FIREBASE = false;
-	private static final boolean EVALUATE_LOCATIONS = true;
+	private static final boolean EVALUATE_LOCATIONS = false;
 	private static final boolean EVALUATE_EVENTS = false;
 	private static final boolean EVALUATE_SCALABILITY = false;
-	private static final boolean TEST = false;
+	private static final boolean TEST = true;
 	private static boolean FIREBASE;
 
 	// debug
@@ -82,10 +83,9 @@ public class GeoServer {
 		FileManager mFileManager = new FileManager();
 		Map<String, UserProfile> id_userProfile = new HashMap<>();
 		Map<Integer, List<ClusterWithMean>> level_clusters_map = new HashMap<>();
-		Map<Integer, List<Cluster>> level_clusters_map_optics = new HashMap<>();
 
 		if (TEST) {
-			testStuff();
+			TestMeasures.testAllMeasures();
 			return;
 		}
 		

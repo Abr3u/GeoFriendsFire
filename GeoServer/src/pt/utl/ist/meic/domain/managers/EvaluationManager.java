@@ -30,13 +30,34 @@ public class EvaluationManager {
 	}
 
 	public double getMRR(){
-		if(this.mrr==null){
-			this.mrr = calculateMRR(this.profiles);
+		if(this.mrr == null){
+			calculateMRR(this.profiles);
 		}
 		return this.mrr;
 	}
 	
-	private double calculateMRR(List<UserProfile> profiles) {
+	public Double getMAP(){
+		if(this.map == null){
+			calculateMAP(this.profiles);
+		}
+		return this.map;
+	}
+	
+	public Double getPrecision(){
+		if(this.precision == null){
+			calculatePrecision(this.profiles);
+		}
+		return this.precision;
+	}
+	
+	public Double getRecall(){
+		if(this.recall == null){
+			calculateRecall(this.profiles);
+		}
+		return this.recall;
+	}
+	
+	private Double calculateMRR(List<UserProfile> profiles) {
 
 		double sumFirstFound = 0;
 		List<String> suggested = new ArrayList<String>();
@@ -57,7 +78,7 @@ public class EvaluationManager {
 			}
 		}
 
-		double mrr = sumFirstFound / profiles.size();
+		Double mrr = sumFirstFound / profiles.size();
 		this.mrr = mrr;
 		System.out.println("MRR  " + mrr);
 		return mrr;
@@ -89,7 +110,7 @@ public class EvaluationManager {
 			}
 		}
 
-		double map = profiles.stream().mapToDouble(UserProfile::getAveragePrecision).sum() / profiles.size();
+		Double map = profiles.stream().mapToDouble(UserProfile::getAveragePrecision).sum() / profiles.size();
 		this.map = map;
 		System.out.println("MAP " + map);
 		return map;
@@ -102,7 +123,7 @@ public class EvaluationManager {
 			totalFound += up.getTotalFoundList(SIMILARITY_THRESHOLD).size();
 			totalFriends += up.getRealFriendsList().size();
 		}
-		double recall = totalFound / totalFriends;
+		Double recall = totalFound / totalFriends;
 		this.recall = recall;
 		System.out.println("Recall " + recall);
 		return recall;
@@ -115,7 +136,7 @@ public class EvaluationManager {
 			totalFound += up.getTotalFoundList(SIMILARITY_THRESHOLD).size();
 			totalSuggested += up.getSuggestedFriendsList(SIMILARITY_THRESHOLD).size();
 		}
-		double precision = totalFound / totalSuggested;
+		Double precision = totalFound / totalSuggested;
 		this.precision = precision;
 		System.out.println("Precision " + precision);
 		return precision;
