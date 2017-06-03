@@ -64,7 +64,7 @@ public class GeoServer {
 	// workflow flags
 	private static final boolean CLUSTER_GOWALLA = false;
 	private static final boolean CLUSTER_FIREBASE = false;
-	private static final boolean EVALUATE_LOCATIONS = false;
+	private static final boolean EVALUATE_GOWALLA = false;
 	private static final boolean EVALUATE_EVENTS = false;
 	private static final boolean EVALUATE_SCALABILITY = false;
 	private static final boolean EVALUATE_UX = true;
@@ -75,10 +75,10 @@ public class GeoServer {
 	private static final long abril = 1491001200000l;// milisecs 1 de abril 2017
 
 	public static void main(String[] args) {
-		long initTime = System.currentTimeMillis();
+		double initTime = System.currentTimeMillis();
 
 		System.out.println("clusterGowalla " + CLUSTER_GOWALLA + "// clusterFirebase " + CLUSTER_FIREBASE);
-		System.out.println("evaluateLocations " + EVALUATE_LOCATIONS + "// evaluateEvents " + EVALUATE_EVENTS
+		System.out.println("evaluateLocations " + EVALUATE_GOWALLA + "// evaluateEvents " + EVALUATE_EVENTS
 				+ "// evaluateScalability " + EVALUATE_SCALABILITY);
 		System.out.println("actScore " + ACT_SCORE_WEIGHT + " // seqScore " + SEQ_SCORE_WEIGHT);
 		System.out.println("level " + LEVEL + " // threshold " + SIMILARITY_THRESHOLD);
@@ -92,7 +92,7 @@ public class GeoServer {
 			return;
 		}
 
-		if (EVALUATE_SCALABILITY) {
+		else if (EVALUATE_SCALABILITY) {
 			try {
 				boolean realVersion = true;
 				int trajectorySize = 50;
@@ -112,29 +112,24 @@ public class GeoServer {
 			} catch (UnsupportedEncodingException | FirebaseException e) {
 				e.printStackTrace();
 			}
-			return;
-		}
-		if (EVALUATE_UX) {
+		} 
+		
+		else if (EVALUATE_UX) {
 			int numEvents = 50;
 			List<UXMetrics> metrics;
 			try {
 				metrics = FirebaseHelper.getUXMetricsFromFirebase(numEvents);
 				OptionalDouble averageTime = metrics.stream().map(x -> x.timeUntilFirst).mapToLong(x -> x).average();
+
 				System.out.println("Evaluating UX metrics :: numEvents " + numEvents);
 				System.out.println("Average Time Until First " + averageTime.getAsDouble() + " milisecs");
 			} catch (UnsupportedEncodingException | FirebaseException e) {
 				e.printStackTrace();
 			}
-			return;
-		}
-		// cluster based on gowalla data
-		if (CLUSTER_GOWALLA) {
-			FIREBASE = false;
-			level_clusters_map = clusterLocationsKMEANS(pathKmeansNewYorkCSV);
 		}
 
 		// use gowalla to evaluate
-		else if (EVALUATE_LOCATIONS) {
+		else if (EVALUATE_GOWALLA) {
 			FIREBASE = false;
 			level_clusters_map = populateLevelClustersMap();
 
@@ -158,6 +153,28 @@ public class GeoServer {
 			evaluationManager.evaluateResults();
 		}
 
+		else if (EVALUATE_EVENTS) {
+			FIREBASE = true;
+			UserProfilesManager userProfilesManager = new UserProfilesManager(mFileManager, FIREBASE);
+			id_userProfile = userProfilesManager.createUserProfiles();
+
+			try {
+				id_userProfile = FirebaseHelper.populateUserEventsFromFirebase(id_userProfile);
+
+				SimilarityManager similarityManager = new SimilarityManager(id_userProfile, LEVEL, SEQ_SCORE_WEIGHT,
+						ACT_SCORE_WEIGHT);
+				id_userProfile = similarityManager.calculateSimilaritiesFromEvents();
+			} catch (UnsupportedEncodingException | FirebaseException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// cluster based on gowalla data
+		else if (CLUSTER_GOWALLA) {
+			FIREBASE = false;
+			level_clusters_map = clusterLocationsKMEANS(pathKmeansNewYorkCSV);
+		}
+
 		else if (CLUSTER_FIREBASE) {
 			FIREBASE = true;
 			try {
@@ -176,39 +193,16 @@ public class GeoServer {
 
 					mFileManager.createCSVFirebaseLocations(id_userProfile, pathKmeansFirebaseCSV);
 
-					// if (KMEANS) {
-					// level_clusters_map =
-					// clusterLocationsKMEANS(pathKmeansFirebaseCSV);
-					// } else {
-					// level_clusters_map_optics =
-					// clusterLocationsOPTICS(pathKmeansFirebaseCSV);
-					// }
+					level_clusters_map = clusterLocationsKMEANS(pathKmeansFirebaseCSV);
 				}
 			} catch (FirebaseException | IOException e) {
 				e.printStackTrace();
 			}
-			return;
 		}
-
-		else if (EVALUATE_EVENTS) {
-			FIREBASE = true;
-			UserProfilesManager userProfilesManager = new UserProfilesManager(mFileManager, FIREBASE);
-			id_userProfile = userProfilesManager.createUserProfiles();
-
-			try {
-				id_userProfile = FirebaseHelper.populateUserEventsFromFirebase(id_userProfile);
-
-				SimilarityManager similarityManager = new SimilarityManager(id_userProfile, LEVEL, SEQ_SCORE_WEIGHT,
-						ACT_SCORE_WEIGHT);
-				id_userProfile = similarityManager.calculateSimilaritiesFromEvents();
-			} catch (UnsupportedEncodingException | FirebaseException e) {
-				e.printStackTrace();
-			}
-		}
-
-		long endTime = System.currentTimeMillis();
-		long time = (endTime - initTime) / 1000 / 60;
-		System.out.println("Took " + time + " minutes");
+		
+		double endTime = System.currentTimeMillis();
+		double time = (endTime - initTime) / 1000 / 60;
+		System.out.println("This task took " + time + " minutes");
 
 	}
 
