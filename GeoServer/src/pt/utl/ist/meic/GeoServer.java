@@ -29,7 +29,8 @@ import pt.utl.ist.meic.domain.managers.EvaluationManager;
 import pt.utl.ist.meic.domain.managers.SimilarityManager;
 import pt.utl.ist.meic.domain.managers.UserProfilesManager;
 import pt.utl.ist.meic.firebase.FirebaseHelper;
-import pt.utl.ist.meic.firebase.models.EvaluationMetrics;
+import pt.utl.ist.meic.firebase.models.ScalabilityMetrics;
+import pt.utl.ist.meic.firebase.models.UXMetrics;
 import pt.utl.ist.meic.utility.FileManager;
 import test.TestMeasures;
 
@@ -66,7 +67,8 @@ public class GeoServer {
 	private static final boolean EVALUATE_LOCATIONS = false;
 	private static final boolean EVALUATE_EVENTS = false;
 	private static final boolean EVALUATE_SCALABILITY = false;
-	private static final boolean TEST = true;
+	private static final boolean EVALUATE_UX = true;
+	private static final boolean TEST = false;
 	private static boolean FIREBASE;
 
 	// debug
@@ -76,7 +78,8 @@ public class GeoServer {
 		long initTime = System.currentTimeMillis();
 
 		System.out.println("clusterGowalla " + CLUSTER_GOWALLA + "// clusterFirebase " + CLUSTER_FIREBASE);
-		System.out.println("evaluateLocations " + EVALUATE_LOCATIONS + "// evaluateEvents " + EVALUATE_EVENTS+ "// evaluateScalability " + EVALUATE_SCALABILITY);
+		System.out.println("evaluateLocations " + EVALUATE_LOCATIONS + "// evaluateEvents " + EVALUATE_EVENTS
+				+ "// evaluateScalability " + EVALUATE_SCALABILITY);
 		System.out.println("actScore " + ACT_SCORE_WEIGHT + " // seqScore " + SEQ_SCORE_WEIGHT);
 		System.out.println("level " + LEVEL + " // threshold " + SIMILARITY_THRESHOLD);
 
@@ -88,23 +91,37 @@ public class GeoServer {
 			TestMeasures.testAllMeasures();
 			return;
 		}
-		
-		if(EVALUATE_SCALABILITY){
+
+		if (EVALUATE_SCALABILITY) {
 			try {
 				boolean realVersion = true;
 				int trajectorySize = 50;
 				String info = "Evaluating ";
 				info += (realVersion) ? "REAL version, " : "BAD version, ";
-				info += "with trajectorySize of "+trajectorySize;
-				
-				List<EvaluationMetrics> metrics = FirebaseHelper.getEvaluationMetricsFromFirebase(realVersion, trajectorySize);
-				OptionalDouble averageBytesSpent = metrics.stream().map(x->x.bytesSpent).mapToLong(x->x).average();
-				OptionalDouble averageUpdates = metrics.stream().map(x->x.updates).mapToInt(x->x).average();
-				
+				info += "with trajectorySize of " + trajectorySize;
+
+				List<ScalabilityMetrics> metrics = FirebaseHelper.getScalabilityMetricsFromFirebase(realVersion,
+						trajectorySize);
+				OptionalDouble averageBytesSpent = metrics.stream().map(x -> x.bytesSpent).mapToLong(x -> x).average();
+				OptionalDouble averageUpdates = metrics.stream().map(x -> x.updates).mapToInt(x -> x).average();
+
 				System.out.println(info);
-				System.out.println("Average Bytes Spent "+averageBytesSpent.getAsDouble());
-				System.out.println("Average Updates "+averageUpdates.getAsDouble());
-				
+				System.out.println("Average Bytes Spent " + averageBytesSpent.getAsDouble());
+				System.out.println("Average Updates " + averageUpdates.getAsDouble());
+
+			} catch (UnsupportedEncodingException | FirebaseException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
+		if (EVALUATE_UX) {
+			int numEvents = 50;
+			List<UXMetrics> metrics;
+			try {
+				metrics = FirebaseHelper.getUXMetricsFromFirebase(numEvents);
+				OptionalDouble averageTime = metrics.stream().map(x -> x.timeUntilFirst).mapToLong(x -> x).average();
+				System.out.println("Evaluating UX metrics :: numEvents " + numEvents);
+				System.out.println("Average Time Until First " + averageTime.getAsDouble() + " milisecs");
 			} catch (UnsupportedEncodingException | FirebaseException e) {
 				e.printStackTrace();
 			}
@@ -113,7 +130,7 @@ public class GeoServer {
 		// cluster based on gowalla data
 		if (CLUSTER_GOWALLA) {
 			FIREBASE = false;
-				level_clusters_map = clusterLocationsKMEANS(pathKmeansNewYorkCSV);
+			level_clusters_map = clusterLocationsKMEANS(pathKmeansNewYorkCSV);
 		}
 
 		// use gowalla to evaluate
@@ -195,11 +212,10 @@ public class GeoServer {
 
 	}
 
-	public static void testStuff(){
-		
+	public static void testStuff() {
+
 	}
-	
-	
+
 	private static Map<Integer, List<ClusterWithMean>> clusterLocationsKMEANS(String path) {
 		Map<Integer, List<ClusterWithMean>> level_clusters_map = new HashMap<>();
 

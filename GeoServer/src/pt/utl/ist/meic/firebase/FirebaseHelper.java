@@ -26,7 +26,8 @@ import net.thegreshams.firebase4j.service.Firebase;
 import pt.utl.ist.meic.domain.CheckIn;
 import pt.utl.ist.meic.domain.DataPoint;
 import pt.utl.ist.meic.domain.UserProfile;
-import pt.utl.ist.meic.firebase.models.EvaluationMetrics;
+import pt.utl.ist.meic.firebase.models.ScalabilityMetrics;
+import pt.utl.ist.meic.firebase.models.UXMetrics;
 import pt.utl.ist.meic.firebase.models.Event;
 import pt.utl.ist.meic.firebase.models.EventCategory;
 import pt.utl.ist.meic.firebase.models.User;
@@ -36,9 +37,35 @@ public class FirebaseHelper {
 
 	private static final String FIREBASE_URL = "https://geofriendsfire.firebaseio.com";
 
-	public static List<EvaluationMetrics> getEvaluationMetricsFromFirebase(boolean real, int trajectorySize)
+	public static List<UXMetrics> getUXMetricsFromFirebase(int totalEvents)
 			throws FirebaseException, UnsupportedEncodingException {
-		List<EvaluationMetrics> toReturn = new ArrayList<>();
+		List<UXMetrics> toReturn = new ArrayList<>();
+
+		String ref = FIREBASE_URL + "/UXEvaluator";
+		ref += "/" + totalEvents;
+
+		Firebase firebase = new Firebase(ref);
+
+		FirebaseResponse response = firebase.get();
+		response.getBody().entrySet().stream().forEach(x -> {
+			toReturn.add(parseUXMetrics(x));
+		});
+
+		return toReturn;
+	}
+
+	private static UXMetrics parseUXMetrics(Map.Entry<String, Object> x) {
+		String metricsValues = x.getValue().toString();
+		String[] aux = metricsValues.split(",");
+		String timeUntilFirst = aux[0].split("=")[1];
+		timeUntilFirst = timeUntilFirst.substring(0, timeUntilFirst.length() - 1);
+		long time = Long.parseLong(timeUntilFirst);
+		return new UXMetrics(time);
+	}
+
+	public static List<ScalabilityMetrics> getScalabilityMetricsFromFirebase(boolean real, int trajectorySize)
+			throws FirebaseException, UnsupportedEncodingException {
+		List<ScalabilityMetrics> toReturn = new ArrayList<>();
 
 		String ref = FIREBASE_URL + "/networkEvaluator";
 		ref += (real) ? "/real" : "/BAD";
@@ -54,7 +81,7 @@ public class FirebaseHelper {
 		return toReturn;
 	}
 
-	private static EvaluationMetrics parseMetrics(Map.Entry<String, Object> x) {
+	private static ScalabilityMetrics parseMetrics(Map.Entry<String, Object> x) {
 		String metricsValues = x.getValue().toString();
 		String[] aux = metricsValues.split(",");
 		String bytesSpentStr = aux[0].split("=")[1];
@@ -64,7 +91,7 @@ public class FirebaseHelper {
 		long bytesSpent = Long.parseLong(bytesSpentStr);
 		int updates = Integer.parseInt(updatesStr);
 
-		return new EvaluationMetrics(bytesSpent, updates);
+		return new ScalabilityMetrics(bytesSpent, updates);
 	}
 
 	public static int getStoredLocationsSizeFromFirebase() throws FirebaseException, UnsupportedEncodingException {
@@ -300,67 +327,72 @@ public class FirebaseHelper {
 		System.out.println(response.getBody().toString());
 	}
 
-	public static void populateFakeEventsToFirebase(int numberOfEvents) throws FirebaseException, UnsupportedEncodingException, JacksonUtilityException {
+	public static void populateFakeEventsToFirebase(int numberOfEvents)
+			throws FirebaseException, UnsupportedEncodingException, JacksonUtilityException {
 		Firebase firebaseEventsRef = new Firebase(FIREBASE_URL + "/fakeEvents");
 		Firebase firebaseLocationsRef = new Firebase(FIREBASE_URL + "/fakeEventsLocations");
-		
+
 		String authorName = "Bob";
 		String authorId = "bobKey";
 		EventCategory category = EventCategory.Sports;
 		String description = "testDescription #";
 		SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        String creationDate = df.format(new Date());
-        
-		for(int i = 0;i<numberOfEvents;i++){
-			//create fake event
-			Event fake = new Event(""+i,authorId,authorName,category,creationDate,description+i);
-			//push to firebase
+		String creationDate = df.format(new Date());
+
+		for (int i = 0; i < numberOfEvents; i++) {
+			// create fake event
+			Event fake = new Event("" + i, authorId, authorName, category, creationDate, description + i);
+			// push to firebase
 			FirebaseResponse responseEvent = firebaseEventsRef.post(fake.toMap());
 			String eventKey = (String) responseEvent.getBody().get("name");
-			System.out.println("Event Key "+eventKey);
-			
-			//create fake location
-			Map<String,Double> location = getRandomLocationTestingArea();
-			GeoHash geoHash = new GeoHash(location.get("lati"),location.get("longi"));
-			
+			System.out.println("Event Key " + eventKey);
+
+			// create fake location
+			Map<String, Double> location = getRandomLocationTestingArea();
+			GeoHash geoHash = new GeoHash(location.get("lati"), location.get("longi"));
+
 			Map<String, Object> fakeEventLocation = new HashMap<String, Object>();
 			fakeEventLocation.put("g", geoHash.getGeoHashString());
 			fakeEventLocation.put("l", Arrays.asList(location.get("lati"), location.get("longi")));
-			
-			//push to firebase with the corresponding event key
-			firebaseLocationsRef.put(eventKey,fakeEventLocation);
+
+			// push to firebase with the corresponding event key
+			firebaseLocationsRef.put(eventKey, fakeEventLocation);
 		}
-		
+
 		System.out.println("Finished populating fake Events");
 	}
-	
-	private static Map<String,Double> getRandomLocationTestingArea() {
-        Random random = new Random();
-        Map<String,Double> testingAreaLimits = getTestingAreaLimits();
-        
-        double maxLati = testingAreaLimits.get("top");
-        double minLati = testingAreaLimits.get("bot");
-        double maxLongi = testingAreaLimits.get("right");
-        double minLongi = testingAreaLimits.get("left");
-        
-        double lati = minLati + (maxLati - minLati) * random.nextDouble();
-        double longi = minLongi + (maxLongi - minLongi) * random.nextDouble();
-        
-        Map<String,Double> toReturn = new HashMap<String,Double>(){{
-        	this.put("lati",lati);
-        	this.put("longi", longi);
-        }};
-        
-        return toReturn;
-    }
-	
-	private static Map<String,Double> getTestingAreaLimits(){
-        return new HashMap<String,Double>(){{
-            put("bot",38.689615);
-            put("top",38.741777);
-            put("left",-9.484146);
-            put("right",-9.388799);
-        }};
-    }
+
+	private static Map<String, Double> getRandomLocationTestingArea() {
+		Random random = new Random();
+		Map<String, Double> testingAreaLimits = getTestingAreaLimits();
+
+		double maxLati = testingAreaLimits.get("top");
+		double minLati = testingAreaLimits.get("bot");
+		double maxLongi = testingAreaLimits.get("right");
+		double minLongi = testingAreaLimits.get("left");
+
+		double lati = minLati + (maxLati - minLati) * random.nextDouble();
+		double longi = minLongi + (maxLongi - minLongi) * random.nextDouble();
+
+		Map<String, Double> toReturn = new HashMap<String, Double>() {
+			{
+				this.put("lati", lati);
+				this.put("longi", longi);
+			}
+		};
+
+		return toReturn;
+	}
+
+	private static Map<String, Double> getTestingAreaLimits() {
+		return new HashMap<String, Double>() {
+			{
+				put("bot", 38.689615);
+				put("top", 38.741777);
+				put("left", -9.484146);
+				put("right", -9.388799);
+			}
+		};
+	}
 
 }

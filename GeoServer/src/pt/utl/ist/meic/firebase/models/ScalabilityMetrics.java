@@ -1,11 +1,11 @@
 package pt.utl.ist.meic.firebase.models;
 
-public class EvaluationMetrics {
+public class ScalabilityMetrics {
 	
 	public long bytesSpent;
 	public int updates;
 	
-	public EvaluationMetrics(long bytesSpent, int updates) {
+	public ScalabilityMetrics(long bytesSpent, int updates) {
 		this.bytesSpent = bytesSpent;
 		this.updates = updates;
 	}
