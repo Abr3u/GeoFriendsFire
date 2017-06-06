@@ -63,13 +63,33 @@ public class FirebaseHelper {
 		return new UXMetrics(time);
 	}
 
-	public static List<ScalabilityMetrics> getScalabilityMetricsFromFirebase(boolean real, int trajectorySize)
+	public static List<ScalabilityMetrics> getScalabilityMetricsTrajSizeFromFirebase(boolean real, int trajectorySize)
 			throws FirebaseException, UnsupportedEncodingException {
 		List<ScalabilityMetrics> toReturn = new ArrayList<>();
 
 		String ref = FIREBASE_URL + "/networkEvaluator";
 		ref += (real) ? "/real" : "/BAD";
+		ref+="/TrajSize";
 		ref += "/" + trajectorySize;
+
+		Firebase firebase = new Firebase(ref);
+
+		FirebaseResponse response = firebase.get();
+		response.getBody().entrySet().stream().forEach(x -> {
+			toReturn.add(parseMetrics(x));
+		});
+
+		return toReturn;
+	}
+	
+	public static List<ScalabilityMetrics> getScalabilityMetricsNumEventsFromFirebase(boolean real, int numEvents)
+			throws FirebaseException, UnsupportedEncodingException {
+		List<ScalabilityMetrics> toReturn = new ArrayList<>();
+
+		String ref = FIREBASE_URL + "/networkEvaluator";
+		ref += (real) ? "/real" : "/BAD";
+		ref+="/NumEvents";
+		ref += "/" + numEvents;
 
 		Firebase firebase = new Firebase(ref);
 

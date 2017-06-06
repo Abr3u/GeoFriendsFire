@@ -66,8 +66,16 @@ public class GeoServer {
 	private static final boolean CLUSTER_FIREBASE = false;
 	private static final boolean EVALUATE_GOWALLA = false;
 	private static final boolean EVALUATE_EVENTS = false;
-	private static final boolean EVALUATE_SCALABILITY = false;
-	private static final boolean EVALUATE_UX = true;
+	
+
+	private static final boolean REAL_VERSION = true;
+	private static final boolean EVALUATE_SCALABILITY_TRAJ_SIZE = true;
+	private static final int TRAJ_SIZE = 40;
+	
+	private static final boolean EVALUATE_SCALABILITY_NUM_EVENTS = true;
+	private static final boolean EVALUATE_UX = true;//uses num_events
+	private static final int NUM_EVENTS = 50;
+	
 	private static final boolean TEST = false;
 	private static boolean FIREBASE;
 
@@ -76,12 +84,20 @@ public class GeoServer {
 
 	public static void main(String[] args) {
 		double initTime = System.currentTimeMillis();
+		String summary = "-----SUMMARY-----\n";
 
-		System.out.println("clusterGowalla " + CLUSTER_GOWALLA + "// clusterFirebase " + CLUSTER_FIREBASE);
-		System.out.println("evaluateLocations " + EVALUATE_GOWALLA + "// evaluateEvents " + EVALUATE_EVENTS
-				+ "// evaluateScalability " + EVALUATE_SCALABILITY);
-		System.out.println("actScore " + ACT_SCORE_WEIGHT + " // seqScore " + SEQ_SCORE_WEIGHT);
-		System.out.println("level " + LEVEL + " // threshold " + SIMILARITY_THRESHOLD);
+		summary += (CLUSTER_GOWALLA) ? "cluster Gowalla\n":"";
+		summary += (CLUSTER_FIREBASE) ? "cluster Firebase\n":"";
+		summary += (EVALUATE_EVENTS) ? "evaluate Events\n":"";
+		
+		summary += (EVALUATE_GOWALLA) ? "evaluate Gowalla\n":"";
+		summary += (EVALUATE_GOWALLA) ? "actScore " + ACT_SCORE_WEIGHT + " // seqScore " + SEQ_SCORE_WEIGHT+"\n":"";
+		summary += (EVALUATE_GOWALLA) ? "level " + LEVEL + " // threshold " + SIMILARITY_THRESHOLD+"\n":"";
+		
+		summary += (EVALUATE_SCALABILITY_NUM_EVENTS) ? "evaluate scalability NumEvents "+NUM_EVENTS+"\n":"";
+		summary += (EVALUATE_SCALABILITY_TRAJ_SIZE) ? "evaluate scalability TrajSize "+TRAJ_SIZE+"\n":"";
+		summary += (EVALUATE_UX) ? "evaluate UX numEvents "+NUM_EVENTS+"\n":"";
+		summary += (REAL_VERSION) ? "REAL version":"BAD version";
 
 		FileManager mFileManager = new FileManager();
 		Map<String, UserProfile> id_userProfile = new HashMap<>();
@@ -92,36 +108,57 @@ public class GeoServer {
 			return;
 		}
 
-		else if (EVALUATE_SCALABILITY) {
-			try {
-				boolean realVersion = true;
-				int trajectorySize = 50;
-				String info = "Evaluating ";
-				info += (realVersion) ? "REAL version, " : "BAD version, ";
-				info += "with trajectorySize of " + trajectorySize;
-
-				List<ScalabilityMetrics> metrics = FirebaseHelper.getScalabilityMetricsFromFirebase(realVersion,
-						trajectorySize);
-				OptionalDouble averageBytesSpent = metrics.stream().map(x -> x.bytesSpent).mapToLong(x -> x).average();
-				OptionalDouble averageUpdates = metrics.stream().map(x -> x.updates).mapToInt(x -> x).average();
+		if (EVALUATE_SCALABILITY_TRAJ_SIZE) {
+			try {				
+				String info = "------>>>>Evaluating Scalability, ";
+				info += (REAL_VERSION) ? "REAL version, " : "BAD version, ";
+				info += "with trajSize of " + TRAJ_SIZE;
+				
+				List<ScalabilityMetrics> metricsTrajSize = FirebaseHelper
+						.getScalabilityMetricsTrajSizeFromFirebase(REAL_VERSION, TRAJ_SIZE);
+				OptionalDouble averageBytesSpentTrajSize = metricsTrajSize.stream().map(x -> x.bytesSpent)
+						.mapToLong(x -> x).average();
+				OptionalDouble averageUpdatesTrajSize = metricsTrajSize.stream().map(x -> x.updates).mapToInt(x -> x)
+						.average();
 
 				System.out.println(info);
-				System.out.println("Average Bytes Spent " + averageBytesSpent.getAsDouble());
-				System.out.println("Average Updates " + averageUpdates.getAsDouble());
+				System.out.println("Average Bytes Spent " + averageBytesSpentTrajSize.getAsDouble());
+				System.out.println("Average Updates " + averageUpdatesTrajSize.getAsDouble());
 
 			} catch (UnsupportedEncodingException | FirebaseException e) {
 				e.printStackTrace();
 			}
-		} 
-		
-		else if (EVALUATE_UX) {
-			int numEvents = 50;
+		}
+
+		if (EVALUATE_SCALABILITY_NUM_EVENTS) {
+			try {
+				String info = "------>>>>>>Evaluating Scalability, ";
+				info += (REAL_VERSION) ? "REAL version, " : "BAD version, ";
+				info += "with numEvents of " + NUM_EVENTS;
+
+				List<ScalabilityMetrics> metricsNumEvents = FirebaseHelper
+						.getScalabilityMetricsNumEventsFromFirebase(REAL_VERSION, NUM_EVENTS);
+				OptionalDouble averageBytesSpentNumEvents = metricsNumEvents.stream().map(x -> x.bytesSpent)
+						.mapToLong(x -> x).average();
+				OptionalDouble averageUpdatesNumEvents = metricsNumEvents.stream().map(x -> x.updates).mapToInt(x -> x)
+						.average();
+
+				System.out.println(info);
+				System.out.println("Average Bytes Spent " + averageBytesSpentNumEvents.getAsDouble());
+				System.out.println("Average Updates " + averageUpdatesNumEvents.getAsDouble());
+
+			} catch (UnsupportedEncodingException | FirebaseException e) {
+				e.printStackTrace();
+			}
+		}
+
+		if (EVALUATE_UX) {
 			List<UXMetrics> metrics;
 			try {
-				metrics = FirebaseHelper.getUXMetricsFromFirebase(numEvents);
+				metrics = FirebaseHelper.getUXMetricsFromFirebase(NUM_EVENTS);
 				OptionalDouble averageTime = metrics.stream().map(x -> x.timeUntilFirst).mapToLong(x -> x).average();
 
-				System.out.println("Evaluating UX metrics :: numEvents " + numEvents);
+				System.out.println("--------->>>>>>>>Evaluating UX metrics :: numEvents " + NUM_EVENTS);
 				System.out.println("Average Time Until First " + averageTime.getAsDouble() + " milisecs");
 			} catch (UnsupportedEncodingException | FirebaseException e) {
 				e.printStackTrace();
@@ -199,7 +236,8 @@ public class GeoServer {
 				e.printStackTrace();
 			}
 		}
-		
+
+		System.out.println(summary);
 		double endTime = System.currentTimeMillis();
 		double time = (endTime - initTime) / 1000 / 60;
 		System.out.println("This task took " + time + " minutes");
