@@ -1,5 +1,6 @@
 package pt.utl.ist.meic.domain;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
@@ -34,7 +35,8 @@ public class VertexInfo {
 
 	@Override
 	public String toString() {
-		return "[" + convertId(cluster.mId) + "]";
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+		return "[" + convertId(cluster.mId) + " @ "+sdf.format(date)+"]";
 	}
 
 	private String convertId(int id) {

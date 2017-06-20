@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import pt.utl.ist.meic.firebase.models.Event;
 import pt.utl.ist.meic.firebase.models.EventCategory;
 import pt.utl.ist.meic.utility.FileManager;
+import pt.utl.ist.meic.utility.FileManagerAMS;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -143,6 +144,14 @@ public class UserProfile {
 	}
 	
 	public void loadRealFriendsFromGowalla(FileManager fm) {
+		try {
+			this.realFriends = fm.getRealFriendsFromGowalla(userId);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void loadRealFriendsFromGowalla(FileManagerAMS fm) {
 		try {
 			this.realFriends = fm.getRealFriendsFromGowalla(userId);
 		} catch (IOException e) {

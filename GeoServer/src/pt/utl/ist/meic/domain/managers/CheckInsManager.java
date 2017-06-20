@@ -15,6 +15,7 @@ import pt.utl.ist.meic.domain.UserProfile;
 import pt.utl.ist.meic.domain.VertexInfo;
 import pt.utl.ist.meic.firebase.FirebaseHelper;
 import pt.utl.ist.meic.utility.FileManager;
+import pt.utl.ist.meic.utility.FileManagerAMS;
 
 public class CheckInsManager {
 
@@ -102,7 +103,7 @@ public class CheckInsManager {
 	}
 
 	// returns in meters
-	private double distanceBetween(double lat1, double lat2, double lon1, double lon2) {
+	private static double distanceBetween(double lat1, double lat2, double lon1, double lon2) {
 
 		final int R = 6371; // Radius of the earth
 
@@ -115,5 +116,42 @@ public class CheckInsManager {
 
 		return distance;
 	}
+	
+	//TODO remove
+	public static Map<String, UserProfile> populateUserCheckInsAMS(FileManagerAMS fm,Map<Integer, List<ClusterWithMean>> clusterLevel, Map<String,UserProfile> profiles,int level, int numClusters) throws ParseException, IOException {
+		List<CheckIn> userCheckIns;
+		Graph graph;
 
+		for (UserProfile profile : profiles.values()) {
+			userCheckIns = fm.getUserCheckInsCsv(profile.userId);
+			graph = getUserGraphFromCheckInsAMS(clusterLevel, userCheckIns, level, numClusters);
+			profile.addNewGraph(level, graph);
+		}
+		return profiles;
+	}
+
+	private static Graph getUserGraphFromCheckInsAMS(Map<Integer, List<ClusterWithMean>> clustersLevel, List<CheckIn> userCheckIns, int level,int numClusters) {
+		Graph graph = new Graph(numClusters);
+		// inserir cada checkIn no seu cluster => criar um vertice no graph
+		for (CheckIn ci : userCheckIns) {
+			// values are init only
+			List<ClusterWithMean> clusters = clustersLevel.get(level);
+			double minDistance = Double.MAX_VALUE;
+			ClusterWithMean minCluster = clusters.get(0);// init with first
+			for (ClusterWithMean cluster : clusters) {
+				double distance = distanceBetween(ci.getDataPoint().getLatitude(), cluster.getmean().get(0),
+						ci.getDataPoint().getLongitude(), cluster.getmean().get(1));
+
+				if (distance < minDistance) {
+					minDistance = distance;
+					minCluster = cluster;
+				}
+			}
+			graph.addVertex(new VertexInfo(minCluster, ci.getDate()));
+		}
+		graph.buildSequences();
+		graph.buildPercentages();
+		return graph;
+	}
+	
 }

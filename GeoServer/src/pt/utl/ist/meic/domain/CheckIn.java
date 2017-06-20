@@ -7,7 +7,7 @@ import java.util.Date;
 public class CheckIn {
 	
 	private DataPoint mDataPoint;
-	private static final DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss Z");
+	private static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 	private Date mDate;
 	
 	public CheckIn(Date date,DataPoint dataPoint) {

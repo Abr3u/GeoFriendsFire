@@ -37,12 +37,13 @@ public class FirebaseHelper {
 
 	private static final String FIREBASE_URL = "https://geofriendsfire.firebaseio.com";
 
-	public static List<UXMetrics> getUXMetricsFromFirebase(int totalEvents)
+	public static List<UXMetrics> getUXMetricsFromFirebase(boolean real,int totalEvents)
 			throws FirebaseException, UnsupportedEncodingException {
 		List<UXMetrics> toReturn = new ArrayList<>();
 
-		String ref = FIREBASE_URL + "/UXEvaluator";
-		ref += "/" + totalEvents;
+		String ref = FIREBASE_URL+"/UXEvaluator/";
+        ref += (real) ? "real/" : "BAD/";
+        ref += totalEvents;
 
 		Firebase firebase = new Firebase(ref);
 
@@ -67,7 +68,7 @@ public class FirebaseHelper {
 			throws FirebaseException, UnsupportedEncodingException {
 		List<ScalabilityMetrics> toReturn = new ArrayList<>();
 
-		String ref = FIREBASE_URL + "/networkEvaluator";
+		String ref = FIREBASE_URL + "/EXPnetworkEvaluator";
 		ref += (real) ? "/real" : "/BAD";
 		ref+="/TrajSize";
 		ref += "/" + trajectorySize;
@@ -354,7 +355,7 @@ public class FirebaseHelper {
 
 		String authorName = "Bob";
 		String authorId = "bobKey";
-		EventCategory category = EventCategory.Sports;
+		EventCategory category = EventCategory.Food;
 		String description = "testDescription #";
 		SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 		String creationDate = df.format(new Date());

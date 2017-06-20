@@ -243,7 +243,7 @@ public class FileManager {
 		return relevant_user_friend;
 	}
 
-	// [End] userIdsNyNy NyNyRelevantFriends & NyNyRelevantFriendsCount
+	// [End] NyNyRelevantFriends & NyNyRelevantFriendsCount
 
 	/*
 	 * 

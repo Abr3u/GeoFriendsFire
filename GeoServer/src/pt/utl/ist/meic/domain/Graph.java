@@ -23,21 +23,27 @@ public class Graph {
 	public Set<Sequence> mSequences;
 
 	public Map<Integer, Double> cluster_percentage;
-	
-	public ClusterWithMean mCluster;//cluster with highest activity
 
- 	public Graph(int numClusters) {
+	public ClusterWithMean mCluster;// cluster with highest activity
+
+	public Graph(int numClusters) {
 		vertexes = new ArrayList<VertexInfo>();
 		mSequences = new HashSet<Sequence>();
-		cluster_percentage = new HashMap<Integer, Double>(){{
-			for(int i=0;i<numClusters;i++){
-				this.put(i, 0d);
+		cluster_percentage = new HashMap<Integer, Double>() {
+			{
+				for (int i = 0; i < numClusters; i++) {
+					this.put(i, 0d);
+				}
 			}
-			}};
+		};
 	}
 
 	public void addVertex(VertexInfo vertex) {
 		this.vertexes.add(vertex);
+	}
+	
+	public void addSequence(Sequence seq) {
+		this.mSequences.add(seq);
 	}
 
 	public void getGraphContentString() {
@@ -65,15 +71,15 @@ public class Graph {
 		for (Map.Entry<Integer, Double> entry : cluster_percentage.entrySet()) {
 			cluster_percentage.put(entry.getKey(), entry.getValue() / total);
 		}
-		
-		//set mCluster as the cluster with highest activity
+
+		// set mCluster as the cluster with highest activity
 		int maxActivityId = cluster_percentage.entrySet().stream().max(Map.Entry.comparingByValue()).get().getKey();
-		for(VertexInfo vi : vertexes){
-			if(vi.cluster.mId == maxActivityId){
+		for (VertexInfo vi : vertexes) {
+			if (vi.cluster.mId == maxActivityId) {
 				mCluster = vi.cluster;
 			}
 		}
-		
+
 	}
 
 	private void removeShortSequences() {
@@ -160,6 +166,21 @@ public class Graph {
 			// System.out.println("sequence" + i + " -> v:" +
 			// seq.getClusters().size());
 			i++;
+		}
+		System.out.println("--------------------------");
+	}
+
+	public void printSequencesExist() {
+		if (mSequences.size() > 0) {
+			System.out.println("TOTAL DE SEQUENCIAS -> " + mSequences.size());
+			int i = 0;
+			for (Sequence seq : mSequences) {
+				System.out.println("sequence " + i + " " + getAggregatedSeqString(seq));
+				// System.out.println("sequence" + i + " -> v:" +
+				// seq.getClusters().size());
+				i++;
+			}
+			System.out.println("--------------------------");
 		}
 	}
 

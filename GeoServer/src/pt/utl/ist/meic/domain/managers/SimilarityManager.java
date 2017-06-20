@@ -143,8 +143,8 @@ public class SimilarityManager {
 			Graph graphB = profileB.getGraphByLevel(level);
 
 			// transformar seqs em seqs aggregadas e ir buscar as top N
-			Set<Sequence> seqsA = graphA.getTopNSequences(5, graphA.getAggregatedSeqs());
-			Set<Sequence> seqsB = graphB.getTopNSequences(5, graphB.getAggregatedSeqs());
+			Set<Sequence> seqsA = graphA.getTopNSequences(50, graphA.getAggregatedSeqs());
+			Set<Sequence> seqsB = graphB.getTopNSequences(50, graphB.getAggregatedSeqs());
 
 			double score = 0;
 			for (Sequence seqA : seqsA) {
