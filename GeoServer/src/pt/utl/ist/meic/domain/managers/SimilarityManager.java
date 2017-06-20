@@ -234,11 +234,17 @@ public class SimilarityManager {
 
 		Set<SequenceAuxiliar> auxSet = new HashSet<SequenceAuxiliar>(set);
 		auxSet.remove(seq);
+		
+		AuxiliarVertex v1;
+		AuxiliarVertex v2;
+		long travelTime1;
+		long travelTime2;
+		long delta;
 
 		for (SequenceAuxiliar aux : auxSet) {
 			if (seq.mVertexes.size() == 1) {
-				AuxiliarVertex v1 = seq.getLastVertex();
-				AuxiliarVertex v2 = aux.getLastVertex();
+				v1 = seq.getLastVertex();
+				v2 = aux.getLastVertex();
 				// System.out.println("estou a analisar " + v1 + " com " + v2);
 				if (v1.vertex.mId != v2.vertex.mId && consequentIndexes(v1, v2)) {
 					// se for tamanho 1, nao comparamos sequencias para o
@@ -246,12 +252,12 @@ public class SimilarityManager {
 					// System.out.println("consequent and diferent!");
 					// calcular o tempo perdido a ir de seq para aux em cada
 					// sequencia original
-					long travelTime1 = Math.abs(a.getClusters().get(v1.index1).leavTime.getTime()
+					travelTime1 = Math.abs(a.getClusters().get(v1.index1).leavTime.getTime()
 							- a.getClusters().get(v2.index1).arrTime.getTime());
-					long travelTime2 = Math.abs(b.getClusters().get(v1.index2).leavTime.getTime()
+					travelTime2 = Math.abs(b.getClusters().get(v1.index2).leavTime.getTime()
 							- b.getClusters().get(v2.index2).arrTime.getTime());
 
-					long delta = Math.abs(travelTime1 - travelTime2);
+					delta = Math.abs(travelTime1 - travelTime2);
 					if (delta <= transitionTimeThreshold) {
 						SequenceAuxiliar result = new SequenceAuxiliar();
 						result.mVertexes.add(v1);
@@ -262,59 +268,50 @@ public class SimilarityManager {
 					}
 				}
 			} else if (seq.mVertexes.size() > 1) {
-				AuxiliarVertex v1 = seq.getLastVertex();
-				AuxiliarVertex v2 = aux.getFirstVertex();
+				v1 = seq.getLastVertex();
+				v2 = aux.getFirstVertex();
+
 				// System.out.println("estou a analisar " + v1 + " com " + v2);
-				if (consequentIndexes(v1, v2)) {
-					// System.out.println("consequent!");
-					long travelTime1;
-					long travelTime2;
-					long delta;
-					if (v1.equals(v2)) {
-						// System.out.println("same! calcular delta com
-						// seguinte");
+				if (v1.equals(v2)) {
+					// System.out.println("same! calcular delta com
+					// seguinte");
 
-						v2 = aux.getSecondVertex();
+					v2 = aux.getSecondVertex();
 
-						travelTime1 = Math.abs(a.getClusters().get(v1.index1).leavTime.getTime()
-								- a.getClusters().get(v2.index1).arrTime.getTime());
-						travelTime2 = Math.abs(b.getClusters().get(v1.index2).leavTime.getTime()
-								- b.getClusters().get(v2.index2).arrTime.getTime());
+					travelTime1 = Math.abs(a.getClusters().get(v1.index1).leavTime.getTime()
+							- a.getClusters().get(v2.index1).arrTime.getTime());
+					travelTime2 = Math.abs(b.getClusters().get(v1.index2).leavTime.getTime()
+							- b.getClusters().get(v2.index2).arrTime.getTime());
 
-						delta = Math.abs(travelTime1 - travelTime2);
-						if (delta <= transitionTimeThreshold && !shareIndexes(v1, v2)) {
-							SequenceAuxiliar result = new SequenceAuxiliar();
-							result.mVertexes.addAll(seq.mVertexes);
-							result.mVertexes.add(aux.getSecondVertex());
-							// System.out.println("aumentei seq para :: " +
-							// result);
-							toReturn.add(result);
-						}
-					} else {
-						// System.out.println("nao encaixam!");
-						if (!shareIndexes(v1, v2)) {
-							// System.out.println("nao partilham");
-							travelTime1 = Math.abs(a.getClusters().get(v1.index1).leavTime.getTime()
-									- a.getClusters().get(v2.index1).arrTime.getTime());
-							travelTime2 = Math.abs(b.getClusters().get(v1.index2).leavTime.getTime()
-									- b.getClusters().get(v2.index2).arrTime.getTime());
+					delta = Math.abs(travelTime1 - travelTime2);
+					if (delta <= transitionTimeThreshold && !shareIndexes(v1, v2)) {
+						SequenceAuxiliar result = new SequenceAuxiliar();
+						result.mVertexes.addAll(seq.mVertexes);
+						result.mVertexes.add(aux.getSecondVertex());
+						// System.out.println("aumentei seq para :: " +
+						// result);
+						toReturn.add(result);
+					}
+				} else if (consequentIndexes(v1, v2) && !shareIndexes(v1, v2)) {
+					// System.out.println("consequent e nao partilham");
+					travelTime1 = Math.abs(a.getClusters().get(v1.index1).leavTime.getTime()
+							- a.getClusters().get(v2.index1).arrTime.getTime());
+					travelTime2 = Math.abs(b.getClusters().get(v1.index2).leavTime.getTime()
+							- b.getClusters().get(v2.index2).arrTime.getTime());
 
-							delta = Math.abs(travelTime1 - travelTime2);
-							if (delta <= transitionTimeThreshold) {
-								SequenceAuxiliar result = new SequenceAuxiliar();
-								result.mVertexes.addAll(seq.mVertexes);
-								result.mVertexes.add(v2);
-								// System.out.println("aumentei seq para :: " +
-								// result);
-								toReturn.add(result);
-							}
-						}
+					delta = Math.abs(travelTime1 - travelTime2);
+					if (delta <= transitionTimeThreshold) {
+						SequenceAuxiliar result = new SequenceAuxiliar();
+						result.mVertexes.addAll(seq.mVertexes);
+						result.mVertexes.add(v2);
+						// System.out.println("aumentei seq para :: " +
+						// result);
+						toReturn.add(result);
 					}
 				}
 			}
 		}
 		return toReturn;
-
 	}
 
 	private boolean shareIndexes(AuxiliarVertex v1, AuxiliarVertex v2) {
