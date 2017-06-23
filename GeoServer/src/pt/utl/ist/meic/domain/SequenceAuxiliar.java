@@ -6,6 +6,7 @@ import java.util.List;
 public class SequenceAuxiliar {
 
 	public List<AuxiliarVertex> mVertexes;
+	public boolean sameTimeOfDay;
 
 	public SequenceAuxiliar() {
 		this.mVertexes = new ArrayList<AuxiliarVertex>();
@@ -17,6 +18,7 @@ public class SequenceAuxiliar {
 		for (AuxiliarVertex vertex : mVertexes) {
 			seq.addVertexInfo(new VertexInfo(vertex.vertex, vertex.date));
 		}
+		seq.sameTimeOfDay = this.sameTimeOfDay;
 
 		return seq;
 	}

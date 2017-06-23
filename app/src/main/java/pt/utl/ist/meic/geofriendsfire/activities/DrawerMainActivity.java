@@ -234,7 +234,7 @@ public class DrawerMainActivity extends AppCompatActivity implements GoogleApiCl
 
                         if (user == null) {
                             Log.d("yyy", "era null");
-                            User newUser = new User(firebaseUser.getDisplayName(), firebaseUser.getEmail());
+                            User newUser = new User(firebaseUser.getDisplayName(), firebaseUser.getEmail(),"NORMAL");
                             writeNewUser(newUser);
                         } else {
                             Log.d("yyy", "nao era null");

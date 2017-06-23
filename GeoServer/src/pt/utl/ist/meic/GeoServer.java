@@ -58,15 +58,16 @@ public class GeoServer {
 	private static final int MATCHING_MAX_SEQ_LENGTH = 20;// analisar seqs no
 															// maximo de 20
 															// clusters
-	private static final long TRANSITION_TIME_THRESHOLD = 2 * 60 * 60 * 1000;// 2
-																				// horas
+	private static final long TRANSITION_TIME_THRESHOLD = 2 * 60 * 60 * 1000;// 2 horas
+	private static final long SAME_TIME_DAY_THRESHOLD = 30 * 60 * 1000;// 30 minutos																			// horas
 
+	
 	// workflow flags
 	private static final boolean CLUSTER_GOWALLA = false;
 	private static final boolean CLUSTER_FIREBASE = false;
 	private static final boolean EVALUATE_EVENTS = false;
 
-	private static final boolean EVALUATE_GOWALLA = false;
+	private static final boolean EVALUATE_NEW_YORK = false;
 	private static final boolean EVALUATE_AMSTERDAM = false;
 	private static final int LEVEL = 0;
 	private static final double ACT_SCORE_WEIGHT = 0.75;
@@ -95,9 +96,9 @@ public class GeoServer {
 		summary += (CLUSTER_FIREBASE) ? "cluster Firebase\n" : "";
 		summary += (EVALUATE_EVENTS) ? "evaluate Events\n" : "";
 
-		summary += (EVALUATE_GOWALLA) ? "evaluate Gowalla\n" : "";
-		summary += (EVALUATE_GOWALLA) ? "actScore " + ACT_SCORE_WEIGHT + " // seqScore " + SEQ_SCORE_WEIGHT + "\n" : "";
-		summary += (EVALUATE_GOWALLA) ? "level " + LEVEL + " // threshold " + SIMILARITY_THRESHOLD + "\n" : "";
+		summary += (EVALUATE_NEW_YORK) ? "evaluate New York\n" : "";
+		summary += (EVALUATE_NEW_YORK) ? "actScore " + ACT_SCORE_WEIGHT + " // seqScore " + SEQ_SCORE_WEIGHT + "\n" : "";
+		summary += (EVALUATE_NEW_YORK) ? "level " + LEVEL + " // threshold " + SIMILARITY_THRESHOLD + "\n" : "";
 
 		summary += (EVALUATE_SCALABILITY_NUM_EVENTS) ? "evaluate scalability NumEvents " + NUM_EVENTS + "\n" : "";
 		summary += (EVALUATE_SCALABILITY_TRAJ_SIZE) ? "evaluate scalability TrajSize " + TRAJ_SIZE + "\n" : "";
@@ -109,7 +110,13 @@ public class GeoServer {
 		Map<Integer, List<ClusterWithMean>> level_clusters_map = new HashMap<>();
 
 		if(TEST) {
-			TestSequences.testSameTimeOfDay();
+			//TestSequences.testExtendSequence();
+			try {
+				FirebaseHelper.getUserListFromFirebase().stream()
+				.forEach(System.out::println);
+			} catch (UnsupportedEncodingException | FirebaseException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		if (EVALUATE_AMSTERDAM) {
@@ -127,7 +134,7 @@ public class GeoServer {
 			SimilarityManager similarityManager = new SimilarityManager(id_userProfile, LEVEL, SEQ_SCORE_WEIGHT,
 					ACT_SCORE_WEIGHT);
 			id_userProfile = similarityManager.calculateSimilaritiesFromLocations(COMPARING_DISTANCE_THRESHOLD,
-					MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD);
+					MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD);
 
 			List<UserProfile> profiles = new ArrayList<>(id_userProfile.values());
 
@@ -199,8 +206,8 @@ public class GeoServer {
 			}
 		}
 
-		// use gowalla to evaluate
-		else if (EVALUATE_GOWALLA) {
+		// use gowalla NY to evaluate suggestions
+		else if (EVALUATE_NEW_YORK) {
 			FIREBASE = false;
 			level_clusters_map = populateLevelClustersMapNY();
 
@@ -214,7 +221,7 @@ public class GeoServer {
 			SimilarityManager similarityManager = new SimilarityManager(id_userProfile, LEVEL, SEQ_SCORE_WEIGHT,
 					ACT_SCORE_WEIGHT);
 			id_userProfile = similarityManager.calculateSimilaritiesFromLocations(COMPARING_DISTANCE_THRESHOLD,
-					MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD);
+					MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD);
 
 			List<UserProfile> profiles = new ArrayList<>(id_userProfile.values());
 

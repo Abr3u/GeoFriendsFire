@@ -47,6 +47,7 @@ public class UserProfilesManager {
 		List<User> users = FirebaseHelper.getUserListFromFirebase();
 		users.forEach(x -> {
 			UserProfile profile = new UserProfile(x.id);
+			profile.crossings = (x.suggestions.equals("NORMAL")) ? false : true;
 			profile.username = x.username;
 			id_userProfile.put(x.id, profile);
 		});

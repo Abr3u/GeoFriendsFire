@@ -1,6 +1,9 @@
 package pt.utl.ist.meic.domain.managers;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +19,7 @@ import pt.utl.ist.meic.domain.VertexInfo;
 import pt.utl.ist.meic.firebase.models.EventCategory;
 
 public class SimilarityManager {
-
+	
 	private Map<String, UserProfile> id_userProfile;
 	private int level;
 	private double SEQ_SCORE_WEIGHT;
@@ -61,7 +64,7 @@ public class SimilarityManager {
 	}
 
 	public Map<String, UserProfile> calculateSimilaritiesFromLocations(int COMPARING_DISTANCE_THRESHOLD,
-			int MATCHING_MAX_SEQ_LENGTH, long TRANSITION_TIME_THRESHOLD) {
+			int MATCHING_MAX_SEQ_LENGTH, long TRANSITION_TIME_THRESHOLD, long SAME_TIME_DAY_THRESHOLD) {
 		List<UserProfile> usersProfiles = new ArrayList<>(id_userProfile.values());
 
 		if (this.SEQ_SCORE_WEIGHT > 0) {
@@ -74,7 +77,7 @@ public class SimilarityManager {
 						if (usersCloseEnough(p1.getGraphByLevel(level), p2.getGraphByLevel(level),
 								COMPARING_DISTANCE_THRESHOLD)) {
 							double seqScore = getUserSimilaritySequences(p1, p2, level, MATCHING_MAX_SEQ_LENGTH,
-									TRANSITION_TIME_THRESHOLD);
+									TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD);
 							p1.addSimilarityScore(p2.userId, seqScore);
 							p2.addSimilarityScore(p1.userId, seqScore);
 						}
@@ -137,7 +140,7 @@ public class SimilarityManager {
 	//
 
 	private double getUserSimilaritySequences(UserProfile profileA, UserProfile profileB, int level,
-			int MATCHING_MAX_SEQ_LENGTH, long TRANSITION_TIME_THRESHOLD) {
+			int MATCHING_MAX_SEQ_LENGTH, long TRANSITION_TIME_THRESHOLD, long SAME_TIME_DAY_THRESHOLD) {
 		if (!profileA.userId.equals(profileB.userId)) {
 			Graph graphA = profileA.getGraphByLevel(level);
 			Graph graphB = profileB.getGraphByLevel(level);
@@ -146,16 +149,39 @@ public class SimilarityManager {
 			Set<Sequence> seqsA = graphA.getTopNSequences(50, graphA.getAggregatedSeqs());
 			Set<Sequence> seqsB = graphB.getTopNSequences(50, graphB.getAggregatedSeqs());
 
+			Set<SequenceAuxiliar> foundSeqs = new HashSet<SequenceAuxiliar>();
+			
 			double score = 0;
 			for (Sequence seqA : seqsA) {
 				for (Sequence seqB : seqsB) {
-					Set<Sequence> maxLengthSeqs = sequenceMatching(seqA, seqB, MATCHING_MAX_SEQ_LENGTH,
-							TRANSITION_TIME_THRESHOLD);
-					for (Sequence simseq : maxLengthSeqs) {
-						double size = simseq.getClusters().size();
-						score += size * Math.pow(2.0, size - 1);
-					}
+					foundSeqs.addAll(sequenceMatching(seqA, seqB, MATCHING_MAX_SEQ_LENGTH,
+							TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD));
 				}
+			}
+			System.out.println("Found seqs");
+			foundSeqs.stream().forEach(System.out::println);
+
+			//respect privacy settings 
+			if (!profileA.crossings && !profileB.crossings) {
+				// get longest seqs only
+				foundSeqs = pruneSequences(foundSeqs);
+				System.out.println("Max Length");
+			} else {
+				// someone wants only crossings
+				foundSeqs = foundSeqs.stream().filter(x -> x.sameTimeOfDay).collect(Collectors.toSet());
+				System.out.println("Only crossings");
+			}
+			
+			// convert auxiliar to normal Sequence
+			Set<Sequence> normalSeqs = new HashSet<Sequence>();
+			for (SequenceAuxiliar seq : foundSeqs) {
+				normalSeqs.add(seq.toNormalSequence());
+			}
+			
+			//calculate score
+			for (Sequence s : normalSeqs) {
+				double size = s.getClusters().size();
+				score += size * Math.pow(2.0, size - 1);
 			}
 			return score;
 		}
@@ -163,8 +189,8 @@ public class SimilarityManager {
 	}
 
 	// returns set of maximum length similar sequences
-	private Set<Sequence> sequenceMatching(Sequence seqA, Sequence seqB, int matchingMaxSeqLength,
-			long transitionTimeThreshold) {
+	private Set<SequenceAuxiliar> sequenceMatching(Sequence seqA, Sequence seqB, int matchingMaxSeqLength,
+			long transitionTimeThreshold, long sameTimeDayThreshold) {
 
 		int step = 1;
 		// add 1-length sequences into sequenceSet
@@ -175,7 +201,7 @@ public class SimilarityManager {
 			for (SequenceAuxiliar seq : sequenceSet) {
 				if (seq.mVertexes.size() == step) {
 					// extend step-length seq to be (step + 1)-length
-					toAdd.addAll(extendSequence(sequenceSet, seq, transitionTimeThreshold, seqA, seqB));
+					toAdd.addAll(extendSequence(sequenceSet, seq, transitionTimeThreshold,sameTimeDayThreshold, seqA, seqB));
 				}
 			}
 			sequenceSet.addAll(toAdd);
@@ -185,15 +211,8 @@ public class SimilarityManager {
 			}
 			step++;
 		}
-		sequenceSet = pruneSequences(sequenceSet);
-		Set<Sequence> toReturn = new HashSet<Sequence>();
 
-		// System.out.println("adicionar para devolver sequencias normais");
-		for (SequenceAuxiliar seq : sequenceSet) {
-			toReturn.add(seq.toNormalSequence());
-			// System.out.println(seq);
-		}
-		return toReturn;
+		return sequenceSet;
 
 	}
 
@@ -228,13 +247,13 @@ public class SimilarityManager {
 	}
 
 	private Set<SequenceAuxiliar> extendSequence(Set<SequenceAuxiliar> set, SequenceAuxiliar seq,
-			long transitionTimeThreshold, Sequence a, Sequence b) {
+			long transitionTimeThreshold,long sameTimeDayThreshold, Sequence a, Sequence b) {
 
 		Set<SequenceAuxiliar> toReturn = new HashSet<SequenceAuxiliar>();
 
 		Set<SequenceAuxiliar> auxSet = new HashSet<SequenceAuxiliar>(set);
 		auxSet.remove(seq);
-		
+
 		AuxiliarVertex v1;
 		AuxiliarVertex v2;
 		long travelTime1;
@@ -249,21 +268,22 @@ public class SimilarityManager {
 				if (v1.vertex.mId != v2.vertex.mId && consequentIndexes(v1, v2)) {
 					// se for tamanho 1, nao comparamos sequencias para o
 					// mesmo cluster
-					// System.out.println("consequent and diferent!");
-					// calcular o tempo perdido a ir de seq para aux em cada
-					// sequencia original
+
 					travelTime1 = Math.abs(a.getClusters().get(v1.index1).leavTime.getTime()
 							- a.getClusters().get(v2.index1).arrTime.getTime());
 					travelTime2 = Math.abs(b.getClusters().get(v1.index2).leavTime.getTime()
 							- b.getClusters().get(v2.index2).arrTime.getTime());
 
 					delta = Math.abs(travelTime1 - travelTime2);
-					if (delta <= transitionTimeThreshold) {
+
+					Date dateV1 = a.getClusters().get(v1.index1).date;
+					Date dateV2 = b.getClusters().get(v2.index2).date;
+
+					if (delta <= transitionTimeThreshold && !shareIndexes(v1, v2)) {
 						SequenceAuxiliar result = new SequenceAuxiliar();
-						result.mVertexes.add(v1);
+						result.mVertexes.addAll(seq.mVertexes);
 						result.mVertexes.add(v2);
-						// System.out.println("aumentei seq Unitaria para :: " +
-						// result);
+						result.sameTimeOfDay = sameTimeOfDay(dateV1, dateV2, sameTimeDayThreshold);
 						toReturn.add(result);
 					}
 				}
@@ -271,41 +291,28 @@ public class SimilarityManager {
 				v1 = seq.getLastVertex();
 				v2 = aux.getFirstVertex();
 
-				// System.out.println("estou a analisar " + v1 + " com " + v2);
 				if (v1.equals(v2)) {
-					// System.out.println("same! calcular delta com
-					// seguinte");
 
 					v2 = aux.getSecondVertex();
 
+				}
+				if (consequentIndexes(v1, v2)) {
+
 					travelTime1 = Math.abs(a.getClusters().get(v1.index1).leavTime.getTime()
 							- a.getClusters().get(v2.index1).arrTime.getTime());
 					travelTime2 = Math.abs(b.getClusters().get(v1.index2).leavTime.getTime()
 							- b.getClusters().get(v2.index2).arrTime.getTime());
 
 					delta = Math.abs(travelTime1 - travelTime2);
+
+					Date dateV1 = a.getClusters().get(v1.index1).date;
+					Date dateV2 = b.getClusters().get(v2.index2).date;
+
 					if (delta <= transitionTimeThreshold && !shareIndexes(v1, v2)) {
 						SequenceAuxiliar result = new SequenceAuxiliar();
 						result.mVertexes.addAll(seq.mVertexes);
-						result.mVertexes.add(aux.getSecondVertex());
-						// System.out.println("aumentei seq para :: " +
-						// result);
-						toReturn.add(result);
-					}
-				} else if (consequentIndexes(v1, v2) && !shareIndexes(v1, v2)) {
-					// System.out.println("consequent e nao partilham");
-					travelTime1 = Math.abs(a.getClusters().get(v1.index1).leavTime.getTime()
-							- a.getClusters().get(v2.index1).arrTime.getTime());
-					travelTime2 = Math.abs(b.getClusters().get(v1.index2).leavTime.getTime()
-							- b.getClusters().get(v2.index2).arrTime.getTime());
-
-					delta = Math.abs(travelTime1 - travelTime2);
-					if (delta <= transitionTimeThreshold) {
-						SequenceAuxiliar result = new SequenceAuxiliar();
-						result.mVertexes.addAll(seq.mVertexes);
 						result.mVertexes.add(v2);
-						// System.out.println("aumentei seq para :: " +
-						// result);
+						result.sameTimeOfDay = sameTimeOfDay(dateV1, dateV2, sameTimeDayThreshold);
 						toReturn.add(result);
 					}
 				}
@@ -322,6 +329,34 @@ public class SimilarityManager {
 		return v1.index1 <= v2.index1 && v1.index2 <= v2.index2;
 	}
 
+	private static boolean sameTimeOfDay(Date d1, Date d2, long sameTimeDayThreshold) {
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+		// System.out.println("STD "+sdf.format(d1)+" "+sdf.format(d2));
+		Calendar cal1 = Calendar.getInstance();
+		Calendar cal2 = Calendar.getInstance();
+		cal1.setTime(d1);
+		cal2.setTime(d2);
+
+		boolean sameDay = cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR)
+				&& cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
+		if (!sameDay) {
+			// System.out.println("FALSE");
+			// System.out.println();
+			return false;
+		}
+
+		long delta = Math.abs(d1.getTime() - d2.getTime());
+
+		if (delta > sameTimeDayThreshold) {
+			// System.out.println("FALSE");
+			// System.out.println();
+			return false;
+		}
+		// System.out.println("TRUE");
+		// System.out.println();
+		return true;
+	}
+	
 	//
 	// [END SEQUENCE MATCHING]
 	//

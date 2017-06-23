@@ -178,9 +178,10 @@ public class FirebaseHelper {
 	private static User parseUser(Map.Entry<String, Object> x) {
 		String userValues = x.getValue().toString();
 		String[] aux = userValues.split(",");
-		String username = aux[1].split("=")[1];
+		String suggestions = aux[1].split("=")[1];
+		String username = aux[2].split("=")[1];
 		username = username.substring(0, username.length() - 1);
-		return new User(x.getKey(), username);
+		return new User(x.getKey(), username,suggestions);
 	}
 
 	private static List<Event> getEventListFromFirebase() throws FirebaseException, UnsupportedEncodingException {

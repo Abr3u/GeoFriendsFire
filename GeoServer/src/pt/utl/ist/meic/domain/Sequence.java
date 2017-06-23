@@ -6,6 +6,7 @@ import java.util.List;
 public class Sequence implements Comparable<Sequence> {
 
 	private List<VertexInfo> mClusters;
+	public boolean sameTimeOfDay;
 
 	public Sequence() {
 		mClusters = new ArrayList<>();

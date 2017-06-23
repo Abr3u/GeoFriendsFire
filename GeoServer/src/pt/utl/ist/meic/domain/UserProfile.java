@@ -18,10 +18,12 @@ import java.util.stream.Collectors;
 public class UserProfile {
 	public String userId;
 	public String username;
+	public boolean crossings;
 	public double avgPrecision;
 
 	private Map<Integer, Graph> mGraphs;
 	private Map<String, Double> similarityScores;
+	private Map<String, Double> similarityScoresCrossings;
 	private Map<EventCategory, Double> eventPercentages;
 
 	private List<Event> mEvents;
@@ -35,6 +37,7 @@ public class UserProfile {
 		this.totalFound = 0;
 		this.mGraphs = new HashMap<Integer, Graph>();
 		this.similarityScores = new HashMap<String, Double>();
+		this.similarityScoresCrossings = new HashMap<String, Double>();
 		this.mEvents = new ArrayList<Event>();
 		this.realFriends = new ArrayList<String>();
 		eventPercentages = new HashMap<EventCategory, Double>() {
@@ -106,6 +109,31 @@ public class UserProfile {
 		}
 
 	}
+	
+	public void addSimilarityScoreCrossings(String userId, double score) {
+		// no simmilarity with yourself
+		if (!this.userId.equals(userId)) {
+			similarityScoresCrossings.put(userId, score);
+		}
+	}
+
+	public double getSimilarityScoreCrossings(String userId) {
+		if (this.similarityScoresCrossings.containsKey(userId)) {
+			return this.similarityScoresCrossings.get(userId);
+		}
+		return 0d;
+	}
+
+	public double getMaxSimilarityScoreCrossings() {
+		Optional<Entry<String, Double>> opt = this.similarityScoresCrossings.entrySet().stream()
+				.max(Map.Entry.<String, Double>comparingByValue());
+		if (opt.isPresent()) {
+			return opt.get().getValue();
+		} else {
+			return 0d;
+		}
+
+	}
 
 	public void printSimilarities() {
 		System.out.println("Similarites for user " + userId);
@@ -115,6 +143,10 @@ public class UserProfile {
 
 	public Map<String, Double> getSimilarities() {
 		return this.similarityScores;
+	}
+	
+	public Map<String, Double> getSimilaritiesCrossings() {
+		return this.similarityScoresCrossings;
 	}
 
 	public void normalizeSimilarityScores() {
@@ -126,6 +158,19 @@ public class UserProfile {
 			for (Map.Entry<String, Double> entry : similarityScores.entrySet()) {
 				double aux = ((entry.getValue() - min) / (max - min)) * (newmax - newmin) + newmin;
 				similarityScores.put(entry.getKey(), aux);
+			}
+		}
+	}
+	
+	public void normalizeSimilarityScoresCrossings() {
+		double min = 0;
+		double max = this.getMaxSimilarityScore();
+		double newmax = 1;
+		double newmin = 0;
+		if (max > 0) {
+			for (Map.Entry<String, Double> entry : similarityScoresCrossings.entrySet()) {
+				double aux = ((entry.getValue() - min) / (max - min)) * (newmax - newmin) + newmin;
+				similarityScoresCrossings.put(entry.getKey(), aux);
 			}
 		}
 	}
