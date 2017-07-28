@@ -19,6 +19,7 @@ import org.codehaus.jackson.map.introspect.BasicClassIntrospector.GetterMethodFi
 
 import ca.pfv.spmf.patterns.cluster.Cluster;
 import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
+import ca.pfv.spmf.patterns.cluster.DoubleArray;
 import net.thegreshams.firebase4j.error.FirebaseException;
 import net.thegreshams.firebase4j.error.JacksonUtilityException;
 import net.thegreshams.firebase4j.model.FirebaseResponse;
@@ -30,6 +31,7 @@ import pt.utl.ist.meic.firebase.models.ScalabilityMetrics;
 import pt.utl.ist.meic.firebase.models.UXMetrics;
 import pt.utl.ist.meic.firebase.models.Event;
 import pt.utl.ist.meic.firebase.models.EventCategory;
+import pt.utl.ist.meic.firebase.models.FirebaseCluster;
 import pt.utl.ist.meic.firebase.models.User;
 import pt.utl.ist.meic.utility.GeoHash;
 
@@ -252,12 +254,12 @@ public class FirebaseHelper {
 		return new CheckIn(df.parse(time), new DataPoint(latitude, longitude));
 	}
 
-	public static void writeNewClustersFirebaseKMEANS(List<ClusterWithMean> clusters, int level, long totalCheckIns)
+	public static void writeNewClustersFirebase(List<ClusterWithMean> clusters, long totalCheckIns)
 			throws FirebaseException, JacksonUtilityException, UnsupportedEncodingException {
 
-		deleteClustersFirebaseKMEANS(level);
+		deleteClustersFirebaseKMEANS();
 
-		Firebase firebase = new Firebase(FIREBASE_URL + "/clustersKMEANS" + level);
+		Firebase firebase = new Firebase(FIREBASE_URL + "/clusters");
 
 		for (int i = 0; i < clusters.size(); i++) {
 			// "PUT cluster to /clusters
@@ -273,36 +275,49 @@ public class FirebaseHelper {
 
 	}
 
-	private static void deleteClustersFirebaseKMEANS(int level) throws FirebaseException, UnsupportedEncodingException {
+	private static void deleteClustersFirebaseKMEANS() throws FirebaseException, UnsupportedEncodingException {
 		Firebase firebase = new Firebase(FIREBASE_URL);
-		FirebaseResponse response = firebase.delete("clustersKMEANS" + level);
+		FirebaseResponse response = firebase.delete("clusters");
 		System.out.println(response.getBody().toString());
 	}
+	
+	
+	public static List<FirebaseCluster> getGlobalClusters() throws FirebaseException, UnsupportedEncodingException {
+		List<FirebaseCluster> toReturn = new ArrayList<>();
 
-	public static void writeNewClustersFirebaseOPTICS(List<Cluster> clusters, int level, long totalCheckIns)
-			throws FirebaseException, JacksonUtilityException, UnsupportedEncodingException {
+		Firebase firebase = new Firebase(FIREBASE_URL + "/clusters");
 
-		deleteClustersFirebaseOPTICS(level);
+		FirebaseResponse response = firebase.get();
+		response.getBody().entrySet().stream().forEach(x -> {
+			try {
+				toReturn.add(parseFirebaseCluster(x));
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+		});
 
-		Firebase firebase = new Firebase(FIREBASE_URL + "/clustersOPTICS" + level);
-
-		for (int i = 0; i < clusters.size(); i++) {
-			// "PUT cluster to /clusters
-			Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
-			dataMap.put("size", clusters.get(i).getVectors().size());
-			dataMap.put("sizePerc", new Double(clusters.get(i).getVectors().size()) / totalCheckIns);
-
-			FirebaseResponse response = firebase.put("cluster" + i, dataMap);
-			System.out.println("\n\nResult of PUT cluster:\n" + response.getRawBody().toString());
-			System.out.println("\n");
-		}
-
+		return toReturn;
 	}
 
-	private static void deleteClustersFirebaseOPTICS(int level) throws FirebaseException, UnsupportedEncodingException {
-		Firebase firebase = new Firebase(FIREBASE_URL);
-		FirebaseResponse response = firebase.delete("clustersOPTICS" + level);
-		System.out.println(response.getBody().toString());
+	private static FirebaseCluster parseFirebaseCluster(Entry<String, Object> x) throws ParseException {
+		String clusterValues = x.getValue().toString();
+		String[] tokens = clusterValues.split(",");
+		
+		String clusterMean = tokens[0].split("=")[1];
+		String lati = clusterMean.split(";")[0];
+		String longi = clusterMean.split(";")[1];
+		longi = longi.substring(0, longi.length()-1);
+		
+		ClusterWithMean mean = new ClusterWithMean(0);
+		mean.setMean(new DoubleArray(new double[] { Double.parseDouble(lati), Double.parseDouble(longi) }));
+		
+		Integer size = Integer.parseInt(tokens[1].split("=")[1]);
+		
+		String prct = tokens[2].split("=")[1];
+		prct = prct.substring(0, prct.length()-1);
+		Double sizePrct = Double.parseDouble(prct);
+
+		return new FirebaseCluster(mean, size,sizePrct);
 	}
 
 	public static void writeNewFriendsFirebase(List<UserProfile> profiles, boolean limited, int limitProfiles,

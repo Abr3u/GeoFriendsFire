@@ -21,14 +21,12 @@ import pt.utl.ist.meic.firebase.models.EventCategory;
 public class SimilarityManager {
 	
 	private Map<String, UserProfile> id_userProfile;
-	private int level;
 	private double SEQ_SCORE_WEIGHT;
 	private double ACT_SCORE_WEIGHT;
 
-	public SimilarityManager(Map<String, UserProfile> id_userProfile, int level, double SEQ_SCORE_WEIGHT,
+	public SimilarityManager(Map<String, UserProfile> id_userProfile, double SEQ_SCORE_WEIGHT,
 			double ACT_SCORE_WEIGHT) {
 		this.id_userProfile = id_userProfile;
-		this.level = level;
 		this.SEQ_SCORE_WEIGHT = SEQ_SCORE_WEIGHT;
 		this.ACT_SCORE_WEIGHT = ACT_SCORE_WEIGHT;
 	}
@@ -74,9 +72,9 @@ public class SimilarityManager {
 					if (i != j && j > i) {
 						UserProfile p1 = usersProfiles.get(i);
 						UserProfile p2 = usersProfiles.get(j);
-						if (usersCloseEnough(p1.getGraphByLevel(level), p2.getGraphByLevel(level),
+						if (usersCloseEnough(p1.getGraph(), p2.getGraph(),
 								COMPARING_DISTANCE_THRESHOLD)) {
-							double seqScore = getUserSimilaritySequences(p1, p2, level, MATCHING_MAX_SEQ_LENGTH,
+							double seqScore = getUserSimilaritySequences(p1, p2, MATCHING_MAX_SEQ_LENGTH,
 									TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD);
 							p1.addSimilarityScore(p2.userId, seqScore);
 							p2.addSimilarityScore(p1.userId, seqScore);
@@ -97,7 +95,7 @@ public class SimilarityManager {
 						UserProfile p1 = usersProfiles.get(i);
 						UserProfile p2 = usersProfiles.get(j);
 						double finalScore;
-						double actScore = getUserSimilarityClusterActivity(p1, p2, level);
+						double actScore = getUserSimilarityClusterActivity(p1, p2);
 						// System.out.println("actScore "+actScore);
 
 						double seqScore1 = p1.getSimilarityScore(p2.userId);
@@ -139,11 +137,11 @@ public class SimilarityManager {
 	// [START SEQUENCE MATCHING]
 	//
 
-	private double getUserSimilaritySequences(UserProfile profileA, UserProfile profileB, int level,
+	private double getUserSimilaritySequences(UserProfile profileA, UserProfile profileB,
 			int MATCHING_MAX_SEQ_LENGTH, long TRANSITION_TIME_THRESHOLD, long SAME_TIME_DAY_THRESHOLD) {
 		if (!profileA.userId.equals(profileB.userId)) {
-			Graph graphA = profileA.getGraphByLevel(level);
-			Graph graphB = profileB.getGraphByLevel(level);
+			Graph graphA = profileA.getGraph();
+			Graph graphB = profileB.getGraph();
 
 			// transformar seqs em seqs aggregadas e ir buscar as top N
 			Set<Sequence> seqsA = graphA.getTopNSequences(50, graphA.getAggregatedSeqs());
@@ -365,10 +363,10 @@ public class SimilarityManager {
 	// [START ACTIVITY MATCHING]
 	//
 
-	private double getUserSimilarityClusterActivity(UserProfile profileA, UserProfile profileB, int level) {
+	private double getUserSimilarityClusterActivity(UserProfile profileA, UserProfile profileB) {
 		if (!profileA.userId.equals(profileB.userId)) {
-			Graph graphA = profileA.getGraphByLevel(level);
-			Graph graphB = profileB.getGraphByLevel(level);
+			Graph graphA = profileA.getGraph();
+			Graph graphB = profileB.getGraph();
 
 			return collaborativeFilteringClusterPercentage(graphA, graphB);
 		}

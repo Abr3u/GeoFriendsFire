@@ -10,18 +10,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
-import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
-import pt.utl.ist.meic.GeoServer;
 import pt.utl.ist.meic.domain.DataPoint;
-import pt.utl.ist.meic.domain.UserProfile;
-import pt.utl.ist.meic.domain.managers.CheckInsManager;
-import pt.utl.ist.meic.domain.managers.UserProfilesManager;
-import pt.utl.ist.meic.utility.FileManager;
 
 public class TestStuff {
 

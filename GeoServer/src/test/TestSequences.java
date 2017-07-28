@@ -131,8 +131,8 @@ public class TestSequences {
 		UserProfile bob = new UserProfile("bob");
 		bob.crossings = false;
 
-		alice.addNewGraph(0, ga);
-		bob.addNewGraph(0, gb);
+		alice.setGraph(ga);
+		bob.setGraph(gb);
 
 		// transformar seqs em seqs aggregadas e ir buscar as top N
 		Set<Sequence> seqsA = ga.getTopNSequences(5, ga.getAggregatedSeqs());

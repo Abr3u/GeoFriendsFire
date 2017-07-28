@@ -12,36 +12,10 @@ import pt.utl.ist.meic.domain.UserProfile;
 import pt.utl.ist.meic.firebase.FirebaseHelper;
 import pt.utl.ist.meic.firebase.models.User;
 import pt.utl.ist.meic.utility.FileManager;
-import pt.utl.ist.meic.utility.FileManagerAMS;
 
-public class UserProfilesManager {
+public class UserProfilesManager {	
 	
-	private boolean firebase;
-	private FileManager fileManager;
-	
-	public UserProfilesManager(FileManager fileManager, boolean firebaseWorkflow) {
-		this.firebase = firebaseWorkflow;
-		this.fileManager = fileManager;
-	}
-
-	public Map<String, UserProfile> createUserProfiles(){
-		Map<String,UserProfile> id_userProfile = new HashMap<String, UserProfile>();
-		
-		if(firebase){
-			try {
-				id_userProfile = createUserProfilesFromFirebase();
-			} catch (UnsupportedEncodingException | FirebaseException e) {
-				e.printStackTrace();
-			}
-		}else{
-			id_userProfile = createUserProfilesGowalla();
-		}
-		
-		return id_userProfile;
-	}
-	
-	
-	private Map<String, UserProfile> createUserProfilesFromFirebase() throws UnsupportedEncodingException, FirebaseException {
+	public static Map<String, UserProfile> createUserProfilesFromFirebase() throws UnsupportedEncodingException, FirebaseException {
 		Map<String,UserProfile> id_userProfile = new HashMap<String, UserProfile>();
 
 		List<User> users = FirebaseHelper.getUserListFromFirebase();
@@ -55,27 +29,13 @@ public class UserProfilesManager {
 		return id_userProfile;
 	}
 	
-	private Map<String,UserProfile> createUserProfilesGowalla() {
+	public static Map<String,UserProfile> createUserProfilesGowalla(FileManager fileManager) {
 		Map<String,UserProfile> id_userProfile = new HashMap<String, UserProfile>();
 		
-		Set<String> idList = fileManager.getNyNyIdListFromFile();
+		Set<String> idList = fileManager.getAmsAmsIdListFromFile();
 		for (String id : idList) {
 			UserProfile profile = new UserProfile(id);
 			profile.loadRealFriendsFromGowalla(fileManager);
-			id_userProfile.put(id, profile);
-		}
-		return id_userProfile;
-	}
-	
-	//TODO remove
-	public static Map<String,UserProfile> createUserProfilesAMS() {
-		Map<String,UserProfile> id_userProfile = new HashMap<String, UserProfile>();
-		
-		FileManagerAMS ams = new FileManagerAMS();
-		Set<String> idList = ams.getAmsAmsIdListFromFile();
-		for (String id : idList) {
-			UserProfile profile = new UserProfile(id);
-			profile.loadRealFriendsFromGowalla(ams);
 			id_userProfile.put(id, profile);
 		}
 		return id_userProfile;

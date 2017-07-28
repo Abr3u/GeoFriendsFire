@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import pt.utl.ist.meic.firebase.models.Event;
 import pt.utl.ist.meic.firebase.models.EventCategory;
 import pt.utl.ist.meic.utility.FileManager;
-import pt.utl.ist.meic.utility.FileManagerAMS;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,7 +20,7 @@ public class UserProfile {
 	public boolean crossings;
 	public double avgPrecision;
 
-	private Map<Integer, Graph> mGraphs;
+	private Graph mGraph;
 	private Map<String, Double> similarityScores;
 	private Map<String, Double> similarityScoresCrossings;
 	private Map<EventCategory, Double> eventPercentages;
@@ -35,7 +34,6 @@ public class UserProfile {
 		this.userId = userId;
 		this.avgPrecision = 0;
 		this.totalFound = 0;
-		this.mGraphs = new HashMap<Integer, Graph>();
 		this.similarityScores = new HashMap<String, Double>();
 		this.similarityScoresCrossings = new HashMap<String, Double>();
 		this.mEvents = new ArrayList<Event>();
@@ -77,12 +75,12 @@ public class UserProfile {
 		return this.eventPercentages;
 	}
 
-	public void addNewGraph(int level, Graph graph) {
-		this.mGraphs.put(level, graph);
+	public void setGraph(Graph graph) {
+		this.mGraph = graph;
 	}
-
-	public Graph getGraphByLevel(int level) {
-		return this.mGraphs.get(level);
+	
+	public Graph getGraph() {
+		return this.mGraph;
 	}
 
 	public void addSimilarityScore(String userId, double score) {
@@ -189,14 +187,6 @@ public class UserProfile {
 	}
 	
 	public void loadRealFriendsFromGowalla(FileManager fm) {
-		try {
-			this.realFriends = fm.getRealFriendsFromGowalla(userId);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void loadRealFriendsFromGowalla(FileManagerAMS fm) {
 		try {
 			this.realFriends = fm.getRealFriendsFromGowalla(userId);
 		} catch (IOException e) {

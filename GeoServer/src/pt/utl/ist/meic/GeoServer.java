@@ -3,25 +3,18 @@ package pt.utl.ist.meic;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ca.pfv.spmf.algorithms.clustering.dbscan.AlgoDBSCAN;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceCosine;
 import ca.pfv.spmf.algorithms.clustering.distanceFunctions.DistanceFunction;
 import ca.pfv.spmf.algorithms.clustering.kmeans.AlgoKMeans;
-import ca.pfv.spmf.algorithms.clustering.optics.AlgoOPTICS;
-import ca.pfv.spmf.patterns.cluster.Cluster;
 import ca.pfv.spmf.patterns.cluster.ClusterWithMean;
-import ca.pfv.spmf.patterns.cluster.DoubleArray;
 import net.thegreshams.firebase4j.error.FirebaseException;
 import net.thegreshams.firebase4j.error.JacksonUtilityException;
 import pt.utl.ist.meic.domain.UserProfile;
@@ -30,24 +23,19 @@ import pt.utl.ist.meic.domain.managers.EvaluationManager;
 import pt.utl.ist.meic.domain.managers.SimilarityManager;
 import pt.utl.ist.meic.domain.managers.UserProfilesManager;
 import pt.utl.ist.meic.firebase.FirebaseHelper;
+import pt.utl.ist.meic.firebase.models.FirebaseCluster;
 import pt.utl.ist.meic.firebase.models.ScalabilityMetrics;
 import pt.utl.ist.meic.firebase.models.UXMetrics;
 import pt.utl.ist.meic.utility.FileManager;
-import pt.utl.ist.meic.utility.FileManagerAMS;
-import test.TestMeasures;
-import test.TestSequences;
-import test.TestStuff;
 
 public class GeoServer {
 
-	private static final String pathKmeansNewYorkCSV = "C:/Android/GeoFriendsFire/GeoServer/dataset/newYorkCluster.csv";
 	private static final String pathKmeansAmsCSV = "C:/Android/GeoFriendsFire/GeoServer/dataset/AMSCluster.csv";
 	private static final String pathKmeansFirebaseCSV = "C:/Android/GeoFriendsFire/GeoServer/dataset/firebase.csv";
 	private static String DELIMITER = ",";
-	private static long mTotalCheckIns = 130425;// newYork CI's
 
 	// clustering Kmeans
-	private static final int NUM_CLUSTERS = 10;// kmeans
+	private static final int NUM_CLUSTERS =4;// kmeans
 	private static final long NEW_DATA_THRESHOLD = 1000;// new locations
 	private static final long TIME_PASSED_THRESHOLD = 1000 * 60 * 60 * 24 * 30; // 30
 																				// days
@@ -59,21 +47,19 @@ public class GeoServer {
 															// maximo de 20
 															// clusters
 	private static final long TRANSITION_TIME_THRESHOLD = 2 * 60 * 60 * 1000;// 2 horas
-	private static final long SAME_TIME_DAY_THRESHOLD = 30 * 60 * 1000;// 30 minutos																			// horas
+	private static final long SAME_TIME_DAY_THRESHOLD = 30 * 60 * 1000;// 30 minutos // horas
 
-	
 	// workflow flags
-	private static final boolean CLUSTER_GOWALLA = false;
+	private static final boolean CLUSTER_GOWALLA = true;
 	private static final boolean CLUSTER_FIREBASE = false;
 	private static final boolean EVALUATE_EVENTS = false;
 
-	private static final boolean EVALUATE_NEW_YORK = false;
-	private static final boolean EVALUATE_AMSTERDAM = false;
-	private static final int LEVEL = 0;
+	private static final boolean DATA_PREPROCESSING = false;
+	private static final boolean EVALUATE_GOWALLA = false;
 	private static final double ACT_SCORE_WEIGHT = 0.75;
 	private static final double SEQ_SCORE_WEIGHT = 0.25;
 	private static final double SIMILARITY_THRESHOLD = 0.5;
-	
+
 	private static final boolean EVALUATE_SCALABILITY_TRAJ_SIZE = false;
 	private static final int TRAJ_SIZE = 50;
 
@@ -82,8 +68,7 @@ public class GeoServer {
 	private static final int NUM_EVENTS = 150;
 
 	private static final boolean REAL_VERSION = false;
-	private static final boolean TEST = true;
-	private static boolean FIREBASE;
+	private static final boolean TEST = false;
 
 	// debug
 	private static final long abril = 1491001200000l;// milisecs 1 de abril 2017
@@ -96,42 +81,62 @@ public class GeoServer {
 		summary += (CLUSTER_FIREBASE) ? "cluster Firebase\n" : "";
 		summary += (EVALUATE_EVENTS) ? "evaluate Events\n" : "";
 
-		summary += (EVALUATE_NEW_YORK) ? "evaluate New York\n" : "";
-		summary += (EVALUATE_NEW_YORK) ? "actScore " + ACT_SCORE_WEIGHT + " // seqScore " + SEQ_SCORE_WEIGHT + "\n" : "";
-		summary += (EVALUATE_NEW_YORK) ? "level " + LEVEL + " // threshold " + SIMILARITY_THRESHOLD + "\n" : "";
+		summary += (EVALUATE_GOWALLA) ? "evaluating\n" : "";
+		summary += (EVALUATE_GOWALLA) ? "actScore " + ACT_SCORE_WEIGHT + " // seqScore " + SEQ_SCORE_WEIGHT + "\n"
+				: "";
+		summary += (EVALUATE_GOWALLA) ? "threshold " + SIMILARITY_THRESHOLD + "\n" : "";
 
 		summary += (EVALUATE_SCALABILITY_NUM_EVENTS) ? "evaluate scalability NumEvents " + NUM_EVENTS + "\n" : "";
 		summary += (EVALUATE_SCALABILITY_TRAJ_SIZE) ? "evaluate scalability TrajSize " + TRAJ_SIZE + "\n" : "";
 		summary += (EVALUATE_UX) ? "evaluate UX numEvents " + NUM_EVENTS + "\n" : "";
 		summary += (REAL_VERSION) ? "REAL version" : "BAD version";
 
-		FileManager mFileManager = new FileManager();
 		Map<String, UserProfile> id_userProfile = new HashMap<>();
-		Map<Integer, List<ClusterWithMean>> level_clusters_map = new HashMap<>();
+		List<FirebaseCluster> globalFirebaseClusters = new ArrayList<>();
+		List<ClusterWithMean> globalClustersWithMean = new ArrayList<>();
 
-		if(TEST) {
-			//TestSequences.testExtendSequence();
+		if (TEST) {
+			// TestSequences.testExtendSequence();
 			try {
-				FirebaseHelper.getUserListFromFirebase().stream()
-				.forEach(System.out::println);
+				FirebaseHelper.getGlobalClusters().stream().forEach(System.out::println);
 			} catch (UnsupportedEncodingException | FirebaseException e) {
 				e.printStackTrace();
 			}
 		}
 		
-		if (EVALUATE_AMSTERDAM) {
-			FileManagerAMS fileMngAMS = new FileManagerAMS();
-			level_clusters_map = populateLevelClustersMapAMS();
-			id_userProfile = UserProfilesManager.createUserProfilesAMS();
+		if(DATA_PREPROCESSING) {
+			FileManager fileManager = new FileManager();
+			
+			try {
+				//checkIns
+				fileManager.createAMSCheckins();
+				fileManager.createCheckinsForClustering();
+				//users
+				Set<String> userIds = fileManager.createUserIdsAmsAms();
+				fileManager.createAmsAmsRelevantFriendsAndCount(userIds);
+			} catch (IOException | ParseException e) {
+				e.printStackTrace();
+			}
+		}
+		// use gowalla dataset (AMS) to suggest friends and evaluate such suggestions
+		if (EVALUATE_GOWALLA) {
+			try {
+				globalFirebaseClusters = FirebaseHelper.getGlobalClusters();
+			} catch (UnsupportedEncodingException | FirebaseException e1) {
+				e1.printStackTrace();
+			}
+			
+			globalClustersWithMean = globalFirebaseClusters.stream().map(x->x.mean).collect(Collectors.toList());
+			id_userProfile = UserProfilesManager.createUserProfilesGowalla(new FileManager());
 
 			try {
-				id_userProfile = CheckInsManager.populateUserCheckInsAMS(fileMngAMS, level_clusters_map, id_userProfile,
-						LEVEL, NUM_CLUSTERS);
+				id_userProfile = CheckInsManager.populateUserCheckInsFromGowalla(new FileManager(), globalClustersWithMean,
+						id_userProfile, NUM_CLUSTERS);
 			} catch (ParseException | IOException e) {
 				e.printStackTrace();
 			}
 
-			SimilarityManager similarityManager = new SimilarityManager(id_userProfile, LEVEL, SEQ_SCORE_WEIGHT,
+			SimilarityManager similarityManager = new SimilarityManager(id_userProfile, SEQ_SCORE_WEIGHT,
 					ACT_SCORE_WEIGHT);
 			id_userProfile = similarityManager.calculateSimilaritiesFromLocations(COMPARING_DISTANCE_THRESHOLD,
 					MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD);
@@ -142,7 +147,7 @@ public class GeoServer {
 			// writeResultsLocalStorage(mFileManager, profiles);
 			EvaluationManager evaluationManager = new EvaluationManager(profiles, SIMILARITY_THRESHOLD);
 			evaluationManager.evaluateResults();
-			
+
 			return;
 		}
 
@@ -195,7 +200,7 @@ public class GeoServer {
 		if (EVALUATE_UX) {
 			List<UXMetrics> metrics;
 			try {
-				metrics = FirebaseHelper.getUXMetricsFromFirebase(REAL_VERSION,NUM_EVENTS);
+				metrics = FirebaseHelper.getUXMetricsFromFirebase(REAL_VERSION, NUM_EVENTS);
 				OptionalDouble averageTime = metrics.stream().map(x -> x.timeUntilFirst).mapToLong(x -> x).average();
 
 				System.out.println("--------->>>>>>>>Evaluating UX metrics :: numEvents " + NUM_EVENTS);
@@ -206,56 +211,34 @@ public class GeoServer {
 			}
 		}
 
-		// use gowalla NY to evaluate suggestions
-		else if (EVALUATE_NEW_YORK) {
-			FIREBASE = false;
-			level_clusters_map = populateLevelClustersMapNY();
-
-			UserProfilesManager userProfilesManager = new UserProfilesManager(mFileManager, FIREBASE);
-			id_userProfile = userProfilesManager.createUserProfiles();
-
-			CheckInsManager checkInsManager = new CheckInsManager(mFileManager, id_userProfile, level_clusters_map,
-					FIREBASE, LEVEL, NUM_CLUSTERS);
-			id_userProfile = checkInsManager.populateUsersCheckIns();
-
-			SimilarityManager similarityManager = new SimilarityManager(id_userProfile, LEVEL, SEQ_SCORE_WEIGHT,
-					ACT_SCORE_WEIGHT);
-			id_userProfile = similarityManager.calculateSimilaritiesFromLocations(COMPARING_DISTANCE_THRESHOLD,
-					MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD);
-
-			List<UserProfile> profiles = new ArrayList<>(id_userProfile.values());
-
-			// writeResultsFirebase(profiles);
-			writeResultsLocalStorage(mFileManager, profiles);
-			EvaluationManager evaluationManager = new EvaluationManager(profiles, SIMILARITY_THRESHOLD);
-			evaluationManager.evaluateResults();
-		}
-
-		else if (EVALUATE_EVENTS) {
-			FIREBASE = true;
-			UserProfilesManager userProfilesManager = new UserProfilesManager(mFileManager, FIREBASE);
-			id_userProfile = userProfilesManager.createUserProfiles();
-
+		//suggest friends based on created events
+		if (EVALUATE_EVENTS) {
 			try {
+				id_userProfile = UserProfilesManager.createUserProfilesFromFirebase();
 				id_userProfile = FirebaseHelper.populateUserEventsFromFirebase(id_userProfile);
-
-				SimilarityManager similarityManager = new SimilarityManager(id_userProfile, LEVEL, SEQ_SCORE_WEIGHT,
-						ACT_SCORE_WEIGHT);
-				id_userProfile = similarityManager.calculateSimilaritiesFromEvents();
-			} catch (UnsupportedEncodingException | FirebaseException e) {
-				e.printStackTrace();
+			} catch (UnsupportedEncodingException | FirebaseException e1) {
+				e1.printStackTrace();
 			}
+
+			SimilarityManager similarityManager = new SimilarityManager(id_userProfile, SEQ_SCORE_WEIGHT,
+					ACT_SCORE_WEIGHT);
+			id_userProfile = similarityManager.calculateSimilaritiesFromEvents();
 		}
 
 		// cluster based on gowalla data
 		else if (CLUSTER_GOWALLA) {
-			FIREBASE = false;
-			// level_clusters_map = clusterLocationsKMEANS(pathKmeansNewYorkCSV);
-			level_clusters_map = clusterLocationsKMEANS(pathKmeansAmsCSV);
+			globalClustersWithMean = clusterLocationsKMEANS(pathKmeansAmsCSV);
+			long totalPoints = globalClustersWithMean.stream().mapToInt(x -> x.getVectors().size()).sum();
+			System.out.println("TP "+totalPoints);
+			try {
+				FirebaseHelper.writeNewClustersFirebase(globalClustersWithMean, totalPoints);
+			} catch (UnsupportedEncodingException | FirebaseException | JacksonUtilityException e) {
+				e.printStackTrace();
+			}
 		}
 
+		//cluster based on firebase data
 		else if (CLUSTER_FIREBASE) {
-			FIREBASE = true;
 			try {
 				// check time passed
 				Long lastUpdated = FirebaseHelper.getLastUpdatedFromFirebase();
@@ -267,12 +250,18 @@ public class GeoServer {
 				if (now - lastUpdated >= TIME_PASSED_THRESHOLD
 						|| Math.abs(currentLotalLocations - storedTotalLocations) > NEW_DATA_THRESHOLD) {
 
-					UserProfilesManager userProfilesManager = new UserProfilesManager(mFileManager, FIREBASE);
-					id_userProfile = userProfilesManager.createUserProfiles();
+					id_userProfile = UserProfilesManager.createUserProfilesFromFirebase();
 
-					mFileManager.createCSVFirebaseLocations(id_userProfile, pathKmeansFirebaseCSV);
+					new FileManager().createCSVFirebaseLocations(id_userProfile, pathKmeansFirebaseCSV);
 
-					level_clusters_map = clusterLocationsKMEANS(pathKmeansFirebaseCSV);
+					globalClustersWithMean = clusterLocationsKMEANS(pathKmeansFirebaseCSV);
+
+					// try {
+					// FirebaseHelper.writeNewClustersFirebaseKMEANS(globalClusters, 10656);
+					// } catch (UnsupportedEncodingException | FirebaseException |
+					// JacksonUtilityException e) {
+					// e.printStackTrace();
+					// }
 				}
 			} catch (FirebaseException | IOException e) {
 				e.printStackTrace();
@@ -286,17 +275,15 @@ public class GeoServer {
 
 	}
 
-	private static Map<Integer, List<ClusterWithMean>> clusterLocationsKMEANS(String path) {
-		Map<Integer, List<ClusterWithMean>> level_clusters_map = new HashMap<>();
+	private static List<ClusterWithMean> clusterLocationsKMEANS(String path) {
+		List<ClusterWithMean> clusters = new ArrayList();
 
 		try {
-			level_clusters_map = applyKmeans(path, DELIMITER);
-			// FirebaseHelper.writeNewClustersFirebaseKMEANS(level_clusters_map.get(LEVEL),
-			// LEVEL, mTotalCheckIns);
+			clusters = applyKmeans(path, DELIMITER);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return level_clusters_map;
+		return clusters;
 	}
 
 	private static void writeResultsFirebase(List<UserProfile> profiles) {
@@ -313,146 +300,24 @@ public class GeoServer {
 		}
 	}
 
-	private static void writeResultsLocalStorage(FileManager mFileManager, List<UserProfile> profiles) {
+	private static void writeResultsLocalStorage(FileManager fileManager, List<UserProfile> profiles) {
 
 		int totalUsers = profiles.size();
-		String friendsPath = "level" + LEVEL + "friendsOf" + totalUsers + "Users.csv";
-		String foundPath = "level" + LEVEL + "foundOf" + totalUsers + "Users.csv";
-		String foundPrctPath = "level" + LEVEL + "foundPRCTOf" + totalUsers + "Users.csv";
+		String friendsPath = "friendsOf" + totalUsers + "Users.csv";
+		String foundPath = "foundOf" + totalUsers + "Users.csv";
+		String foundPrctPath = "foundPRCTOf" + totalUsers + "Users.csv";
 
 		try {
-			mFileManager.createCsvSimilarities(profiles, friendsPath, SIMILARITY_THRESHOLD);
-			mFileManager.createFoundCSV(friendsPath, foundPath);
-			mFileManager.createFoundPrctCSV(foundPath, foundPrctPath);
+			fileManager.createCsvSimilarities(profiles, friendsPath, SIMILARITY_THRESHOLD);
+			fileManager.createFoundCSV(friendsPath, foundPath);
+			fileManager.createFoundPrctCSV(foundPath, foundPrctPath);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	public static Map<Integer, List<ClusterWithMean>> populateLevelClustersMapNY() {
-		Map<Integer, List<ClusterWithMean>> level_clusters_map = new HashMap<Integer, List<ClusterWithMean>>();
-
-		List<ClusterWithMean> clusters = new ArrayList<ClusterWithMean>();
-		ClusterWithMean cluster = new ClusterWithMean(0);
-		// LEVEL 0 START
-		cluster.setMean(new DoubleArray(new double[] { 40.68596772385074, -73.99656293456547 }));
-		cluster.mId = 0;
-		clusters.add(cluster);
-
-		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 40.77761934847919, -73.92851136376517 }));
-		cluster.mId = 1;
-		clusters.add(cluster);
-
-		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 40.75076361515444, -73.96725029838117 }));
-		cluster.mId = 2;
-		clusters.add(cluster);
-
-		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 40.72968661755094, -73.99184556681594 }));
-		cluster.mId = 3;
-		clusters.add(cluster);
-
-		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 40.83586092995377, -73.89130396728055 }));
-		cluster.mId = 4;
-		clusters.add(cluster);
-
-		level_clusters_map.put(0, clusters);
-		// LEVEL 0 END
-
-		// LEVEL 1 START
-		clusters.clear();
-		cluster.setMean(new DoubleArray(new double[] { 40.79996523013644, -73.90179777475407 }));
-		cluster.mId = 0;
-		clusters.add(cluster);
-
-		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 40.75234672984151, -73.96658361000398 }));
-		cluster.mId = 1;
-		clusters.add(cluster);
-
-		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 40.713945673741044, -73.99464156416163 }));
-		cluster.mId = 2;
-		clusters.add(cluster);
-
-		level_clusters_map.put(1, clusters);
-		// LEVEL 1 END
-
-		// LEVEL 2 START
-		clusters.clear();
-		cluster.setMean(new DoubleArray(new double[] { 40.76490479484749, -73.94928948232359 }));
-		cluster.mId = 0;
-		clusters.add(cluster);
-
-		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 40.721799680165596, -73.99091744437025 }));
-		cluster.mId = 1;
-		clusters.add(cluster);
-
-		level_clusters_map.put(2, clusters);
-		// LEVEL 2 END
-
-		return level_clusters_map;
-	}
-
-	public static Map<Integer, List<ClusterWithMean>> populateLevelClustersMapAMS() {
-		Map<Integer, List<ClusterWithMean>> level_clusters_map = new HashMap<Integer, List<ClusterWithMean>>();
-
-		List<ClusterWithMean> clusters = new ArrayList<ClusterWithMean>();
-		ClusterWithMean cluster = new ClusterWithMean(0);
-
-		// LEVEL 0 START
-		cluster.setMean(new DoubleArray(new double[] { 52.370912454270616, 4.896327400489638 }));
-		cluster.mId = 0;
-		clusters.add(cluster);
-
-		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 52.36017856739102, 4.915750442291416 }));
-		cluster.mId = 1;
-		clusters.add(cluster);
-
-		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 52.36503694540698, 4.880165004206793 }));
-		cluster.mId = 2;
-		clusters.add(cluster);
-
-		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 52.35843297445221, 4.9427269187396865 }));
-		cluster.mId = 3;
-		clusters.add(cluster);
-
-		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 52.36763967013118, 4.845918143777797 }));
-		cluster.mId = 4;
-		clusters.add(cluster);
-
-		level_clusters_map.put(0, clusters);
-		// LEVEL 0 END
-
-		// LEVEL 1 START
-		clusters.clear();
-		cluster.setMean(new DoubleArray(new double[] { 52.368489034989004, 4.885667183434909 }));
-		cluster.mId = 0;
-		clusters.add(cluster);
-
-		cluster = new ClusterWithMean(0);
-		cluster.setMean(new DoubleArray(new double[] { 52.35967971676436, 4.925140920147148 }));
-		cluster.mId = 1;
-		clusters.add(cluster);
-
-		level_clusters_map.put(1, clusters);
-		// LEVEL 1 END
-
-		return level_clusters_map;
-	}
-
-	private static Map<Integer, List<ClusterWithMean>> applyKmeans(String pathToCSV, String delimiter)
-			throws IOException {
-		Map<Integer, List<ClusterWithMean>> level_clusters_map = new HashMap<>();
+	private static List<ClusterWithMean> applyKmeans(String pathToCSV, String delimiter) throws IOException {
 		DistanceFunction distanceFunction = new DistanceCosine();
 
 		// Apply the algorithm
@@ -464,7 +329,7 @@ public class GeoServer {
 		// Print the clusters found by the algorithm
 		// For each cluster:
 		int i = 0;
-		mTotalCheckIns = 0;
+		int mTotalCheckIns = 0;
 		for (ClusterWithMean cluster : clusters) {
 			System.out.println("Cluster " + i++);
 			System.out.println("size -> " + cluster.getVectors().size());
@@ -472,7 +337,7 @@ public class GeoServer {
 			mTotalCheckIns += cluster.getVectors().size();
 		}
 		System.out.println("Total CI " + mTotalCheckIns);
-		return level_clusters_map;
+		return clusters;
 	}
 
 }
