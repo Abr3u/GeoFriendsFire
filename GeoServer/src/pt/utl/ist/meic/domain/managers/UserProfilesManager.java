@@ -32,7 +32,19 @@ public class UserProfilesManager {
 	public static Map<String,UserProfile> createUserProfilesGowalla(FileManager fileManager) {
 		Map<String,UserProfile> id_userProfile = new HashMap<String, UserProfile>();
 		
-		Set<String> idList = fileManager.getAmsAmsIdListFromFile();
+		Set<String> idList = fileManager.getAmsAmsIdListFromFile().stream().collect(Collectors.toSet());
+		for (String id : idList) {
+			UserProfile profile = new UserProfile(id);
+			profile.loadRealFriendsFromGowalla(fileManager);
+			id_userProfile.put(id, profile);
+		}
+		return id_userProfile;
+	}
+	
+	public static Map<String,UserProfile> createUserProfilesGowalla(FileManager fileManager, int limit) {
+		Map<String,UserProfile> id_userProfile = new HashMap<String, UserProfile>();
+		
+		Set<String> idList = fileManager.getAmsAmsIdListFromFile().stream().limit(limit).collect(Collectors.toSet());
 		for (String id : idList) {
 			UserProfile profile = new UserProfile(id);
 			profile.loadRealFriendsFromGowalla(fileManager);

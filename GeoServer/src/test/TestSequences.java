@@ -175,8 +175,8 @@ public class TestSequences {
 		}
 		System.out.println("SCORE " + score);
 		
-		alice.addSimilarityScore(bob.userId, score);
-		bob.addSimilarityScore(alice.userId, score);
+		alice.addSimilarityScoreByLayer(4,bob.userId, score);
+		bob.addSimilarityScoreByLayer(4,alice.userId, score);
 	}
 
 	public static void testSameTimeOfDay() {

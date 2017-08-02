@@ -521,7 +521,7 @@ public class FileManager {
 	 * Evaluation Datasets
 	 */
 	
-	public void createCsvSimilarities(List<UserProfile> profiles, String fileName, double limit) {
+	public void createCsvSimilarities(List<UserProfile> profiles, String fileName, double limit, int numClusters) {
 		System.out.println("createCsvSimilarities");
 
 		try {
@@ -529,7 +529,7 @@ public class FileManager {
 
 			// Write a new point object to the CSV file
 			for (UserProfile profile : profiles) {
-				profile.getSimilarities().entrySet().stream()
+				profile.getSimilaritiesByLayer(numClusters).entrySet().stream()
 						.sorted(Map.Entry.<String, Double>comparingByValue().reversed())
 						.filter(x -> x.getValue() > limit).forEach(x -> {
 

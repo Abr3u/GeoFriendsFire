@@ -21,21 +21,21 @@ public class UserProfile {
 	public double avgPrecision;
 
 	private Graph mGraph;
-	private Map<String, Double> similarityScores;
+	private Map<Integer, Map<String,Double>> numClustersSimScore;
+	private Map<String, Double> multiLayerSimilarityScores;
 	private Map<String, Double> similarityScoresCrossings;
 	private Map<EventCategory, Double> eventPercentages;
 
 	private List<Event> mEvents;
 	private List<String> realFriends;
-	
-	private int totalFound;
 
 	public UserProfile(String userId) {
 		this.userId = userId;
 		this.avgPrecision = 0;
-		this.totalFound = 0;
-		this.similarityScores = new HashMap<String, Double>();
+		this.crossings = false;
+		this.numClustersSimScore = new HashMap<Integer, Map<String,Double>>();
 		this.similarityScoresCrossings = new HashMap<String, Double>();
+		this.multiLayerSimilarityScores = new HashMap<String, Double>();
 		this.mEvents = new ArrayList<Event>();
 		this.realFriends = new ArrayList<String>();
 		eventPercentages = new HashMap<EventCategory, Double>() {
@@ -45,6 +45,34 @@ public class UserProfile {
 				}
 			}
 		};
+	}
+	
+	public void calculateMultiLayerScore() {		
+		for(Map.Entry<Integer, Map<String,Double>> entry : numClustersSimScore.entrySet()) {
+			double factor = Math.pow(2, entry.getKey());
+			//iterate scores in this layer
+			for(Map.Entry<String, Double> scores : entry.getValue().entrySet()) {
+				String user = scores.getKey();
+				if(multiLayerSimilarityScores.containsKey(user)) {
+					double prevScore = multiLayerSimilarityScores.get(user);
+					double newScore = factor * scores.getValue();
+					multiLayerSimilarityScores.put(user,prevScore + newScore);
+				}else {
+					double newScore = factor * scores.getValue();
+					multiLayerSimilarityScores.put(user,newScore);
+				}
+			}
+		}
+		
+		//normalize [0,1]
+		double sumFactors = 0d;
+		for(Integer numCluster : numClustersSimScore.keySet()) {
+			sumFactors += (Math.pow(2, numCluster));
+		}
+		
+		for(Map.Entry<String, Double> multiScore : multiLayerSimilarityScores.entrySet()) {
+			multiScore.setValue(multiScore.getValue() / sumFactors);
+		}
 	}
 
 	public void addEvent(Event e) {
@@ -83,22 +111,31 @@ public class UserProfile {
 		return this.mGraph;
 	}
 
-	public void addSimilarityScore(String userId, double score) {
+	public void addSimilarityScoreByLayer(int numClusters, String userId, double score) {
 		// no simmilarity with yourself
 		if (!this.userId.equals(userId)) {
-			similarityScores.put(userId, score);
+			if(numClustersSimScore.containsKey(numClusters)) {
+				Map<String,Double> content = numClustersSimScore.get(numClusters);
+				content.put(userId, score);
+				numClustersSimScore.put(numClusters, content);
+			}else {
+				Map<String,Double> map = new HashMap<>();
+				map.put(userId, score);
+				numClustersSimScore.put(numClusters, map);
+			}
 		}
 	}
 
-	public double getSimilarityScore(String userId) {
-		if (this.similarityScores.containsKey(userId)) {
-			return this.similarityScores.get(userId);
+	public double getSimilarityScoreByLayer(int numClusters, String userId) {
+		
+		if (this.numClustersSimScore.get(numClusters).containsKey(userId)) {
+			return this.numClustersSimScore.get(numClusters).get(userId);
 		}
 		return 0d;
 	}
 
-	public double getMaxSimilarityScore() {
-		Optional<Entry<String, Double>> opt = this.similarityScores.entrySet().stream()
+	public double getMaxSimilarityScore(int numClusters) {
+		Optional<Entry<String, Double>> opt = this.numClustersSimScore.get(numClusters).entrySet().stream()
 				.max(Map.Entry.<String, Double>comparingByValue());
 		if (opt.isPresent()) {
 			return opt.get().getValue();
@@ -133,36 +170,34 @@ public class UserProfile {
 
 	}
 
-	public void printSimilarities() {
+	public void printSimilaritiesByLayer(int numClusters) {
 		System.out.println("Similarites for user " + userId);
-		similarityScores.entrySet().stream().sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+		numClustersSimScore.get(numClusters).entrySet().stream().sorted(Map.Entry.<String, Double>comparingByValue().reversed())
 				.forEach(System.out::println);
 	}
 
-	public Map<String, Double> getSimilarities() {
-		return this.similarityScores;
+	public Map<String, Double> getSimilaritiesByLayer(int numClusters) {
+		return this.numClustersSimScore.get(numClusters);
 	}
 	
 	public Map<String, Double> getSimilaritiesCrossings() {
 		return this.similarityScoresCrossings;
 	}
 
-	public void normalizeSimilarityScores() {
+	public void normalizeSimilarityScoresByLayer(double newMin, double newMax, int numClusters) {
 		double min = 0;
-		double max = this.getMaxSimilarityScore();
-		double newmax = 1;
-		double newmin = 0;
+		double max = this.getMaxSimilarityScore(numClusters);
 		if (max > 0) {
-			for (Map.Entry<String, Double> entry : similarityScores.entrySet()) {
-				double aux = ((entry.getValue() - min) / (max - min)) * (newmax - newmin) + newmin;
-				similarityScores.put(entry.getKey(), aux);
+			for (Map.Entry<String, Double> entry : numClustersSimScore.get(numClusters).entrySet()) {
+				double aux = ((entry.getValue() - min) / (max - min)) * (newMax - newMin) + newMin;
+				numClustersSimScore.get(numClusters).put(entry.getKey(), aux);
 			}
 		}
 	}
 	
-	public void normalizeSimilarityScoresCrossings() {
+	public void normalizeSimilarityScoresCrossings(int numClusters) {
 		double min = 0;
-		double max = this.getMaxSimilarityScore();
+		double max = this.getMaxSimilarityScore(numClusters);
 		double newmax = 1;
 		double newmin = 0;
 		if (max > 0) {
@@ -194,8 +229,8 @@ public class UserProfile {
 		}
 	}
 
-	public long getNumberSuggestedFriends(double threshold) {
-		return this.similarityScores.entrySet().stream().sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+	public long getNumberSuggestedFriends(double threshold, int numClusters) {
+		return this.numClustersSimScore.get(numClusters).entrySet().stream().sorted(Map.Entry.<String, Double>comparingByValue().reversed())
 				.filter(x -> x.getValue() > threshold).count();
 	}
 
@@ -207,13 +242,24 @@ public class UserProfile {
 		return this.realFriends;
 	}
 
-	public List<String> getSuggestedFriendsList(double threshold) {
-		return this.similarityScores.entrySet().stream().sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+	public List<String> getSuggestedFriendsListMultiLayer(double threshold) {
+		return this.multiLayerSimilarityScores.entrySet().stream().sorted(Map.Entry.<String, Double>comparingByValue().reversed())
 				.filter(x -> x.getValue() > threshold).map(x -> x.getKey()).collect(Collectors.toList());
 	}
 	
-	public List<String> getTotalFoundList(double threshold){
-		List<String> found = new ArrayList<>(getSuggestedFriendsList(threshold));
+	public List<String> getSuggestedFriendsList(double threshold, int numClusters) {
+		return this.numClustersSimScore.get(numClusters).entrySet().stream().sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+				.filter(x -> x.getValue() > threshold).map(x -> x.getKey()).collect(Collectors.toList());
+	}
+	
+	public List<String> getTotalFoundListMultiLayer(double threshold){
+		List<String> found = new ArrayList<>(getSuggestedFriendsListMultiLayer(threshold));
+		found.retainAll(realFriends);
+		return found;
+	}
+	
+	public List<String> getTotalFoundList(double threshold, int numClusters){
+		List<String> found = new ArrayList<>(getSuggestedFriendsList(threshold, numClusters));
 		found.retainAll(realFriends);
 		return found;
 	}

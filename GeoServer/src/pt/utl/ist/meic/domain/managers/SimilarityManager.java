@@ -5,12 +5,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import pt.utl.ist.meic.domain.AuxiliarVertex;
+import pt.utl.ist.meic.domain.COLLAB_TYPE;
 import pt.utl.ist.meic.domain.Graph;
 import pt.utl.ist.meic.domain.Sequence;
 import pt.utl.ist.meic.domain.SequenceAuxiliar;
@@ -19,7 +21,7 @@ import pt.utl.ist.meic.domain.VertexInfo;
 import pt.utl.ist.meic.firebase.models.EventCategory;
 
 public class SimilarityManager {
-	
+
 	private Map<String, UserProfile> id_userProfile;
 	private double SEQ_SCORE_WEIGHT;
 	private double ACT_SCORE_WEIGHT;
@@ -31,15 +33,17 @@ public class SimilarityManager {
 		this.ACT_SCORE_WEIGHT = ACT_SCORE_WEIGHT;
 	}
 
-	public Map<String, UserProfile> calculateSimilaritiesFromEvents() {
+	
+	//[START from events]
+	public Map<String, UserProfile> calculateSimilaritiesFromEvents(int numClusters) {
 		for (UserProfile up1 : id_userProfile.values()) {
 			for (UserProfile up2 : id_userProfile.values()) {
-				if (!up1.equals(up2) && up1.getSimilarityScore(up2.userId) == 0 && up1.getEvents().size() > 0
+				if (!up1.equals(up2) && up1.getSimilarityScoreByLayer(numClusters,up2.userId) == 0 && up1.getEvents().size() > 0
 						&& up2.getEvents().size() > 0) {
 					double score = collaborativeFilteringEventPercentage(up1.getEventPercentages(),
 							up2.getEventPercentages());
-					up1.addSimilarityScore(up2.userId, score);
-					up2.addSimilarityScore(up1.userId, score);
+					up1.addSimilarityScoreByLayer(numClusters,up2.userId, score);
+					up2.addSimilarityScoreByLayer(numClusters,up1.userId, score);
 				}
 			}
 		}
@@ -60,8 +64,61 @@ public class SimilarityManager {
 		return dotProduct / (magnitudeA * magnitudeB);
 
 	}
+	
+	//[END from events]
+	//[START by count]
 
-	public Map<String, UserProfile> calculateSimilaritiesFromLocations(int COMPARING_DISTANCE_THRESHOLD,
+	public Map<String, UserProfile> calculateSimilaritiesByCount(int numClusters,int COMPARING_DISTANCE_THRESHOLD) {
+
+		List<UserProfile> usersProfiles = new ArrayList<>(id_userProfile.values());
+
+		for (int i = 0; i < usersProfiles.size(); i++) {
+			for (int j = 0; j < usersProfiles.size(); j++) {
+				if (i != j && j > i) {
+					UserProfile p1 = usersProfiles.get(i);
+					UserProfile p2 = usersProfiles.get(j);
+					if (usersCloseEnough(p1.getGraph(), p2.getGraph(), COMPARING_DISTANCE_THRESHOLD)) {
+						double score = getUserSimilarityByCount(p1, p2);
+						p1.addSimilarityScoreByLayer(numClusters,p2.userId, score);
+						p2.addSimilarityScoreByLayer(numClusters,p1.userId, score);
+					}
+				}
+			}
+			for (UserProfile profile : usersProfiles) {
+				profile.normalizeSimilarityScoresByLayer(0.0, 1.0,numClusters);
+			}
+		}
+
+		return id_userProfile;
+	}
+
+	private double getUserSimilarityByCount(UserProfile pA, UserProfile pB) {
+		Graph graph1 = pA.getGraph();
+		Graph graph2 = pB.getGraph();
+
+		int size1 = graph1.vertexes.size();
+		int size2 = graph2.vertexes.size();
+
+		Map<Integer, Double> percentageA = graph1.cluster_percentage;
+		Map<Integer, Double> percentageB = graph2.cluster_percentage;
+
+		List<Double> countA = percentageA.entrySet().stream().sorted(Map.Entry.comparingByKey())
+				.map(x -> x.getValue() * size1).collect(Collectors.toList());
+
+		List<Double> countB = percentageB.entrySet().stream().sorted(Map.Entry.comparingByKey())
+				.map(x -> x.getValue() * size2).collect(Collectors.toList());
+
+		double score = 0d;
+		for (int i = 0; i < countA.size(); i++) {
+			score += (countA.get(i) < countB.get(i)) ? countA.get(i) : countB.get(i);
+		}
+		return score;
+	}
+
+	//[END by count]
+	
+	//[START geofriends]
+	public Map<String, UserProfile> calculateSimilaritiesFromLocations(int numClusters,COLLAB_TYPE type,int COMPARING_DISTANCE_THRESHOLD,
 			int MATCHING_MAX_SEQ_LENGTH, long TRANSITION_TIME_THRESHOLD, long SAME_TIME_DAY_THRESHOLD) {
 		List<UserProfile> usersProfiles = new ArrayList<>(id_userProfile.values());
 
@@ -72,22 +129,21 @@ public class SimilarityManager {
 					if (i != j && j > i) {
 						UserProfile p1 = usersProfiles.get(i);
 						UserProfile p2 = usersProfiles.get(j);
-						if (usersCloseEnough(p1.getGraph(), p2.getGraph(),
-								COMPARING_DISTANCE_THRESHOLD)) {
+						if (usersCloseEnough(p1.getGraph(), p2.getGraph(), COMPARING_DISTANCE_THRESHOLD)) {
 							double seqScore = getUserSimilaritySequences(p1, p2, MATCHING_MAX_SEQ_LENGTH,
 									TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD);
-							p1.addSimilarityScore(p2.userId, seqScore);
-							p2.addSimilarityScore(p1.userId, seqScore);
+							p1.addSimilarityScoreByLayer(numClusters,p2.userId, seqScore);
+							p2.addSimilarityScoreByLayer(numClusters,p1.userId, seqScore);
 						}
 					}
 				}
 			}
 			// tranform seqScore [0-1]
 			for (UserProfile profile : usersProfiles) {
-				profile.normalizeSimilarityScores();
+				profile.normalizeSimilarityScoresByLayer(0.0, 1.0,numClusters);
 			}
 		}
-		if(this.ACT_SCORE_WEIGHT > 0){
+		if (this.ACT_SCORE_WEIGHT > 0) {
 			// take into account activity Score
 			for (int i = 0; i < usersProfiles.size(); i++) {
 				for (int j = 0; j < usersProfiles.size(); j++) {
@@ -95,21 +151,21 @@ public class SimilarityManager {
 						UserProfile p1 = usersProfiles.get(i);
 						UserProfile p2 = usersProfiles.get(j);
 						double finalScore;
-						double actScore = getUserSimilarityClusterActivity(p1, p2);
+						double actScore = getUserSimilarityClusterActivity(p1, p2,type);
 						// System.out.println("actScore "+actScore);
 
-						double seqScore1 = p1.getSimilarityScore(p2.userId);
+						double seqScore1 = p1.getSimilarityScoreByLayer(numClusters,p2.userId);
 						finalScore = calculateFinalScore(seqScore1, actScore);
-						p1.addSimilarityScore(p2.userId, finalScore);
+						p1.addSimilarityScoreByLayer(numClusters,p2.userId, finalScore);
 
-						double seqScore2 = p2.getSimilarityScore(p1.userId);
+						double seqScore2 = p2.getSimilarityScoreByLayer(numClusters,p1.userId);
 						finalScore = calculateFinalScore(seqScore2, actScore);
-						p2.addSimilarityScore(p1.userId, finalScore);
+						p2.addSimilarityScoreByLayer(numClusters,p1.userId, finalScore);
 					}
 				}
 			}
 		}
-		
+
 		return id_userProfile;
 	}
 
@@ -137,8 +193,8 @@ public class SimilarityManager {
 	// [START SEQUENCE MATCHING]
 	//
 
-	private double getUserSimilaritySequences(UserProfile profileA, UserProfile profileB,
-			int MATCHING_MAX_SEQ_LENGTH, long TRANSITION_TIME_THRESHOLD, long SAME_TIME_DAY_THRESHOLD) {
+	private double getUserSimilaritySequences(UserProfile profileA, UserProfile profileB, int MATCHING_MAX_SEQ_LENGTH,
+			long TRANSITION_TIME_THRESHOLD, long SAME_TIME_DAY_THRESHOLD) {
 		if (!profileA.userId.equals(profileB.userId)) {
 			Graph graphA = profileA.getGraph();
 			Graph graphB = profileB.getGraph();
@@ -148,35 +204,31 @@ public class SimilarityManager {
 			Set<Sequence> seqsB = graphB.getTopNSequences(50, graphB.getAggregatedSeqs());
 
 			Set<SequenceAuxiliar> foundSeqs = new HashSet<SequenceAuxiliar>();
-			
+
 			double score = 0;
 			for (Sequence seqA : seqsA) {
 				for (Sequence seqB : seqsB) {
-					foundSeqs.addAll(sequenceMatching(seqA, seqB, MATCHING_MAX_SEQ_LENGTH,
-							TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD));
+					foundSeqs.addAll(sequenceMatching(seqA, seqB, MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD,
+							SAME_TIME_DAY_THRESHOLD));
 				}
 			}
-			System.out.println("Found seqs");
-			foundSeqs.stream().forEach(System.out::println);
 
-			//respect privacy settings 
+			// respect privacy settings
 			if (!profileA.crossings && !profileB.crossings) {
 				// get longest seqs only
 				foundSeqs = pruneSequences(foundSeqs);
-				System.out.println("Max Length");
 			} else {
 				// someone wants only crossings
 				foundSeqs = foundSeqs.stream().filter(x -> x.sameTimeOfDay).collect(Collectors.toSet());
-				System.out.println("Only crossings");
 			}
-			
+
 			// convert auxiliar to normal Sequence
 			Set<Sequence> normalSeqs = new HashSet<Sequence>();
 			for (SequenceAuxiliar seq : foundSeqs) {
 				normalSeqs.add(seq.toNormalSequence());
 			}
-			
-			//calculate score
+
+			// calculate score
 			for (Sequence s : normalSeqs) {
 				double size = s.getClusters().size();
 				score += size * Math.pow(2.0, size - 1);
@@ -199,7 +251,8 @@ public class SimilarityManager {
 			for (SequenceAuxiliar seq : sequenceSet) {
 				if (seq.mVertexes.size() == step) {
 					// extend step-length seq to be (step + 1)-length
-					toAdd.addAll(extendSequence(sequenceSet, seq, transitionTimeThreshold,sameTimeDayThreshold, seqA, seqB));
+					toAdd.addAll(extendSequence(sequenceSet, seq, transitionTimeThreshold, sameTimeDayThreshold, seqA,
+							seqB));
 				}
 			}
 			sequenceSet.addAll(toAdd);
@@ -245,7 +298,7 @@ public class SimilarityManager {
 	}
 
 	private Set<SequenceAuxiliar> extendSequence(Set<SequenceAuxiliar> set, SequenceAuxiliar seq,
-			long transitionTimeThreshold,long sameTimeDayThreshold, Sequence a, Sequence b) {
+			long transitionTimeThreshold, long sameTimeDayThreshold, Sequence a, Sequence b) {
 
 		Set<SequenceAuxiliar> toReturn = new HashSet<SequenceAuxiliar>();
 
@@ -328,8 +381,6 @@ public class SimilarityManager {
 	}
 
 	private static boolean sameTimeOfDay(Date d1, Date d2, long sameTimeDayThreshold) {
-		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-		// System.out.println("STD "+sdf.format(d1)+" "+sdf.format(d2));
 		Calendar cal1 = Calendar.getInstance();
 		Calendar cal2 = Calendar.getInstance();
 		cal1.setTime(d1);
@@ -338,23 +389,17 @@ public class SimilarityManager {
 		boolean sameDay = cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR)
 				&& cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
 		if (!sameDay) {
-			// System.out.println("FALSE");
-			// System.out.println();
 			return false;
 		}
 
 		long delta = Math.abs(d1.getTime() - d2.getTime());
 
 		if (delta > sameTimeDayThreshold) {
-			// System.out.println("FALSE");
-			// System.out.println();
 			return false;
 		}
-		// System.out.println("TRUE");
-		// System.out.println();
 		return true;
 	}
-	
+
 	//
 	// [END SEQUENCE MATCHING]
 	//
@@ -363,25 +408,42 @@ public class SimilarityManager {
 	// [START ACTIVITY MATCHING]
 	//
 
-	private double getUserSimilarityClusterActivity(UserProfile profileA, UserProfile profileB) {
+	private double getUserSimilarityClusterActivity(UserProfile profileA, UserProfile profileB, COLLAB_TYPE type) {
 		if (!profileA.userId.equals(profileB.userId)) {
 			Graph graphA = profileA.getGraph();
 			Graph graphB = profileB.getGraph();
 
-			return collaborativeFilteringClusterPercentage(graphA, graphB);
+			return collaborativeFilteringClusterPercentage(graphA, graphB,type);
 		}
 		return 0;
 	}
 
-	private double collaborativeFilteringClusterPercentage(Graph graphA, Graph graphB) {
+	private double collaborativeFilteringClusterPercentage(Graph graphA, Graph graphB, COLLAB_TYPE type) {
 		Map<Integer, Double> percentageA = graphA.cluster_percentage;
 		Map<Integer, Double> percentageB = graphB.cluster_percentage;
 
-		List<Double> actA = percentageA.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(x -> x.getValue())
-				.collect(Collectors.toList());
+		List<Double> actA = new LinkedList<Double>();
+		List<Double> actB = new LinkedList<Double>();
+		
+		if (type.equals(COLLAB_TYPE.cosine)) {
+			actA = percentageA.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(x -> x.getValue())
+					.collect(Collectors.toList());
 
-		List<Double> actB = percentageB.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(x -> x.getValue())
-				.collect(Collectors.toList());
+			actB = percentageB.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(x -> x.getValue())
+					.collect(Collectors.toList());
+		}
+
+		if (type.equals(COLLAB_TYPE.pearson)) {
+			//subtract mean to normalize activity prcts
+			double meanA = percentageA.entrySet().stream().sorted(Map.Entry.comparingByKey()).mapToDouble(x -> x.getValue()).sum() / percentageA.size();
+			double meanB = percentageB.entrySet().stream().sorted(Map.Entry.comparingByKey()).mapToDouble(x -> x.getValue()).sum() / percentageB.size();
+			
+			actA = percentageA.entrySet().stream().sorted(Map.Entry.comparingByKey())
+					.map(x -> x.getValue() - meanA).collect(Collectors.toList());
+
+			actB = percentageB.entrySet().stream().sorted(Map.Entry.comparingByKey())
+					.map(x -> x.getValue() - meanB).collect(Collectors.toList());
+		}
 
 		double dotProduct = dotProduct(actA, actB);
 		double magnitudeA = magnitude(actA);
@@ -408,5 +470,7 @@ public class SimilarityManager {
 	private double calculateFinalScore(double seqScore, double actScore) {
 		return SEQ_SCORE_WEIGHT * seqScore + ACT_SCORE_WEIGHT * actScore;
 	}
+	
+	//[END GeoFriends]
 
 }

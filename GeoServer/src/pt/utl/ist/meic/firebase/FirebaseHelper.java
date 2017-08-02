@@ -254,12 +254,12 @@ public class FirebaseHelper {
 		return new CheckIn(df.parse(time), new DataPoint(latitude, longitude));
 	}
 
-	public static void writeNewClustersFirebase(List<ClusterWithMean> clusters, long totalCheckIns)
+	public static void writeNewClustersFirebase(List<ClusterWithMean> clusters, long totalCheckIns, int numClusters)
 			throws FirebaseException, JacksonUtilityException, UnsupportedEncodingException {
 
-		deleteClustersFirebaseKMEANS();
+		deleteClustersFirebaseKMEANS(numClusters);
 
-		Firebase firebase = new Firebase(FIREBASE_URL + "/clusters");
+		Firebase firebase = new Firebase(FIREBASE_URL + "/clusters"+numClusters);
 
 		for (int i = 0; i < clusters.size(); i++) {
 			// "PUT cluster to /clusters
@@ -275,31 +275,33 @@ public class FirebaseHelper {
 
 	}
 
-	private static void deleteClustersFirebaseKMEANS() throws FirebaseException, UnsupportedEncodingException {
+	private static void deleteClustersFirebaseKMEANS(int numClusters) throws FirebaseException, UnsupportedEncodingException {
 		Firebase firebase = new Firebase(FIREBASE_URL);
-		FirebaseResponse response = firebase.delete("clusters");
+		FirebaseResponse response = firebase.delete("clusters"+numClusters);
 		System.out.println(response.getBody().toString());
 	}
 	
 	
-	public static List<FirebaseCluster> getGlobalClusters() throws FirebaseException, UnsupportedEncodingException {
+	public static List<FirebaseCluster> getGlobalClusters(int numClusters) throws FirebaseException, UnsupportedEncodingException {
 		List<FirebaseCluster> toReturn = new ArrayList<>();
 
-		Firebase firebase = new Firebase(FIREBASE_URL + "/clusters");
-
+		Firebase firebase = new Firebase(FIREBASE_URL + "/clusters"+numClusters);
+		
 		FirebaseResponse response = firebase.get();
-		response.getBody().entrySet().stream().forEach(x -> {
+		
+		int id = 0;
+		for(Map.Entry<String, Object> entry : response.getBody().entrySet()) {
 			try {
-				toReturn.add(parseFirebaseCluster(x));
+				toReturn.add(parseFirebaseCluster(entry,id++));
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
-		});
+		}
 
 		return toReturn;
 	}
 
-	private static FirebaseCluster parseFirebaseCluster(Entry<String, Object> x) throws ParseException {
+	private static FirebaseCluster parseFirebaseCluster(Entry<String, Object> x, int id) throws ParseException {
 		String clusterValues = x.getValue().toString();
 		String[] tokens = clusterValues.split(",");
 		
@@ -310,6 +312,9 @@ public class FirebaseHelper {
 		
 		ClusterWithMean mean = new ClusterWithMean(0);
 		mean.setMean(new DoubleArray(new double[] { Double.parseDouble(lati), Double.parseDouble(longi) }));
+		mean.mId = id;
+		
+		System.out.println("parse cluster with id "+id);
 		
 		Integer size = Integer.parseInt(tokens[1].split("=")[1]);
 		
@@ -320,7 +325,7 @@ public class FirebaseHelper {
 		return new FirebaseCluster(mean, size,sizePrct);
 	}
 
-	public static void writeNewFriendsFirebase(List<UserProfile> profiles, boolean limited, int limitProfiles,
+	public static void writeNewFriendsFirebase(List<UserProfile> profiles, int numClusters, boolean limited, int limitProfiles,
 			int limitSuggestions) throws FirebaseException, JacksonUtilityException, UnsupportedEncodingException {
 
 		deleteFriendsFirebase();
@@ -331,7 +336,7 @@ public class FirebaseHelper {
 				if (limitProfiles > 0) {
 					// "POST firends to /friends
 					Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
-					profile.getSimilarities().entrySet().stream()
+					profile.getSimilaritiesByLayer(numClusters).entrySet().stream()
 							.sorted(Map.Entry.<String, Double>comparingByValue().reversed()).limit(limitSuggestions)
 							.forEach(x -> dataMap.put(x.getKey(), x.getValue()));
 
@@ -346,7 +351,7 @@ public class FirebaseHelper {
 		} else {
 			for (UserProfile profile : profiles) {
 				Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
-				profile.getSimilarities().entrySet().stream()
+				profile.getSimilaritiesByLayer(numClusters).entrySet().stream()
 						.sorted(Map.Entry.<String, Double>comparingByValue().reversed())
 						.forEach(x -> dataMap.put(x.getKey(), x.getValue()));
 

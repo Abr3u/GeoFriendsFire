@@ -10,6 +10,7 @@ import pt.utl.ist.meic.domain.managers.EvaluationManager;
 
 public class TestMeasures {
 
+	/*
 	public static void testAllMeasures(){
 		testPrecision();
 		testRecall();
@@ -293,7 +294,7 @@ public class TestMeasures {
 			System.out.println("--Test passed");
 		}
 	}
-
+*/
 	
 	
 }
