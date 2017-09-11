@@ -55,7 +55,7 @@ public class FileManager {
 	private static final Double LOW_LATI = 52.3261076319;
 	private static final Double HIGH_LONGI = 4.98538970;
 	private static final Double LOW_LONGI = 4.8308944702;
-	
+
 	/*
 	 * Data pre processing
 	 */
@@ -246,11 +246,10 @@ public class FileManager {
 
 	// [End] AmsAmsRelevantFriends & AmsAmsRelevantFriendsCount
 
-	
 	/*
 	 * Server Logic
 	 */
-	
+
 	public Set<String> getAmsAmsIdListFromFile() {
 		Set<String> toReturn = new HashSet<String>();
 
@@ -267,7 +266,7 @@ public class FileManager {
 		System.out.println(toReturn.size() + " unique Ids");
 		return toReturn;
 	}
-	
+
 	public List<String> getRealFriendsFromGowalla(String username) throws IOException {
 
 		List<String> realFriends = new ArrayList<>();
@@ -313,7 +312,7 @@ public class FileManager {
 
 			}
 			System.out.println("criar csv para user " + userId + " com tamanho -> " + userCheckIns.size());
-			createCsvCheckIns(userCheckIns,userCheckInsPath);
+			createCsvCheckIns(userCheckIns, userCheckInsPath);
 			return userCheckIns;
 		} else {
 			// checkIns do csv do utilizador
@@ -382,7 +381,6 @@ public class FileManager {
 
 	}
 
-	
 	public void createAMSCheckins() throws IOException, ParseException {
 		// creating ams.csv from global
 		Reader in = new FileReader(pathGlobalCSV);
@@ -402,7 +400,7 @@ public class FileManager {
 				list.add(new OriginalDataPoint(date, new DataPoint(latitude, longitude), user));
 			}
 		}
-		//BEGIN
+		// BEGIN
 		FileWriter fileWriter = null;
 
 		try {
@@ -439,7 +437,7 @@ public class FileManager {
 		System.out.println("createCSVnewYork --- END");
 
 	}
-	
+
 	public void createCheckinsForClustering() throws IOException, ParseException {
 		// creating AMS.csv from global
 		Reader in = new FileReader(pathAmsCSV);
@@ -487,7 +485,7 @@ public class FileManager {
 		System.out.println("createCSVAmsClustering --- END");
 
 	}
-	
+
 	public void createCSVFirebaseLocations(Map<String, UserProfile> id_userProfile, String path)
 			throws FirebaseException, IOException {
 		FileWriter fileWriter = new FileWriter(path);
@@ -515,12 +513,11 @@ public class FileManager {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 	/*
 	 * Evaluation Datasets
 	 */
-	
+
 	public void createCsvSimilarities(List<UserProfile> profiles, String fileName, double limit, int numClusters) {
 		System.out.println("createCsvSimilarities");
 
@@ -556,7 +553,7 @@ public class FileManager {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void createFoundCSV(String friendsPath, String foundPath) throws IOException {
 		Map<String, List<String>> gowalla_friends = new HashMap<String, List<String>>();
 
@@ -625,7 +622,7 @@ public class FileManager {
 		}
 		createCsvFriendsFoundPrct(prctPath, user_foundTotal);
 	}
-	
+
 	private void createCsvFriendsFound(String fileName, Map<String, Integer> friendsFound, int totalFound) {
 		System.out.println("createCsvFriendsFound");
 		FileWriter fileWriter = null;
@@ -692,6 +689,42 @@ public class FileManager {
 
 		}
 	}
-	
-	
+
+	/*
+	 * random stuff
+	 */
+
+	public double getAverageRelevantFriendsGowalla() throws IOException {
+		Reader in = new FileReader(pathAmsAmsFriendCount);
+		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
+		int numberUsers = 0;
+		int sumFriends = 0;
+		for (CSVRecord record : records) {
+			sumFriends += Integer.parseInt(record.get(1));
+			numberUsers++;
+		}
+		return sumFriends / numberUsers;
+	}
+
+	public double getAverageSuggestedFriendsGeoFriends(String pathSuggested) throws IOException {
+		Reader in = new FileReader(pathSuggested);
+		Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
+		HashMap<String, Integer> numberFriends = new HashMap<String, Integer>();
+		for (CSVRecord record : records) {
+			String user = record.get(0);
+			if (numberFriends.containsKey(user)) {
+				numberFriends.put(user, numberFriends.get(user) + 1);
+			} else {
+				numberFriends.put(user, 1);
+			}
+		}
+		int numberUsers = numberFriends.size();
+		int numberSuggestions = numberFriends.entrySet().stream().mapToInt(x -> x.getValue()).sum();
+		if (numberSuggestions != 0) {
+			return numberSuggestions / numberUsers;
+		} else {
+			return 0d;
+		}
+	}
+
 }

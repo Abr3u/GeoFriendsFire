@@ -28,6 +28,7 @@ import pt.utl.ist.meic.firebase.models.FirebaseCluster;
 import pt.utl.ist.meic.firebase.models.ScalabilityMetrics;
 import pt.utl.ist.meic.firebase.models.UXMetrics;
 import pt.utl.ist.meic.utility.FileManager;
+import test.TestSequences;
 
 public class GeoServer {
 
@@ -36,7 +37,7 @@ public class GeoServer {
 	private static String DELIMITER = ",";
 
 	// clustering Kmeans
-	private static final int NUM_CLUSTERS = 0;// kmeans
+	private static final int NUM_CLUSTERS = 4;// kmeans
 	private static final long NEW_DATA_THRESHOLD = 1000;// new locations
 	private static final long TIME_PASSED_THRESHOLD = 1000 * 60 * 60 * 24 * 30; // 30
 																				// days
@@ -56,10 +57,11 @@ public class GeoServer {
 	private static final boolean EVALUATE_EVENTS = false;
 
 	private static final boolean DATA_PREPROCESSING = false;
-	private static final boolean EVALUATE_BY_COUNT = false;
 	
-	private static final boolean EVALUATE_GOWALLA = false;
-	private static final boolean EVALUATE_GOWALLA_MULTI_LAYER = true;//NUM_CLUSTERS = 0
+	private static final boolean EVALUATE_BY_COUNT = false;
+	private static final boolean EVALUATE_GOWALLA = true;
+	private static final boolean EVALUATE_GOWALLA_MULTI_LAYER = false;//NUM_CLUSTERS = 0
+	private static final int NUM_LAYERS = 2;
 	private static final COLLAB_TYPE COLLABORATION_TYPE = COLLAB_TYPE.cosine;
 	private static final double ACT_SCORE_WEIGHT = 0.875;
 	private static final double SEQ_SCORE_WEIGHT = 0.125;
@@ -77,7 +79,7 @@ public class GeoServer {
 
 	// debug
 	private static final long abril = 1491001200000l;// milisecs 1 de abril 2017
-
+	
 	public static void main(String[] args) {
 		double initTime = System.currentTimeMillis();
 		String summary = "-----SUMMARY-----\n";
@@ -102,15 +104,17 @@ public class GeoServer {
 		List<ClusterWithMean> globalClustersWithMean = new ArrayList<>();
 
 		if (TEST) {
-			Map<Integer,Map<String,Double>> layerSimScore = new HashMap<Integer, Map<String,Double>>();
-			Map<String,Double> simScore = new HashMap<String,Double>();
-			simScore.put("1", 1.0);
-			simScore.put("2", 2.0);
-			simScore.put("3", 3.0);
-			
-			layerSimScore.put(1, simScore);
-			
-			layerSimScore.entrySet().stream().forEach(System.out::println);
+			try {
+				FileManager fm = new FileManager();
+				String pathSuggested = "C:/Android/GeoFriendsFire/GeoServer/friendsOf562Users.csv";
+				System.out.println("Average Friends Gowalla");
+				System.out.println(fm.getAverageRelevantFriendsGowalla());
+				System.out.println("Average Suggested Friends GeoFriends");
+				System.out.println(fm.getAverageSuggestedFriendsGeoFriends(pathSuggested));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		if(DATA_PREPROCESSING) {
@@ -153,114 +157,44 @@ public class GeoServer {
 			List<UserProfile> profiles = new ArrayList<>(id_userProfile.values());
 
 			// writeResultsFirebase(profiles);
-			// writeResultsLocalStorage(mFileManager, profiles);
+			writeResultsLocalStorage(new FileManager(), profiles, NUM_CLUSTERS);
 			EvaluationManager evaluationManager = new EvaluationManager(profiles, SIMILARITY_THRESHOLD,NUM_CLUSTERS);
 			evaluationManager.evaluateResults();
 		}
 		if (EVALUATE_GOWALLA_MULTI_LAYER) {
-			//[start layer]
-			int firstLayer = 4;
-			try {
-				globalFirebaseClusters = FirebaseHelper.getGlobalClusters(firstLayer);
-			} catch (UnsupportedEncodingException | FirebaseException e1) {
-				e1.printStackTrace();
-			}
 			
-			globalClustersWithMean = globalFirebaseClusters.stream().map(x->x.mean).collect(Collectors.toList());
 			id_userProfile = UserProfilesManager.createUserProfilesGowalla(new FileManager());
-
-			try {
-				id_userProfile = CheckInsManager.populateUserCheckInsFromGowalla(new FileManager(), globalClustersWithMean,
-						id_userProfile, firstLayer);
-			} catch (ParseException | IOException e) {
-				e.printStackTrace();
-			}
-
-			SimilarityManager similarityManager = new SimilarityManager(id_userProfile, SEQ_SCORE_WEIGHT,
-					ACT_SCORE_WEIGHT);
-			id_userProfile = similarityManager.calculateSimilaritiesFromLocations(firstLayer,COLLABORATION_TYPE,COMPARING_DISTANCE_THRESHOLD,
-					MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD);
-
-			//[end layer]
 			
-			//[start layer]
-			int secondLayer = 2;
-			try {
-				globalFirebaseClusters = FirebaseHelper.getGlobalClusters(secondLayer);
-			} catch (UnsupportedEncodingException | FirebaseException e1) {
-				e1.printStackTrace();
-			}
-			
-			globalClustersWithMean = globalFirebaseClusters.stream().map(x->x.mean).collect(Collectors.toList());
+			for(int i = 1; i<= NUM_LAYERS ; i++) {
+				int numClusters = i*2;
+				try {
+					globalFirebaseClusters = FirebaseHelper.getGlobalClusters(numClusters);
+				} catch (UnsupportedEncodingException | FirebaseException e1) {
+					e1.printStackTrace();
+				}
+				
+				globalClustersWithMean = globalFirebaseClusters.stream().map(x->x.mean).collect(Collectors.toList());
+				
+				try {
+					id_userProfile = CheckInsManager.populateUserCheckInsFromGowalla(new FileManager(), globalClustersWithMean,
+							id_userProfile, numClusters);
+				} catch (ParseException | IOException e) {
+					e.printStackTrace();
+				}
 
-			try {
-				id_userProfile = CheckInsManager.populateUserCheckInsFromGowalla(new FileManager(), globalClustersWithMean,
-						id_userProfile, secondLayer);
-			} catch (ParseException | IOException e) {
-				e.printStackTrace();
-			}
-
-			similarityManager = new SimilarityManager(id_userProfile, SEQ_SCORE_WEIGHT,
-					ACT_SCORE_WEIGHT);
-			id_userProfile = similarityManager.calculateSimilaritiesFromLocations(secondLayer,COLLABORATION_TYPE,COMPARING_DISTANCE_THRESHOLD,
-					MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD);
-
-			//[end layer]	
-			
-			//[start layer]
-			int thirdLayer = 6;
-			try {
-				globalFirebaseClusters = FirebaseHelper.getGlobalClusters(thirdLayer);
-			} catch (UnsupportedEncodingException | FirebaseException e1) {
-				e1.printStackTrace();
+				SimilarityManager similarityManager = new SimilarityManager(id_userProfile, SEQ_SCORE_WEIGHT,
+						ACT_SCORE_WEIGHT);
+				id_userProfile = similarityManager.calculateSimilaritiesFromLocations(numClusters,COLLABORATION_TYPE,COMPARING_DISTANCE_THRESHOLD,
+						MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD);
 			}
 			
-			globalClustersWithMean = globalFirebaseClusters.stream().map(x->x.mean).collect(Collectors.toList());
-
-			try {
-				id_userProfile = CheckInsManager.populateUserCheckInsFromGowalla(new FileManager(), globalClustersWithMean,
-						id_userProfile, thirdLayer);
-			} catch (ParseException | IOException e) {
-				e.printStackTrace();
-			}
-
-			similarityManager = new SimilarityManager(id_userProfile, SEQ_SCORE_WEIGHT,
-					ACT_SCORE_WEIGHT);
-			id_userProfile = similarityManager.calculateSimilaritiesFromLocations(thirdLayer,COLLABORATION_TYPE,COMPARING_DISTANCE_THRESHOLD,
-					MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD);
-
-			//[end layer]
-			
-			//[start layer]
-			int fourthLayer = 8;
-			try {
-				globalFirebaseClusters = FirebaseHelper.getGlobalClusters(fourthLayer);
-			} catch (UnsupportedEncodingException | FirebaseException e1) {
-				e1.printStackTrace();
-			}
-			
-			globalClustersWithMean = globalFirebaseClusters.stream().map(x->x.mean).collect(Collectors.toList());
-
-			try {
-				id_userProfile = CheckInsManager.populateUserCheckInsFromGowalla(new FileManager(), globalClustersWithMean,
-						id_userProfile, fourthLayer);
-			} catch (ParseException | IOException e) {
-				e.printStackTrace();
-			}
-
-			similarityManager = new SimilarityManager(id_userProfile, SEQ_SCORE_WEIGHT,
-					ACT_SCORE_WEIGHT);
-			id_userProfile = similarityManager.calculateSimilaritiesFromLocations(fourthLayer,COLLABORATION_TYPE,COMPARING_DISTANCE_THRESHOLD,
-					MATCHING_MAX_SEQ_LENGTH, TRANSITION_TIME_THRESHOLD, SAME_TIME_DAY_THRESHOLD);
-
-			//[end layer]
 			
 			System.out.println("Multi Layer Score");
 			List<UserProfile> profiles = new ArrayList<>(id_userProfile.values());
 			profiles.stream().forEach(UserProfile::calculateMultiLayerScore);
 
 			// writeResultsFirebase(profiles);
-			// writeResultsLocalStorage(mFileManager, profiles);
+			writeResultsLocalStorage(new FileManager(), profiles,NUM_CLUSTERS);
 			EvaluationManager evaluationManager = new EvaluationManager(profiles, SIMILARITY_THRESHOLD,NUM_CLUSTERS);
 			evaluationManager.evaluateResults();
 		}
@@ -454,6 +388,8 @@ public class GeoServer {
 			fileManager.createCsvSimilarities(profiles, friendsPath, SIMILARITY_THRESHOLD,numClusters);
 			fileManager.createFoundCSV(friendsPath, foundPath);
 			fileManager.createFoundPrctCSV(foundPath, foundPrctPath);
+			System.out.println("Average Suggested Friends GeoFriends");
+			System.out.println(fileManager.getAverageSuggestedFriendsGeoFriends(friendsPath));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

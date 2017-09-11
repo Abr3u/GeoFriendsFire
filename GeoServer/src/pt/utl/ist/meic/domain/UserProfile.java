@@ -127,7 +127,12 @@ public class UserProfile {
 	}
 
 	public double getSimilarityScoreByLayer(int numClusters, String userId) {
-		
+		if(numClusters == 0 && this.multiLayerSimilarityScores.containsKey(userId)) {
+			return this.multiLayerSimilarityScores.get(userId);
+		}
+		if(this.numClustersSimScore.get(numClusters) == null) {
+			return 0d;
+		}
 		if (this.numClustersSimScore.get(numClusters).containsKey(userId)) {
 			return this.numClustersSimScore.get(numClusters).get(userId);
 		}
@@ -177,6 +182,9 @@ public class UserProfile {
 	}
 
 	public Map<String, Double> getSimilaritiesByLayer(int numClusters) {
+		if(numClusters == 0) {
+			return this.multiLayerSimilarityScores;
+		}
 		return this.numClustersSimScore.get(numClusters);
 	}
 	

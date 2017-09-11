@@ -101,29 +101,23 @@ public class TestSequences {
 		Sequence b = new Sequence();
 
 		ga.addVertex(new VertexInfo(clusterA, now));
-		ga.addVertex(new VertexInfo(clusterB, one));
-		ga.addVertex(new VertexInfo(clusterC, nine));
-		ga.addVertex(new VertexInfo(clusterA, ten));
-		ga.addVertex(new VertexInfo(clusterD, eleven));
-
-		gb.addVertex(new VertexInfo(clusterA, now));
-		gb.addVertex(new VertexInfo(clusterB, one));
-		gb.addVertex(new VertexInfo(clusterC, three));
-		gb.addVertex(new VertexInfo(clusterA, four));
-		gb.addVertex(new VertexInfo(clusterD, five));
+		ga.addVertex(new VertexInfo(clusterB, oneHalf));
+		ga.addVertex(new VertexInfo(clusterC, threeHalf));
 
 		a.addVertexInfo(new VertexInfo(clusterA, now));
-		a.addVertexInfo(new VertexInfo(clusterB, one));
-		a.addVertexInfo(new VertexInfo(clusterC, nine));
-		a.addVertexInfo(new VertexInfo(clusterA, ten));
-		a.addVertexInfo(new VertexInfo(clusterD, eleven));
+		a.addVertexInfo(new VertexInfo(clusterB, oneHalf));
+		a.addVertexInfo(new VertexInfo(clusterC, threeHalf));
 		ga.addSequence(a);
+		
+		gb.addVertex(new VertexInfo(clusterA, now));
+		gb.addVertex(new VertexInfo(clusterD, one));
+		gb.addVertex(new VertexInfo(clusterB, two));
+		gb.addVertex(new VertexInfo(clusterC, fourHalf));
 
 		b.addVertexInfo(new VertexInfo(clusterA, now));
-		b.addVertexInfo(new VertexInfo(clusterB, one));
-		b.addVertexInfo(new VertexInfo(clusterC, three));
-		b.addVertexInfo(new VertexInfo(clusterA, four));
-		b.addVertexInfo(new VertexInfo(clusterD, five));
+		b.addVertexInfo(new VertexInfo(clusterD, one));
+		b.addVertexInfo(new VertexInfo(clusterB, two));
+		b.addVertexInfo(new VertexInfo(clusterC, fourHalf));
 		gb.addSequence(b);
 
 		UserProfile alice = new UserProfile("alice");
@@ -307,60 +301,31 @@ public class TestSequences {
 		long delta;
 
 		for (SequenceAuxiliar aux : auxSet) {
-			if (seq.mVertexes.size() == 1) {
-				v1 = seq.getLastVertex();
-				v2 = aux.getLastVertex();
-				// System.out.println("estou a analisar " + v1 + " com " + v2);
-				if (v1.vertex.mId != v2.vertex.mId && consequentIndexes(v1, v2)) {
-					// se for tamanho 1, nao comparamos sequencias para o
-					// mesmo cluster
+			v1 = seq.getLastVertex();
+			v2 = aux.getFirstVertex();
+			
+			if(v1.equals(v2) && aux.mVertexes.size()>=2) {
+				v2 = aux.getSecondVertex();
+			}
+			
+			if (consequentIndexes(v1, v2)) {
 
-					travelTime1 = Math.abs(a.getClusters().get(v1.index1).leavTime.getTime()
-							- a.getClusters().get(v2.index1).arrTime.getTime());
-					travelTime2 = Math.abs(b.getClusters().get(v1.index2).leavTime.getTime()
-							- b.getClusters().get(v2.index2).arrTime.getTime());
+				travelTime1 = Math.abs(a.getClusters().get(v1.index1).leavTime.getTime()
+						- a.getClusters().get(v2.index1).arrTime.getTime());
+				travelTime2 = Math.abs(b.getClusters().get(v1.index2).leavTime.getTime()
+						- b.getClusters().get(v2.index2).arrTime.getTime());
 
-					delta = Math.abs(travelTime1 - travelTime2);
+				delta = Math.abs(travelTime1 - travelTime2);
 
-					Date dateV1 = a.getClusters().get(v1.index1).date;
-					Date dateV2 = b.getClusters().get(v2.index2).date;
+				Date dateV1 = a.getClusters().get(v1.index1).date;
+				Date dateV2 = b.getClusters().get(v2.index2).date;
 
-					if (delta <= transitionTimeThreshold && !shareIndexes(v1, v2)) {
-						SequenceAuxiliar result = new SequenceAuxiliar();
-						result.mVertexes.addAll(seq.mVertexes);
-						result.mVertexes.add(v2);
-						result.sameTimeOfDay = sameTimeOfDay(dateV1, dateV2);
-						toReturn.add(result);
-					}
-				}
-			} else if (seq.mVertexes.size() > 1) {
-				v1 = seq.getLastVertex();
-				v2 = aux.getFirstVertex();
-
-				if (v1.equals(v2)) {
-
-					v2 = aux.getSecondVertex();
-
-				}
-				if (consequentIndexes(v1, v2)) {
-
-					travelTime1 = Math.abs(a.getClusters().get(v1.index1).leavTime.getTime()
-							- a.getClusters().get(v2.index1).arrTime.getTime());
-					travelTime2 = Math.abs(b.getClusters().get(v1.index2).leavTime.getTime()
-							- b.getClusters().get(v2.index2).arrTime.getTime());
-
-					delta = Math.abs(travelTime1 - travelTime2);
-
-					Date dateV1 = a.getClusters().get(v1.index1).date;
-					Date dateV2 = b.getClusters().get(v2.index2).date;
-
-					if (delta <= transitionTimeThreshold && !shareIndexes(v1, v2)) {
-						SequenceAuxiliar result = new SequenceAuxiliar();
-						result.mVertexes.addAll(seq.mVertexes);
-						result.mVertexes.add(v2);
-						result.sameTimeOfDay = sameTimeOfDay(dateV1, dateV2);
-						toReturn.add(result);
-					}
+				if (delta <= transitionTimeThreshold && !shareIndexes(v1, v2)) {
+					SequenceAuxiliar result = new SequenceAuxiliar();
+					result.mVertexes.addAll(seq.mVertexes);
+					result.mVertexes.add(v2);
+					result.sameTimeOfDay = sameTimeOfDay(dateV1, dateV2);
+					toReturn.add(result);
 				}
 			}
 		}
