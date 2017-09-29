@@ -70,7 +70,7 @@ public class FirebaseHelper {
 			throws FirebaseException, UnsupportedEncodingException {
 		List<ScalabilityMetrics> toReturn = new ArrayList<>();
 
-		String ref = FIREBASE_URL + "/EXPnetworkEvaluator";
+		String ref = FIREBASE_URL + "/UpDownNetworkEvaluator";
 		ref += (real) ? "/real" : "/BAD";
 		ref+="/TrajSize";
 		ref += "/" + trajectorySize;
@@ -79,7 +79,7 @@ public class FirebaseHelper {
 
 		FirebaseResponse response = firebase.get();
 		response.getBody().entrySet().stream().forEach(x -> {
-			toReturn.add(parseMetrics(x));
+			toReturn.add(parseScalabilityMetrics(x));
 		});
 
 		return toReturn;
@@ -89,7 +89,7 @@ public class FirebaseHelper {
 			throws FirebaseException, UnsupportedEncodingException {
 		List<ScalabilityMetrics> toReturn = new ArrayList<>();
 
-		String ref = FIREBASE_URL + "/networkEvaluator";
+		String ref = FIREBASE_URL + "/UpDownNetworkEvaluator";
 		ref += (real) ? "/real" : "/BAD";
 		ref+="/NumEvents";
 		ref += "/" + numEvents;
@@ -98,23 +98,25 @@ public class FirebaseHelper {
 
 		FirebaseResponse response = firebase.get();
 		response.getBody().entrySet().stream().forEach(x -> {
-			toReturn.add(parseMetrics(x));
+			toReturn.add(parseScalabilityMetrics(x));
 		});
 
 		return toReturn;
 	}
 
-	private static ScalabilityMetrics parseMetrics(Map.Entry<String, Object> x) {
+	private static ScalabilityMetrics parseScalabilityMetrics(Map.Entry<String, Object> x) {
 		String metricsValues = x.getValue().toString();
 		String[] aux = metricsValues.split(",");
-		String bytesSpentStr = aux[0].split("=")[1];
+		String downloadStr = aux[0].split("=")[1];
 		String updatesStr = aux[1].split("=")[1];
-		updatesStr = updatesStr.substring(0, updatesStr.length() - 1);
+		String uploadStr = aux[2].split("=")[1];
+		uploadStr = uploadStr.substring(0, uploadStr.length() - 1);
 
-		long bytesSpent = Long.parseLong(bytesSpentStr);
+		long bytesUpload = Long.parseLong(uploadStr);
+		long bytesDownload = Long.parseLong(downloadStr);
 		int updates = Integer.parseInt(updatesStr);
 
-		return new ScalabilityMetrics(bytesSpent, updates);
+		return new ScalabilityMetrics(bytesUpload,bytesDownload, updates);
 	}
 
 	public static int getStoredLocationsSizeFromFirebase() throws FirebaseException, UnsupportedEncodingException {

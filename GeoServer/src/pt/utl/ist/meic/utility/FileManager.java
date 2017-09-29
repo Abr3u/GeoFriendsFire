@@ -51,10 +51,16 @@ public class FileManager {
 	private static final String pathAmsCSV = "C:/Android/GeoFriendsFire/GeoServer/dataset/AMS.csv";// user e datas
 
 	// AMS
-	private static final Double HIGH_LATI = 52.427128848;
-	private static final Double LOW_LATI = 52.3261076319;
-	private static final Double HIGH_LONGI = 4.98538970;
-	private static final Double LOW_LONGI = 4.8308944702;
+//	private static final Double HIGH_LATI = 52.427128848;
+//	private static final Double LOW_LATI = 52.3261076319;
+//	private static final Double HIGH_LONGI = 4.98538970;
+//	private static final Double LOW_LONGI = 4.8308944702;
+	
+	// Manhattan
+		private static final Double HIGH_LATI = 40.877939;
+		private static final Double LOW_LATI = 40.685047;
+		private static final Double HIGH_LONGI = -73.899505;
+		private static final Double LOW_LONGI = -74.026232;
 
 	/*
 	 * Data pre processing

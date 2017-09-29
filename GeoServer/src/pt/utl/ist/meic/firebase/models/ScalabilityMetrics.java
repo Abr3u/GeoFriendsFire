@@ -2,17 +2,19 @@ package pt.utl.ist.meic.firebase.models;
 
 public class ScalabilityMetrics {
 	
-	public long bytesSpent;
+	public long bytesUpload;
+	public long bytesDownload;
 	public int updates;
 	
-	public ScalabilityMetrics(long bytesSpent, int updates) {
-		this.bytesSpent = bytesSpent;
+	public ScalabilityMetrics(long bytesUpload,long bytesDownload, int updates) {
+		this.bytesUpload = bytesUpload;
+		this.bytesDownload = bytesDownload;
 		this.updates = updates;
 	}
 
 	@Override
 	public String toString() {
-		return "bytes -> "+bytesSpent+" // updates -> "+updates;
+		return "bytesUpload -> "+bytesUpload+" ; bytesDownload -> "+bytesDownload+" // updates -> "+updates;
 	}
 	
 }

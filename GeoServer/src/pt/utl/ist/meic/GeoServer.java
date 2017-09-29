@@ -48,8 +48,8 @@ public class GeoServer {
 	private static final int MATCHING_MAX_SEQ_LENGTH = 20;// analisar seqs no
 															// maximo de 20
 															// clusters
-	private static final long TRANSITION_TIME_THRESHOLD = 2 * 60 * 60 * 1000;// 2 horas
-	private static final long SAME_TIME_DAY_THRESHOLD = 30 * 60 * 1000;// 30 minutos // horas
+	private static final long TRANSITION_TIME_THRESHOLD = 210 * 60 * 1000;// 3.5 horas
+	private static final long SAME_TIME_DAY_THRESHOLD = 30 * 60 * 1000;// 30 minutos
 
 	// workflow flags
 	private static final boolean CLUSTER_GOWALLA = false;
@@ -59,18 +59,18 @@ public class GeoServer {
 	private static final boolean DATA_PREPROCESSING = false;
 	
 	private static final boolean EVALUATE_BY_COUNT = false;
-	private static final boolean EVALUATE_GOWALLA = true;
+	private static final boolean EVALUATE_GOWALLA = false;
 	private static final boolean EVALUATE_GOWALLA_MULTI_LAYER = false;//NUM_CLUSTERS = 0
 	private static final int NUM_LAYERS = 2;
 	private static final COLLAB_TYPE COLLABORATION_TYPE = COLLAB_TYPE.cosine;
-	private static final double ACT_SCORE_WEIGHT = 0.875;
-	private static final double SEQ_SCORE_WEIGHT = 0.125;
+	private static final double ACT_SCORE_WEIGHT = 0.75;
+	private static final double SEQ_SCORE_WEIGHT = 0.25;
 	private static final double SIMILARITY_THRESHOLD = 0.5;
 
-	private static final boolean EVALUATE_SCALABILITY_TRAJ_SIZE = false;
+	private static final boolean EVALUATE_SCALABILITY_TRAJ_SIZE = false;//uses realVersion
 	private static final int TRAJ_SIZE = 50;
 
-	private static final boolean EVALUATE_SCALABILITY_NUM_EVENTS = false;
+	private static final boolean EVALUATE_SCALABILITY_NUM_EVENTS = true;//uses realVersion
 	private static final boolean EVALUATE_UX = false;// uses num_events + realVersion
 	private static final int NUM_EVENTS = 150;
 
@@ -104,17 +104,26 @@ public class GeoServer {
 		List<ClusterWithMean> globalClustersWithMean = new ArrayList<>();
 
 		if (TEST) {
-			try {
-				FileManager fm = new FileManager();
-				String pathSuggested = "C:/Android/GeoFriendsFire/GeoServer/friendsOf562Users.csv";
-				System.out.println("Average Friends Gowalla");
-				System.out.println(fm.getAverageRelevantFriendsGowalla());
-				System.out.println("Average Suggested Friends GeoFriends");
-				System.out.println(fm.getAverageSuggestedFriendsGeoFriends(pathSuggested));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			double x8 = ((8d - 0) / (24d - 0)) * (1 - 0) + 0;
+			double x24 = ((24d - 0) / (24d - 0)) * (1 - 0) + 0;
+			double y24 = ((24d - 0) / (64d - 0)) * (1 - 0) + 0;
+			double y64 = ((64d - 0) / (64d - 0)) * (1 - 0) + 0;
+			double z8 = ((8d - 0) / (64d - 0)) * (1 - 0) + 0;
+			double z64 = ((64d - 0) / (64d - 0)) * (1 - 0) + 0;
+			System.out.println(x8 + " ; "+x24);
+			System.out.println(y24 + " ; "+y64);
+			System.out.println(z8 + " ; "+z64);
+//			try {
+//				FileManager fm = new FileManager();
+//				String pathSuggested = "C:/Android/GeoFriendsFire/GeoServer/friendsOf562Users.csv";
+//				System.out.println("Average Friends Gowalla");
+//				System.out.println(fm.getAverageRelevantFriendsGowalla());
+//				System.out.println("Average Suggested Friends GeoFriends");
+//				System.out.println(fm.getAverageSuggestedFriendsGeoFriends(pathSuggested));
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		}
 		
 		if(DATA_PREPROCESSING) {
@@ -236,14 +245,17 @@ public class GeoServer {
 
 				List<ScalabilityMetrics> metricsTrajSize = FirebaseHelper
 						.getScalabilityMetricsTrajSizeFromFirebase(REAL_VERSION, TRAJ_SIZE);
-				OptionalDouble averageBytesSpentTrajSize = metricsTrajSize.stream().map(x -> x.bytesSpent)
+				OptionalDouble averageBytesUploadTrajSize = metricsTrajSize.stream().map(x -> x.bytesUpload)
+						.mapToLong(x -> x).average();
+				OptionalDouble averageBytesDownloadTrajSize = metricsTrajSize.stream().map(x -> x.bytesDownload)
 						.mapToLong(x -> x).average();
 				OptionalDouble averageUpdatesTrajSize = metricsTrajSize.stream().map(x -> x.updates).mapToInt(x -> x)
 						.average();
 
 				System.out.println(info);
 				System.out.println(metricsTrajSize.size() + " measures");
-				System.out.println("Average Bytes Spent " + averageBytesSpentTrajSize.getAsDouble());
+				System.out.println("Average Bytes Upload " + averageBytesUploadTrajSize.getAsDouble());
+				System.out.println("Average Bytes Download " + averageBytesDownloadTrajSize.getAsDouble());
 				System.out.println("Average Updates " + averageUpdatesTrajSize.getAsDouble());
 
 			} catch (UnsupportedEncodingException | FirebaseException e) {
@@ -259,14 +271,17 @@ public class GeoServer {
 
 				List<ScalabilityMetrics> metricsNumEvents = FirebaseHelper
 						.getScalabilityMetricsNumEventsFromFirebase(REAL_VERSION, NUM_EVENTS);
-				OptionalDouble averageBytesSpentNumEvents = metricsNumEvents.stream().map(x -> x.bytesSpent)
+				OptionalDouble averageBytesUploadNumEvents = metricsNumEvents.stream().map(x -> x.bytesUpload)
+						.mapToLong(x -> x).average();
+				OptionalDouble averageBytesDownloadNumEvents = metricsNumEvents.stream().map(x -> x.bytesDownload)
 						.mapToLong(x -> x).average();
 				OptionalDouble averageUpdatesNumEvents = metricsNumEvents.stream().map(x -> x.updates).mapToInt(x -> x)
 						.average();
 
 				System.out.println(info);
 				System.out.println(metricsNumEvents.size() + " measures");
-				System.out.println("Average Bytes Spent " + averageBytesSpentNumEvents.getAsDouble());
+				System.out.println("Average Bytes Upload " + averageBytesUploadNumEvents.getAsDouble());
+				System.out.println("Average Bytes Download " + averageBytesDownloadNumEvents.getAsDouble());
 				System.out.println("Average Updates " + averageUpdatesNumEvents.getAsDouble());
 
 			} catch (UnsupportedEncodingException | FirebaseException e) {
